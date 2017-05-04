@@ -11,7 +11,7 @@ class App extends Component {
         this.state = {
             results: [],
             activePage: 0,
-            limit: 3,
+            limit: 6,
             offset: 0,
             totalPages: 0,
             query: "",
@@ -25,7 +25,7 @@ class App extends Component {
     handlePaginationSelect(selectedPage) {
         const self = this;
         let offset = this.state.limit * selectedPage;
-        const url = `http://localhost:7676/search/${this.state.query}/?limit=3&offset=${selectedPage -1}`;
+        const url = `http://localhost:7676/search/${this.state.query}/?limit=${self.state.limit}&offset=${selectedPage -1}`;
         this.fetch(
             url,
             (json) => {
@@ -40,7 +40,7 @@ class App extends Component {
     requestSearch(query){
         const self = this;
         if(query){
-            const url = `http://localhost:7676/search/${query}/?limit=3&offset=0`;
+            const url = `http://localhost:7676/search/${query}/?limit=${self.state.limit}&offset=0`;
             this.fetch(
                 url,
                 (json) => {
