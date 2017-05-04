@@ -4,7 +4,8 @@ import "./MarkdownViewer.css";
 const converter = new showdown.Converter();
 
 const MarkdownViewer = ({entry}) => {
-    const generatedHtml = converter.makeHtml(entry.markdown);
+    const { title, markdown } = entry;
+    const generatedHtml = converter.makeHtml(`# ${title} \n${entry.markdown}`);
     return (
         <div className="MarkdownViewer">
             <div dangerouslySetInnerHTML={{__html: generatedHtml}} />

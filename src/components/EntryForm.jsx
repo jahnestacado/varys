@@ -34,6 +34,7 @@ class EntryForm extends Component {
             "updateKeywords",
             "updateMarkdown",
             "updateTitle",
+            "setState"
         ]);
     }
 
@@ -66,7 +67,7 @@ class EntryForm extends Component {
                 }),
             })
             .then(() => {
-                self.setState({
+                setState({
                     markdown: "",
                     title: "",
                     keywords: "",
@@ -113,6 +114,7 @@ class EntryForm extends Component {
         } = self;
         const { entry, showModal, glyph } = this.state;
         const { title, keywords } = entry;
+        console.log("Updated tityle", title, self.state.entry.title);
         return (
             <div className="EntryForm">
                 <div className="EntryForm-btn-open" onClick={openModal} >

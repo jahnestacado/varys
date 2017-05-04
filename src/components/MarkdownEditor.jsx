@@ -8,15 +8,11 @@ class MarkdownEditor extends Component {
         super(props);
         const self = this;
         const { markdown, title } = props.entry;
-        const markdownInput = markdown
-            ? markdown.replace(`# ${title}`, "")
-            : ""
-        ;
         self.converter = new showdown.Converter();
         self.state = {
-            generatedHtml: self.converter.makeHtml(markdown),
-            markdownInput,
-            markdown: "",
+            generatedHtml: self.converter.makeHtml(`${self.getMarkdownTitleField()}${markdown}`),
+            markdownInput: markdown || "",
+            markdownWithTitle: "",
         };
 
         bindToComponent(self, ["onMarkdownChanged"]);
@@ -24,22 +20,28 @@ class MarkdownEditor extends Component {
 
     componentDidUpdate(){
         const self = this;
-        const { markdownInput, markdown } = self.state;
+        const { markdownInput, markdownWithTitle } = self.state;
         const { title } = self.props.entry;
-        if(!markdown.startsWith(`# ${title}`)){
+        if(!markdownWithTitle.startsWith(self.getMarkdownTitleField())){
             self.renderMarkdown(markdownInput);
         }
+    }
+
+    getMarkdownTitleField(){
+        const { title } = this.props.entry;
+        return `# ${title} \n`;
+
     }
 
     renderMarkdown(markdownInput = ""){
         const self = this;
         const { title } = self.props.entry;
-        const markdown = `# ${title} \n${markdownInput}`;
-        self.props.updateMarkdown(markdown);
-        const generatedHtml = self.converter.makeHtml(markdown);
+        const markdownWithTitle = `# ${title} \n${markdownInput}`;
+        self.props.updateMarkdown(markdownInput);
+        const generatedHtml = self.converter.makeHtml(markdownWithTitle);
         self.setState({
             generatedHtml,
-            markdown,
+            markdownWithTitle,
         });
     }
 
@@ -54,7 +56,7 @@ class MarkdownEditor extends Component {
 
     render() {
         const self = this;
-        const { markdownInput, generatedHtml } = self.state;
+        const { markdownInput, generatedHtml, title } = self.state;
         return (
             <div>
                 <textarea value={markdownInput} className="MarkdownEditor-input-area" onChange={self.onMarkdownChanged} />
