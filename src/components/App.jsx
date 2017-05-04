@@ -63,7 +63,6 @@ class App extends Component {
     }
 
     fetch(url, onDone, onError = console.log) {
-        console.log("requesting", url);
         fetch(url, {
             method: "GET",
             webPreferences: {

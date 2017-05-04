@@ -7,11 +7,11 @@ class MarkdownEditor extends Component {
     constructor(props){
         super(props);
         const self = this;
-        const { markdown, title } = props.entry;
+        const { body, id } = props.entry;
         self.converter = new showdown.Converter();
         self.state = {
-            generatedHtml: self.converter.makeHtml(`${self.getMarkdownTitleField()}${markdown}`),
-            markdownInput: markdown || "",
+            generatedHtml: self.converter.makeHtml(`${self.getMarkdownTitleField()}${body}`),
+            markdownInput: body || "",
             markdownWithTitle: "",
         };
 
@@ -37,7 +37,7 @@ class MarkdownEditor extends Component {
         const self = this;
         const { title } = self.props.entry;
         const markdownWithTitle = `# ${title} \n${markdownInput}`;
-        self.props.updateMarkdown(markdownInput);
+        self.props.updateBody(markdownInput);
         const generatedHtml = self.converter.makeHtml(markdownWithTitle);
         self.setState({
             generatedHtml,
@@ -67,7 +67,7 @@ class MarkdownEditor extends Component {
 }
 
 MarkdownEditor.propTypes = {
-    updateMarkdown: React.PropTypes.func.isRequired,
+    updateBody: React.PropTypes.func.isRequired,
     entry: React.PropTypes.object.isRequired,
 };
 

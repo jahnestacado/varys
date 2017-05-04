@@ -9,7 +9,8 @@ const initializeEntry = () => {
     return {
         title: "",
         keywords: [],
-        markdown: "",
+        body: null,
+        id: null,
         // username
         // date-created
         // date-edited
@@ -32,7 +33,7 @@ class EntryForm extends Component {
             "closeModal",
             "submit",
             "updateKeywords",
-            "updateMarkdown",
+            "updateBody",
             "updateTitle",
             "setState"
         ]);
@@ -41,7 +42,7 @@ class EntryForm extends Component {
     openModal(event){
         const self = this;
         event && event.stopPropagation();
-        this.setState({showModal: true});
+        self.setState({showModal: true});
     }
 
     closeModal(event){
@@ -68,7 +69,7 @@ class EntryForm extends Component {
             })
             .then(() => {
                 setState({
-                    markdown: "",
+                    body: "",
                     title: "",
                     keywords: "",
                 });
@@ -78,10 +79,10 @@ class EntryForm extends Component {
 
     }
 
-    updateMarkdown(markdown){
+    updateBody(body){
         const self = this;
         self.setState({
-            entry: {...this.state.entry, markdown},
+            entry: {...this.state.entry, body},
         });
     }
 
@@ -108,13 +109,12 @@ class EntryForm extends Component {
             openModal,
             closeModal,
             updateTitle,
-            updateMarkdown,
+            updateBody,
             updateKeywords,
             submit,
         } = self;
         const { entry, showModal, glyph } = this.state;
         const { title, keywords } = entry;
-        console.log("Updated tityle", title, self.state.entry.title);
         return (
             <div className="EntryForm">
                 <div className="EntryForm-btn-open" onClick={openModal} >
@@ -130,7 +130,7 @@ class EntryForm extends Component {
                         <div>Title</div>
                         <input value={title} onChange={updateTitle} />
                     </div>
-                    <MarkdownEditor entry={entry} updateMarkdown={updateMarkdown}/>
+                    <MarkdownEditor entry={entry} updateBody={updateBody}/>
                     <Button className="EntryForm-btn-close" onClick={closeModal} >
                         x
                     </Button>
