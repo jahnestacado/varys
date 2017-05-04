@@ -5,7 +5,7 @@ const converter = new showdown.Converter();
 
 const MarkdownViewer = ({entry}) => {
     const { title, body } = entry;
-    const generatedHtml = converter.makeHtml(`# ${title} \n${entry.body}`);
+    const generatedHtml = converter.makeHtml(`# ${title} \n${body}`);
     return (
         <div className="MarkdownViewer">
             <div dangerouslySetInnerHTML={{__html: generatedHtml}} />
