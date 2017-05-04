@@ -2,9 +2,10 @@ import React, { Component } from "react";
 import ReactModal from "react-modal";
 import MarkdownEditor from "./MarkdownEditor.jsx"
 import { Button, Glyphicon } from "react-bootstrap";
+import bindToComponent from "./../utils/bindToComponent.js";
 import "./EntryForm.css";
 
-const createEntry = () => {
+const initializeEntry = () => {
     return {
         title: "",
         keywords: [],
@@ -18,105 +19,125 @@ const createEntry = () => {
 class EntryForm extends Component {
     constructor(props){
         super(props);
-        const entry = props.entry || createEntry();
+        const self = this;
+        const entry = props.entry || initializeEntry();
         this.state = {
             showModal: false,
             entry,
             glyph: props.entry ? "pencil" : "plus-sign",
         };
 
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
-        this.save = this.save.bind(this);
-        this.updateKeywords = this.updateKeywords.bind(this);
-        this.updateMarkdown = this.updateMarkdown.bind(this);
-        this.updateTitle = this.updateTitle.bind(this);
+        bindToComponent(self, [
+            "openModal",
+            "closeModal",
+            "submit",
+            "updateKeywords",
+            "updateMarkdown",
+            "updateTitle",
+        ]);
     }
 
     openModal(event){
-        event.stopPropagation();
+        const self = this;
+        event && event.stopPropagation();
         this.setState({showModal: true});
     }
 
-    closeModal(){
-        this.setState({showModal: false});
+    closeModal(event){
+        const self = this;
+        event && event.stopPropagation();
+        self.setState({showModal: false});
     }
 
-    save(){
-        console.log("Saving", this.state.entry);
+    submit(){
+        const self = this;
+        const { setState, closeModal, state } = self;
+        console.log("Saving", state.entry);
         const url = "http://localhost:7676/entry";
             fetch(url, {
                 method: "PUT",
                 webPreferences: {
                     webSecurity: false
                 },
-                body: JSON.stringify(this.state.entry),
+                body: JSON.stringify(state.entry),
                 headers: new Headers({
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                 }),
             })
             .then(() => {
-                this.setState({
+                self.setState({
                     markdown: "",
                     title: "",
                     keywords: "",
                 });
-                this.closeModal();
+                closeModal();
             })
             .catch(console.log);
 
     }
 
     updateMarkdown(markdown){
-        this.setState({
+        const self = this;
+        self.setState({
             entry: {...this.state.entry, markdown},
         });
     }
 
     updateTitle(event){
+        const self = this;
         const title = event.target.value;
-        this.setState({
-            entry: {...this.state.entry, title},
+        self.setState({
+            entry: {...self.state.entry, title},
         });
     }
 
     updateKeywords(event){
+        const self = this;
         const keywordsText = event.target.value;
         const keywords = keywordsText.split(",").map((keyword) => keyword.trim());
-        this.setState({
-            entry: {...this.state.entry, keywords},
+        self.setState({
+            entry: {...self.state.entry, keywords},
         });
     }
 
     render() {
+        const self = this;
+        const {
+            openModal,
+            closeModal,
+            updateTitle,
+            updateMarkdown,
+            updateKeywords,
+            submit,
+        } = self;
         const { entry, showModal, glyph } = this.state;
         const { title, keywords } = entry;
         return (
             <div className="EntryForm">
-                <div className="EntryForm-btn-open" onClick={this.openModal} >
+                <div className="EntryForm-btn-open" onClick={openModal} >
                     <Glyphicon glyph={glyph}></Glyphicon>
                 </div>
                 <ReactModal
                     isOpen={showModal}
                     contentLabel={title}
                     shouldCloseOnOverlayClick={true}
-                    onRequestClose={this.closeModal}
+                    onRequestClose={closeModal}
                 >
                     <div className="EntryForm-title">
                         <div>Title</div>
-                        <input value={title} onChange={this.updateTitle} />
+                        <input value={title} onChange={updateTitle} />
                     </div>
-                    <MarkdownEditor entry={entry} updateMarkdown={this.updateMarkdown}/>
-                    <Button className="EntryForm-btn-close" onClick={this.closeModal} >
+                    <MarkdownEditor entry={entry} updateMarkdown={updateMarkdown}/>
+                    <Button className="EntryForm-btn-close" onClick={closeModal} >
                         x
                     </Button>
-                    <Button className="EntryForm-btn-save btn btn-success" onClick={this.save} >
+                    <Button className="EntryForm-btn-submit btn btn-success" onClick={submit} >
                         Save
                     </Button>
                     <div className="EntryForm-keywords">
                         <div>Keywords</div>
-                        <input value={keywords} onChange={this.updateKeywords} />
+                        <input value={keywords} onChange={updateKeywords} />
                     </div>
                 </ReactModal>
             </div>
