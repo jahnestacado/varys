@@ -11,7 +11,7 @@ class MarkdownEditor extends Component {
         self.converter = new showdown.Converter();
         self.state = {
             generatedHtml: self.converter.makeHtml(`${self.getMarkdownTitleField()}${body}`),
-            markdownInput: body || "",
+            markdownInput: (id && body) || "",
             markdownWithTitle: "",
         };
 
@@ -21,7 +21,6 @@ class MarkdownEditor extends Component {
     componentDidUpdate(){
         const self = this;
         const { markdownInput, markdownWithTitle } = self.state;
-        const { title } = self.props.entry;
         if(!markdownWithTitle.startsWith(self.getMarkdownTitleField())){
             self.renderMarkdown(markdownInput);
         }
@@ -56,7 +55,7 @@ class MarkdownEditor extends Component {
 
     render() {
         const self = this;
-        const { markdownInput, generatedHtml, title } = self.state;
+        const { markdownInput, generatedHtml } = self.state;
         return (
             <div>
                 <textarea value={markdownInput} className="MarkdownEditor-input-area" onChange={self.onMarkdownChanged} />
