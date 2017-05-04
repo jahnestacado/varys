@@ -1,0 +1,37 @@
+.AddEntry-btn-close {
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+
+.AddEntry-btn-save {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin: 10px;
+}
+
+.AddEntry-btn-open .glyphicon-plus-sign {
+    font-size: 30px;
+}
+
+.AddEntry-btn-open .glyphicon-pencil {
+    font-size: 12px;
+}
+
+.AddEntry-keywords {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display:inline-flex;
+    padding: 10px;
+}
+
+.AddEntry-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display:inline-flex;
+    margin: 10px;
+}

@@ -1,0 +1,35 @@
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #222;
+  height: 150px;
+  padding: 20px;
+  color: white;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+
+.App-search-bar {
+    width: 40%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+}
+
+.App-search-bar .input-group {
+    width: 100%;
+}
+
+.App-search-bar .input-group {
+    z-index: 0;
+}
+
+.App .pagination .active a {
+    z-index: 0;
+}

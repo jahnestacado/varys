@@ -1,0 +1,13 @@
+.MarkdownViewer {
+    width: 80%;
+    height: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid; border: 1px solid rgb(242, 242, 242);
+    border: 1px solid rgba(242, 242, 242, .7);
+    -webkit-background-clip: padding-box; /* for Safari */
+    background-clip: padding-box; /* for IE9+, Firefox 4+, Opera, Chrome */
+    border-radius: 10px;
+    padding: 20px;
+}

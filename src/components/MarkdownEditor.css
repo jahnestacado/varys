@@ -1,0 +1,17 @@
+.MarkdownEditor-input-area {
+    position: absolute;
+    height: 85%;
+    background-color: gray;
+    width: 50%;
+    left:0;
+    top: 40px;
+}
+
+.MarkdownEditor-output-area {
+    position: absolute;
+    height: 85%;
+    width: 50%;
+    right: 0;
+    overflow: auto;
+    top: 40px;
+}

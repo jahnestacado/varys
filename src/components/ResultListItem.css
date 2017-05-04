@@ -1,0 +1,12 @@
+.ResultListItem-btn-close {
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+
+.ResultListItem {
+  text-transform: capitalize;
+  height: 80px;
+  margin-top: 20px;
+}
