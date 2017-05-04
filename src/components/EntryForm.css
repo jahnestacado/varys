@@ -1,26 +1,26 @@
-.AddEntry-btn-close {
+.EntryForm-btn-close {
     position: fixed;
     top: 0;
     right: 0;
     margin: 10px;
 }
 
-.AddEntry-btn-save {
+.EntryForm-btn-save {
     position: absolute;
     bottom: 0;
     right: 0;
     margin: 10px;
 }
 
-.AddEntry-btn-open .glyphicon-plus-sign {
+.EntryForm-btn-open .glyphicon-plus-sign {
     font-size: 30px;
 }
 
-.AddEntry-btn-open .glyphicon-pencil {
+.EntryForm-btn-open .glyphicon-pencil {
     font-size: 12px;
 }
 
-.AddEntry-keywords {
+.EntryForm-keywords {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -28,7 +28,7 @@
     padding: 10px;
 }
 
-.AddEntry-title {
+.EntryForm-title {
     position: absolute;
     top: 0;
     left: 0;

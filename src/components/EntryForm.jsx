@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ReactModal from "react-modal";
 import MarkdownEditor from "./MarkdownEditor.jsx"
 import { Button, Glyphicon } from "react-bootstrap";
-import "./AddEntry.css";
+import "./EntryForm.css";
 
 const createEntry = () => {
     return {
@@ -15,14 +15,14 @@ const createEntry = () => {
     }
 };
 
-class AddEntry extends Component {
+class EntryForm extends Component {
     constructor(props){
         super(props);
-        const entry = props.initData || createEntry();
+        const entry = props.entry || createEntry();
         this.state = {
             showModal: false,
             entry,
-            glyph: props.initData ? "pencil" : "plus-sign",
+            glyph: props.entry ? "pencil" : "plus-sign",
         };
 
         this.openModal = this.openModal.bind(this);
@@ -93,8 +93,8 @@ class AddEntry extends Component {
         const { entry, showModal, glyph } = this.state;
         const { title, keywords } = entry;
         return (
-            <div className="AddEntry">
-                <div className="AddEntry-btn-open" onClick={this.openModal} >
+            <div className="EntryForm">
+                <div className="EntryForm-btn-open" onClick={this.openModal} >
                     <Glyphicon glyph={glyph}></Glyphicon>
                 </div>
                 <ReactModal
@@ -103,18 +103,18 @@ class AddEntry extends Component {
                     shouldCloseOnOverlayClick={true}
                     onRequestClose={this.closeModal}
                 >
-                    <div className="AddEntry-title">
+                    <div className="EntryForm-title">
                         <div>Title</div>
                         <input value={title} onChange={this.updateTitle} />
                     </div>
-                    <MarkdownEditor initData={entry} updateMarkdown={this.updateMarkdown}/>
-                    <Button className="AddEntry-btn-close" onClick={this.closeModal} >
+                    <MarkdownEditor entry={entry} updateMarkdown={this.updateMarkdown}/>
+                    <Button className="EntryForm-btn-close" onClick={this.closeModal} >
                         x
                     </Button>
-                    <Button className="AddEntry-btn-save btn btn-success" onClick={this.save} >
+                    <Button className="EntryForm-btn-save btn btn-success" onClick={this.save} >
                         Save
                     </Button>
-                    <div className="AddEntry-keywords">
+                    <div className="EntryForm-keywords">
                         <div>Keywords</div>
                         <input value={keywords} onChange={this.updateKeywords} />
                     </div>
@@ -124,4 +124,4 @@ class AddEntry extends Component {
     }
 }
 
-export default AddEntry;
+export default EntryForm;

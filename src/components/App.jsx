@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 // import { ListGroup, ListGroupItem, Col } "react-bootstrap/lib";
 import ResultList from "./ResultList.jsx";
-import AddEntry from "./AddEntry.jsx";
+import EntryForm from "./EntryForm.jsx";
 import { Col, Pagination, FormGroup, FormControl, InputGroup } from "react-bootstrap";
 import "./App.css";
 
@@ -103,7 +103,7 @@ class App extends Component {
                     />
                 </Col>
 
-                <AddEntry />
+                <EntryForm />
             </div>
         )
     }

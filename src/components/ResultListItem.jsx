@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Col, ListGroupItem } from "react-bootstrap";
 import ReactModal from "react-modal";
 import MarkdownViewer from "./MarkdownViewer.jsx";
-import AddEntry from "./AddEntry.jsx";
+import EntryForm from "./EntryForm.jsx";
 import "./ResultListItem.css";
 
 class ResultListItem extends Component {
@@ -21,10 +21,6 @@ class ResultListItem extends Component {
         this.setState({showModal: false});
     }
 
-    editEntry() {
-
-    }
-
     render() {
         const { entry } = this.props;
         return (
@@ -34,7 +30,7 @@ class ResultListItem extends Component {
                     onClick={() => this.openModal()}
                 >
                 {entry.title}
-                <AddEntry initData={entry} />
+                <EntryForm entry={entry} />
                 </ListGroupItem>
                 <ReactModal
                     isOpen={this.state.showModal}
