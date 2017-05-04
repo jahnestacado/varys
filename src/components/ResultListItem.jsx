@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Col, ListGroupItem } from "react-bootstrap";
+import { Col, ListGroupItem, Label } from "react-bootstrap";
 import ReactModal from "react-modal";
 import MarkdownViewer from "./MarkdownViewer.jsx";
 import EntryForm from "./EntryForm.jsx";
@@ -23,13 +23,19 @@ class ResultListItem extends Component {
 
     render() {
         const { entry } = this.props;
+        const keywordLabels = entry.keywords.map((keyword, i) => {
+            return (
+                <Label key={i} className="ResultListItem-label">{keyword}</Label>
+            )
+        })
         return (
             <Col sm={6} md={4} >
                 <ListGroupItem
                     className="ResultListItem"
                     onClick={() => this.openModal()}
                 >
-                {entry.title}
+                <div className="ResultListItem-title">{entry.title}</div>
+                <div>{keywordLabels}</div>
                 <EntryForm entry={entry} />
                 </ListGroupItem>
                 <ReactModal
