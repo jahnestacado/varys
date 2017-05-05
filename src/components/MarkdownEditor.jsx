@@ -11,7 +11,7 @@ class MarkdownEditor extends Component {
         self.converter = new showdown.Converter();
         self.state = {
             generatedHtml: self.converter.makeHtml(`${self.getMarkdownTitleField()}${body}`),
-            markdownInput: (id && body) || "",
+            markdownInput: id ? body : "",
             markdownWithTitle: "",
         };
 

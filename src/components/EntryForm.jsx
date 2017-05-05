@@ -35,7 +35,7 @@ class EntryForm extends Component {
             "updateKeywords",
             "updateBody",
             "updateTitle",
-            "setState"
+            "setState",
         ]);
     }
 
@@ -53,7 +53,7 @@ class EntryForm extends Component {
 
     submit(){
         const self = this;
-        const { setState, closeModal, state } = self;
+        const { setState, closeModal, state, props } = self;
         console.log("Saving", state.entry);
         const url = "http://localhost:7676/entry";
             fetch(url, {
@@ -68,6 +68,7 @@ class EntryForm extends Component {
                 }),
             })
             .then(() => {
+                props.onEntryUpdated && props.onEntryUpdated(state.entry);
                 setState({
                     body: "",
                     title: "",
