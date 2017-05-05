@@ -4,18 +4,25 @@ import ResultList from "./ResultList.jsx";
 import EntryForm from "./EntryForm.jsx";
 import { Col, Pagination, FormGroup, FormControl, InputGroup } from "react-bootstrap";
 import "./App.css";
+import bindToComponent from "./../utils/bindToComponent.js";
 
 class App extends Component {
     constructor(props){
         super(props);
-        this.state = {
-            results: [],
+		const self = this;
+        self.state = {
+            entries: [],
             activePage: 0,
             limit: 6,
             offset: 0,
             totalPages: 0,
             query: "",
-        }
+        };
+		bindToComponent(self, [
+			"handlePaginationSelect",
+			"requestSearch",
+			"refreshSearchResults",
+		]);
     }
 
     componentWillMount(){
@@ -30,7 +37,7 @@ class App extends Component {
             url,
             (json) => {
                 self.setState({
-                    results: json.payload,
+                    entries: json.payload,
                     activePage: selectedPage,
                 });
             }
@@ -41,11 +48,12 @@ class App extends Component {
         const self = this;
         if(query){
             const url = `http://localhost:7676/search/${query}/?limit=${self.state.limit}&offset=0`;
-            this.fetch(
+            self.fetch(
                 url,
                 (json) => {
+					console.log("WTFFF", json.payload);
                     self.setState({
-                        results: json.payload,
+                        entries: json.payload,
                         totalPages: Math.ceil(json.totalMatches / self.state.limit),
                         activePage: 1,
                         query,
@@ -54,7 +62,7 @@ class App extends Component {
             );
         } else {
             self.setState({
-                results: [],
+                entries: [],
                 totalPages: 0,
                 activePage: 0,
                 query,
@@ -74,7 +82,16 @@ class App extends Component {
         .catch(onError);
     }
 
+	refreshSearchResults(){
+		const self = this;
+		self.requestSearch(self.state.query);
+	}
+
     render() {
+		const self = this;
+		const { handlePaginationSelect , requestSearch, refreshSearchResults, state } = self;
+		const { entries, activePage, totalPages } = state;
+		console.log("---Render APP", entries);
         return (
             <div className="App" >
                 <div className="App-header">
@@ -84,21 +101,21 @@ class App extends Component {
                           <FormControl
                               type="text"
                               placeholder="Search..."
-                              onChange={(event) => this.requestSearch(event.target.value)}
+                              onChange={(event) => requestSearch(event.target.value)}
                           />
                       </InputGroup>
                   </FormGroup>
                 </div>
                 <Col sm={8} md={10} smOffset={2} mdOffset={1} >
-                    <ResultList results={this.state.results} />
+                    <ResultList refresh={refreshSearchResults} entries={entries} />
                 </Col>
 
                 <Col sm={12} >
                     <Pagination
-                        onSelect={(eventKey) => this.handlePaginationSelect(eventKey)}
+                        onSelect={handlePaginationSelect}
                         bsSize={"medium"}
-                        activePage={this.state.activePage}
-                        items={this.state.totalPages}
+                        activePage={activePage}
+                        items={totalPages}
                     />
                 </Col>
 

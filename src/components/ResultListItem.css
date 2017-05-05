@@ -16,18 +16,22 @@
     font-size: 15px;
 }
 
-.ResultListItem-body {
-    font-size: 10px;
-}
-
 .ResultListItem-label {
     margin-right: 2px;
     background-color: red;
 }
 
+.ResultListItem-btn-panel {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: inline-flex;
+}
+
 .ResultListItem .EntryForm {
-    position: absolute;
-    top: 0;
-    right: 0;
-    margin: 10px;
+    margin: 5px;
+}
+
+.ResultListItem .DeleteEntry {
+    margin: 5px;
 }

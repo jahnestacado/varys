@@ -3,6 +3,7 @@ import { Col, ListGroupItem, Label } from "react-bootstrap";
 import ReactModal from "react-modal";
 import MarkdownViewer from "./MarkdownViewer.jsx";
 import EntryForm from "./EntryForm.jsx";
+import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 
@@ -39,6 +40,7 @@ class ResultListItem extends Component {
         const self = this;
         const { openModal, closeModal, updateEntry } = self;
         const { entry } = self.state;
+		const { onEntryDeleted } = self.props;
         const keywordLabels = entry.keywords.map((keyword, i) => {
             return (
                 <Label key={i} className="ResultListItem-label">{keyword}</Label>
@@ -50,9 +52,12 @@ class ResultListItem extends Component {
                     className="ResultListItem"
                     onClick={openModal}
                 >
+				<div className="ResultListItem-btn-panel">
+					<EntryForm onEntryUpdated={updateEntry} entry={entry} />
+					<DeleteEntry onEntryDeleted={onEntryDeleted} entry={entry} />
+				</div>
                 <div className="ResultListItem-title">{entry.title}</div>
                 <div>{keywordLabels}</div>
-                <EntryForm onEntryUpdated={updateEntry} entry={entry} />
                 </ListGroupItem>
                 <ReactModal
                     isOpen={this.state.showModal}
@@ -71,7 +76,7 @@ class ResultListItem extends Component {
 
 ResultListItem.propTypes = {
     entry: React.PropTypes.object.isRequired,
+	onEntryDeleted: React.PropTypes.func.isRequired,
 };
-
 
 export default ResultListItem;

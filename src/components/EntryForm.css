@@ -18,6 +18,12 @@
 
 .EntryForm-btn-open .glyphicon-pencil {
     font-size: 12px;
+	opacity: 0.6;
+}
+
+.EntryForm-btn-open .glyphicon-pencil:hover {
+    font-size: 14px;
+	opacity: 1;
 }
 
 .EntryForm-keywords {
