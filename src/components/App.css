@@ -13,7 +13,6 @@
   font-size: large;
 }
 
-
 .App-search-bar {
     width: 40%;
     display: block;
@@ -32,4 +31,13 @@
 
 .App .pagination .active a {
     z-index: 0;
+}
+
+.App .EntryForm-btn-open .glyphicon-plus-sign {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    margin: 10px;
+    font-weight: bold;
+    color: white;
 }

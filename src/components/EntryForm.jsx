@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ReactModal from "react-modal";
 import MarkdownEditor from "./MarkdownEditor.jsx"
-import { Button, Glyphicon } from "react-bootstrap";
+import { Button, Glyphicon, ControlLabel, FormControl, FormGroup, Col, Form, InputGroup } from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import "./EntryForm.css";
 
@@ -55,7 +55,7 @@ class EntryForm extends Component {
         const self = this;
         const { setState, closeModal, state, props } = self;
         console.log("Saving", state.entry);
-        const url = "http://localhost:7676/entry";
+        const url = "http://172.27.225.98:7676/entry";
             fetch(url, {
                 method: "PUT",
                 webPreferences: {
@@ -118,7 +118,7 @@ class EntryForm extends Component {
         const { entry, showModal, glyph } = this.state;
         const { title, keywords } = entry;
         return (
-            <div className="EntryForm">
+            <Form className="EntryForm">
                 <div className="EntryForm-btn-open" onClick={openModal} >
                     <Glyphicon glyph={glyph}></Glyphicon>
                 </div>
@@ -128,10 +128,13 @@ class EntryForm extends Component {
                     shouldCloseOnOverlayClick={true}
                     onRequestClose={closeModal}
                 >
-                    <div className="EntryForm-title">
-                        <div>Title</div>
-                        <input value={title} onChange={updateTitle} />
-                    </div>
+                    <Form className="EntryForm-title" inline>
+                        <FormGroup controlId="formInlineName">
+                            <ControlLabel>Title</ControlLabel>
+                            {' '}
+                            <FormControl placeholder="Set a title.." value={title} onChange={updateTitle} />
+                        </FormGroup>
+                    </Form>
                     <MarkdownEditor entry={entry} updateBody={updateBody}/>
                     <Button className="EntryForm-btn-close" onClick={closeModal} >
                         x
@@ -139,12 +142,16 @@ class EntryForm extends Component {
                     <Button className="EntryForm-btn-submit btn btn-success" onClick={submit} >
                         Save
                     </Button>
-                    <div className="EntryForm-keywords">
-                        <div>Keywords</div>
-                        <input value={keywords} onChange={updateKeywords} />
-                    </div>
+                    <Form className="EntryForm-keywords" inline>
+                        <FormGroup controlId="formInlineName">
+                            <ControlLabel>Keywords</ControlLabel>
+                            {' '}
+                            <FormControl value={keywords} onChange={updateKeywords} />
+                        </FormGroup>
+                    </Form>
+
                 </ReactModal>
-            </div>
+            </Form>
         )
     }
 }

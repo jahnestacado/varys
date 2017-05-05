@@ -16,7 +16,7 @@ class DeleteEntry extends Component {
 		console.log("Ask for Confirmation!!!!!", this.props.entry);
 		const self = this;
 		const { entry, onEntryDeleted } = self.props;
-		const url = `http://localhost:7676/entry`;
+		const url = `http://172.27.225.98:7676/entry`;
 		fetch(url, {
             method: "DELETE",
             webPreferences: {

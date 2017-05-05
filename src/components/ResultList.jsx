@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { ListGroup } from "react-bootstrap/lib";
 import ResultListItem from "./ResultListItem.jsx";
+import "./ResultList.css";
 
 class ResultList extends Component {
 	render(){
@@ -13,7 +14,7 @@ class ResultList extends Component {
 			)
 		});
 		return (
-			<ListGroup>
+			<ListGroup className="ResultList">
 				{listItems}
 			</ListGroup>
 		)
