@@ -9,7 +9,7 @@ const initializeEntry = () => {
     return {
         title: "",
         keywords: [],
-        body: null,
+        body: "",
         id: null,
         // username
         // date-created
@@ -68,16 +68,17 @@ class EntryForm extends Component {
                 }),
             })
             .then(() => {
-                props.onEntryUpdated && props.onEntryUpdated(state.entry);
+            	props.onSubmit(state.entry);
                 setState({
-                    body: "",
-                    title: "",
-                    keywords: "",
+					entry: {
+	                    body: "",
+	                    title: "",
+	                    keywords: "",
+					},
                 });
                 closeModal();
             })
             .catch(console.log);
-
     }
 
     updateBody(body){
@@ -147,5 +148,10 @@ class EntryForm extends Component {
         )
     }
 }
+
+EntryForm.propTypes = {
+    entry: React.PropTypes.object,
+	onSubmit: React.PropTypes.func.isRequired,
+};
 
 export default EntryForm;

@@ -51,7 +51,6 @@ class App extends Component {
             self.fetch(
                 url,
                 (json) => {
-					console.log("WTFFF", json.payload);
                     self.setState({
                         entries: json.payload,
                         totalPages: Math.ceil(json.totalMatches / self.state.limit),
@@ -91,7 +90,6 @@ class App extends Component {
 		const self = this;
 		const { handlePaginationSelect , requestSearch, refreshSearchResults, state } = self;
 		const { entries, activePage, totalPages } = state;
-		console.log("---Render APP", entries);
         return (
             <div className="App" >
                 <div className="App-header">
@@ -119,7 +117,7 @@ class App extends Component {
                     />
                 </Col>
 
-                <EntryForm />
+                <EntryForm onSubmit={refreshSearchResults}/>
             </div>
         )
     }

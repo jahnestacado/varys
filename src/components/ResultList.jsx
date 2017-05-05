@@ -9,7 +9,7 @@ class ResultList extends Component {
 		const { entries, refresh } = props;
 		const listItems = entries.map((entry) => {
 			return (
-				<ResultListItem onEntryDeleted={refresh} entry={entry} key={entry.id} />
+				<ResultListItem onEntryChanged={refresh} entry={entry} key={entry.id} />
 			)
 		});
 		return (
