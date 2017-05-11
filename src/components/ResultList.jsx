@@ -4,21 +4,21 @@ import ResultListItem from "./ResultListItem.jsx";
 import "./ResultList.css";
 
 class ResultList extends Component {
-	render(){
-		const self = this;
-		const { props } = self;
-		const { entries, refresh } = props;
-		const listItems = entries.map((entry) => {
-			return (
-				<ResultListItem onEntryChanged={refresh} entry={entry} key={entry.id} />
-			)
-		});
-		return (
-			<ListGroup className="ResultList">
-				{listItems}
-			</ListGroup>
-		)
-	}
+    render(){
+        const self = this;
+        const { props } = self;
+        const { entries, refresh } = props;
+        const listItems = entries.map((entry) => {
+            return (
+                <ResultListItem onEntryChanged={refresh} entry={entry} key={entry.id} />
+            )
+        });
+        return (
+            <ListGroup className="ResultList">
+                {listItems}
+            </ListGroup>
+        )
+    }
 }
 
 ResultList.propTypes = {

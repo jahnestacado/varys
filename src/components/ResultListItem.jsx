@@ -46,10 +46,10 @@ class ResultListItem extends Component {
                     onClick={openModal}
                 >
 				<div className="ResultListItem-btn-panel">
-					<EntryForm onSubmit={onEntryChanged} entry={entry} />
-					<DeleteEntry onEntryDeleted={onEntryChanged} entry={entry} />
+					<EntryForm onSubmit={onEntryChanged} entry={self.props.entry} />
+					<DeleteEntry onEntryDeleted={onEntryChanged} entry={self.props.entry} />
 				</div>
-                <div className="ResultListItem-title">{entry.title}</div>
+                <div className="ResultListItem-title">{self.props.entry.title}</div>
                 <div>{keywordLabels}</div>
                 </ListGroupItem>
                 <ReactModal
@@ -58,7 +58,7 @@ class ResultListItem extends Component {
                     shouldCloseOnOverlayClick={true}
                     onRequestClose={closeModal}
                 >
-                    <MarkdownViewer entry={entry} />
+                    <MarkdownViewer entry={self.props.entry} />
 
                     <button className="ResultListItem-btn-close" onClick={closeModal}>x</button>
                 </ReactModal>
