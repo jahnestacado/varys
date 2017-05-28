@@ -16,22 +16,22 @@ class DeleteEntry extends Component {
 		console.log("Ask for Confirmation!!!!!", this.props.entry);
 		const self = this;
 		const { entry, onEntryDeleted } = self.props;
-		const url = `http://172.27.225.98:7676/entry`;
+		const url = `http://localhost:7676/entry`;
 		fetch(url, {
-            method: "DELETE",
-            webPreferences: {
-                webSecurity: false
-            },
+			method: "DELETE",
+			webPreferences: {
+				webSecurity: false
+			},
 			body: JSON.stringify({id: entry.id}),
 			headers: new Headers({
 				'Accept': 'application/json',
 				'Content-Type': 'application/json',
 			}),
-        })
-        .then(() => {
+		})
+		.then(() => {
 			onEntryDeleted(entry);
 		})
-        .catch(console.log);
+		.catch(console.log);
 	}
 
 	render(){
@@ -45,8 +45,8 @@ class DeleteEntry extends Component {
 }
 
 DeleteEntry.propTypes = {
-    entry: React.PropTypes.object.isRequired,
-    onEntryDeleted: React.PropTypes.func.isRequired,
+	entry: React.PropTypes.object.isRequired,
+	onEntryDeleted: React.PropTypes.func.isRequired,
 };
 
 export default DeleteEntry;

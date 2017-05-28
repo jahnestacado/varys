@@ -6,9 +6,9 @@
 }
 
 .ResultListItem {
-  text-transform: capitalize;
-  height: 80px;
-  margin-top: 20px;
+    text-transform: capitalize;
+    height: 80px;
+    margin-top: 20px;
 }
 
 .ResultListItem-title {
@@ -22,10 +22,10 @@
 }
 
 .ResultListItem-btn-panel {
-	position: absolute;
-	top: 0;
-	right: 0;
-	display: inline-flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
 }
 
 .ResultListItem .EntryForm {

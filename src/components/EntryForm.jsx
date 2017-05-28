@@ -55,30 +55,30 @@ class EntryForm extends Component {
         const self = this;
         const { setState, closeModal, state, props } = self;
         console.log("Saving", state.entry);
-        const url = "http://172.27.225.98:7676/entry";
-            fetch(url, {
-                method: "PUT",
-                webPreferences: {
-                    webSecurity: false
+        const url = "http://localhost:7676/entry";
+        fetch(url, {
+            method: "PUT",
+            webPreferences: {
+                webSecurity: false
+            },
+            body: JSON.stringify(state.entry),
+            headers: new Headers({
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }),
+        })
+        .then(() => {
+            props.onSubmit(state.entry);
+            setState({
+                entry: {
+                    body: "",
+                    title: "",
+                    keywords: "",
                 },
-                body: JSON.stringify(state.entry),
-                headers: new Headers({
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }),
-            })
-            .then(() => {
-            	props.onSubmit(state.entry);
-                setState({
-					entry: {
-	                    body: "",
-	                    title: "",
-	                    keywords: "",
-					},
-                });
-                closeModal();
-            })
-            .catch(console.log);
+            });
+            closeModal();
+        })
+        .catch(console.log);
     }
 
     updateBody(body){
@@ -130,9 +130,9 @@ class EntryForm extends Component {
                 >
                     <Form className="EntryForm-title" inline>
                         <FormGroup controlId="formInlineName">
-                            <ControlLabel>Title</ControlLabel>
-                            {' '}
-                            <FormControl placeholder="Set a title.." value={title} onChange={updateTitle} />
+                        <ControlLabel>Title</ControlLabel>
+                        {' '}
+                        <FormControl placeholder="Set a title.." value={title} onChange={updateTitle} />
                         </FormGroup>
                     </Form>
                     <MarkdownEditor entry={entry} updateBody={updateBody}/>
@@ -144,12 +144,11 @@ class EntryForm extends Component {
                     </Button>
                     <Form className="EntryForm-keywords" inline>
                         <FormGroup controlId="formInlineName">
-                            <ControlLabel>Keywords</ControlLabel>
-                            {' '}
-                            <FormControl value={keywords} onChange={updateKeywords} />
+                        <ControlLabel>Keywords</ControlLabel>
+                        {' '}
+                        <FormControl value={keywords} onChange={updateKeywords} />
                         </FormGroup>
                     </Form>
-
                 </ReactModal>
             </Form>
         )
@@ -158,7 +157,7 @@ class EntryForm extends Component {
 
 EntryForm.propTypes = {
     entry: React.PropTypes.object,
-	onSubmit: React.PropTypes.func.isRequired,
+    onSubmit: React.PropTypes.func.isRequired,
 };
 
 export default EntryForm;

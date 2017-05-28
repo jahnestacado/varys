@@ -29,7 +29,6 @@ class MarkdownEditor extends Component {
     getMarkdownTitleField(){
         const { title } = this.props.entry;
         return `# ${title} \n`;
-
     }
 
     renderMarkdown(markdownInput = ""){

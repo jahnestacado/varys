@@ -9,7 +9,7 @@ import bindToComponent from "./../utils/bindToComponent.js";
 class App extends Component {
     constructor(props){
         super(props);
-		const self = this;
+        const self = this;
         self.state = {
             entries: [],
             activePage: 0,
@@ -18,11 +18,11 @@ class App extends Component {
             totalPages: 0,
             query: "",
         };
-		bindToComponent(self, [
-			"handlePaginationSelect",
-			"requestSearch",
-			"refreshSearchResults",
-		]);
+        bindToComponent(self, [
+            "handlePaginationSelect",
+            "requestSearch",
+            "refreshSearchResults",
+        ]);
     }
 
     componentWillMount(){
@@ -32,7 +32,7 @@ class App extends Component {
     handlePaginationSelect(selectedPage) {
         const self = this;
         let offset = this.state.limit * selectedPage;
-        const url = `http://172.27.225.98:7676/search/${this.state.query}/?limit=${self.state.limit}&offset=${selectedPage -1}`;
+        const url = `http://localhost:7676/search/${this.state.query}/?limit=${self.state.limit}&offset=${selectedPage -1}`;
         this.fetch(
             url,
             (json) => {
@@ -47,7 +47,7 @@ class App extends Component {
     requestSearch(query){
         const self = this;
         if(query){
-            const url = `http://172.27.225.98:7676/search/${query}/?limit=${self.state.limit}&offset=0`;
+            const url = `http://localhost:7676/search/${query}/?limit=${self.state.limit}&offset=0`;
             self.fetch(
                 url,
                 (json) => {
@@ -81,28 +81,28 @@ class App extends Component {
         .catch(onError);
     }
 
-	refreshSearchResults(){
-		const self = this;
-		self.requestSearch(self.state.query);
-	}
+    refreshSearchResults(){
+        const self = this;
+        self.requestSearch(self.state.query);
+    }
 
     render() {
-		const self = this;
-		const { handlePaginationSelect , requestSearch, refreshSearchResults, state } = self;
-		const { entries, activePage, totalPages } = state;
+        const self = this;
+        const { handlePaginationSelect , requestSearch, refreshSearchResults, state } = self;
+        const { entries, activePage, totalPages } = state;
         return (
             <div className="App" >
                 <div className="App-header">
-                  <h2>Welcome to Varys</h2>
-                  <FormGroup className="App-search-bar">
-                      <InputGroup>
-                          <FormControl
-                              type="text"
-                              placeholder="Search..."
-                              onChange={(event) => requestSearch(event.target.value)}
-                          />
-                      </InputGroup>
-                  </FormGroup>
+                    <h2>Welcome to Varys</h2>
+                    <FormGroup className="App-search-bar">
+                        <InputGroup>
+                            <FormControl
+                            type="text"
+                            placeholder="Search..."
+                            onChange={(event) => requestSearch(event.target.value)}
+                            />
+                        </InputGroup>
+                    </FormGroup>
                 </div>
                 <Col sm={8} md={10} smOffset={2} mdOffset={1} >
                     <ResultList refresh={refreshSearchResults} entries={entries} />
@@ -110,10 +110,10 @@ class App extends Component {
 
                 <Col sm={12} >
                     <Pagination
-                        onSelect={handlePaginationSelect}
-                        bsSize={"medium"}
-                        activePage={activePage}
-                        items={totalPages}
+                    onSelect={handlePaginationSelect}
+                    bsSize={"medium"}
+                    activePage={activePage}
+                    items={totalPages}
                     />
                 </Col>
 
