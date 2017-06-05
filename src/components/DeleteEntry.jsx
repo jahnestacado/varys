@@ -4,6 +4,7 @@ import "./DeleteEntry.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { deleteEntry } from "./../actions/entryActions.js";
+import handleFetchError from "./../utils/handleFetchError.js";
 
 class DeleteEntry extends Component {
 	constructor(props){
@@ -30,8 +31,8 @@ class DeleteEntry extends Component {
 				'Content-Type': 'application/json',
 			}),
 		})
-		.then(() => {
-			// Handle fetch error is !response.ok
+		.then(handleFetchError)
+		.then((response) => {
 			deleteEntry(entry);
 		})
 		.catch(console.log);

@@ -6,6 +6,7 @@ import bindToComponent from "./../utils/bindToComponent.js";
 import "./EntryForm.css";
 import { connect } from "react-redux";
 import { updateEntry } from "./../actions/entryActions.js";
+import handleFetchError from "./../utils/handleFetchError.js";
 
 const initializeEntry = () => {
     return {
@@ -68,6 +69,7 @@ class EntryForm extends Component {
                 'Content-Type': 'application/json',
             }),
         })
+        .then(handleFetchError)
         .then(() => {
             self.props.updateEntry(state.entry);
             setState({

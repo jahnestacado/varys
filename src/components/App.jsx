@@ -7,6 +7,7 @@ import "./App.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
+import handleFetchError from "./../utils/handleFetchError.js";
 
 class App extends Component {
     constructor(props){
@@ -79,6 +80,7 @@ class App extends Component {
                 webSecurity: false
             },
         })
+        .then(handleFetchError)
         .then((response) => response.json())
         .then(onDone)
         .catch(onError);
