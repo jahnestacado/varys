@@ -5,13 +5,14 @@ import EntryForm from "./EntryForm.jsx";
 import { Col, Pagination, FormGroup, FormControl, InputGroup } from "react-bootstrap";
 import "./App.css";
 import bindToComponent from "./../utils/bindToComponent.js";
+import { connect } from "react-redux";
+import { setEntries } from "./../actions/entryActions.js";
 
 class App extends Component {
     constructor(props){
         super(props);
         const self = this;
         self.state = {
-            entries: [],
             activePage: 0,
             limit: 15,
             offset: 0,
@@ -31,41 +32,43 @@ class App extends Component {
 
     handlePaginationSelect(selectedPage) {
         const self = this;
-        let offset = this.state.limit * selectedPage;
+        const { setEntries } = self.props;
+        let offset = self.state.limit * selectedPage;
         const url = `http://localhost:7676/search/${this.state.query}/?limit=${self.state.limit}&offset=${selectedPage -1}`;
-        this.fetch(
+        self.fetch(
             url,
             (json) => {
                 self.setState({
-                    entries: json.payload,
                     activePage: selectedPage,
                 });
+                setEntries(json.payload);
             }
         );
     }
 
     requestSearch(query){
         const self = this;
+        const { setEntries } = self.props;
         if(query){
             const url = `http://localhost:7676/search/${query}/?limit=${self.state.limit}&offset=0`;
             self.fetch(
                 url,
                 (json) => {
                     self.setState({
-                        entries: json.payload,
                         totalPages: Math.ceil(json.totalMatches / self.state.limit),
                         activePage: 1,
                         query,
                     });
+                    setEntries(json.payload);
                 }
             );
         } else {
             self.setState({
-                entries: [],
                 totalPages: 0,
                 activePage: 0,
                 query,
             });
+            setEntries([]);
         }
     }
 
@@ -89,7 +92,8 @@ class App extends Component {
     render() {
         const self = this;
         const { handlePaginationSelect , requestSearch, refreshSearchResults, state } = self;
-        const { entries, activePage, totalPages } = state;
+        const { activePage, totalPages } = state;
+        const { entries } = self.props.results;
         return (
             <div className="App" >
                 <div className="App-header">
@@ -123,4 +127,18 @@ class App extends Component {
     }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+    return {
+        results: state.results,
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setEntries: (entries) => {
+            dispatch(setEntries(entries));
+        },
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

@@ -2,12 +2,14 @@ import  React, { Component } from "react";
 import { Glyphicon } from "react-bootstrap";
 import "./DeleteEntry.css";
 import bindToComponent from "./../utils/bindToComponent.js";
+import { connect } from "react-redux";
+import { deleteEntry } from "./../actions/entryActions.js";
 
 class DeleteEntry extends Component {
 	constructor(props){
 		super(props);
-		const self = this;
 
+		const self = this;
 		bindToComponent(self, ["deleteEntry"]);
 	}
 
@@ -15,7 +17,7 @@ class DeleteEntry extends Component {
 		event.stopPropagation();
 		console.log("Ask for Confirmation!!!!!", this.props.entry);
 		const self = this;
-		const { entry, onEntryDeleted } = self.props;
+		const { entry, deleteEntry } = self.props;
 		const url = `http://localhost:7676/entry`;
 		fetch(url, {
 			method: "DELETE",
@@ -29,7 +31,8 @@ class DeleteEntry extends Component {
 			}),
 		})
 		.then(() => {
-			onEntryDeleted(entry);
+			// Handle fetch error is !response.ok
+			deleteEntry(entry);
 		})
 		.catch(console.log);
 	}
@@ -44,9 +47,16 @@ class DeleteEntry extends Component {
 	}
 }
 
-DeleteEntry.propTypes = {
-	entry: React.PropTypes.object.isRequired,
-	onEntryDeleted: React.PropTypes.func.isRequired,
+const mapDispatchToProps = (dispatch) => {
+    return {
+        deleteEntry: (entry) => {
+            dispatch(deleteEntry(entry));
+        },
+    }
 };
 
-export default DeleteEntry;
+DeleteEntry.propTypes = {
+	entry: React.PropTypes.object.isRequired,
+};
+
+export default connect(null, mapDispatchToProps)(DeleteEntry);

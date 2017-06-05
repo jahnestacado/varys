@@ -33,7 +33,6 @@ class ResultListItem extends Component {
         const self = this;
         const { openModal, closeModal } = self;
         const { entry } = self.state;
-		const { onEntryChanged } = self.props;
         const keywordLabels = entry.keywords.map((keyword, i) => {
             return (
                 <Label key={i} className="ResultListItem-label">{keyword}</Label>
@@ -45,12 +44,12 @@ class ResultListItem extends Component {
                     className="ResultListItem"
                     onClick={openModal}
                 >
-				<div className="ResultListItem-btn-panel">
-					<EntryForm onSubmit={onEntryChanged} entry={self.props.entry} />
-					<DeleteEntry onEntryDeleted={onEntryChanged} entry={self.props.entry} />
-				</div>
-                <div className="ResultListItem-title">{self.props.entry.title}</div>
-                <div>{keywordLabels}</div>
+                    <div className="ResultListItem-btn-panel">
+                        <EntryForm entry={self.props.entry} />
+                        <DeleteEntry entry={self.props.entry} />
+                    </div>
+                    <div className="ResultListItem-title">{self.props.entry.title}</div>
+                    <div>{keywordLabels}</div>
                 </ListGroupItem>
                 <ReactModal
                     isOpen={this.state.showModal}
@@ -69,7 +68,6 @@ class ResultListItem extends Component {
 
 ResultListItem.propTypes = {
     entry: React.PropTypes.object.isRequired,
-	onEntryChanged: React.PropTypes.func.isRequired,
 };
 
 export default ResultListItem;

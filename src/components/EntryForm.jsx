@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import ReactModal from "react-modal";
 import MarkdownEditor from "./MarkdownEditor.jsx"
-import { Button, Glyphicon, ControlLabel, FormControl, FormGroup, Col, Form, InputGroup } from "react-bootstrap";
+import { Button, Glyphicon, ControlLabel, FormControl, FormGroup, Form } from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import "./EntryForm.css";
+import { connect } from "react-redux";
+import { updateEntry } from "./../actions/entryActions.js";
 
 const initializeEntry = () => {
     return {
@@ -53,8 +55,7 @@ class EntryForm extends Component {
 
     submit(){
         const self = this;
-        const { setState, closeModal, state, props } = self;
-        console.log("Saving", state.entry);
+        const { setState, closeModal, state } = self;
         const url = "http://localhost:7676/entry";
         fetch(url, {
             method: "PUT",
@@ -68,7 +69,7 @@ class EntryForm extends Component {
             }),
         })
         .then(() => {
-            props.onSubmit(state.entry);
+            self.props.updateEntry(state.entry);
             setState({
                 entry: {
                     body: "",
@@ -155,9 +156,16 @@ class EntryForm extends Component {
     }
 }
 
-EntryForm.propTypes = {
-    entry: React.PropTypes.object,
-    onSubmit: React.PropTypes.func.isRequired,
+const mapDispatchToProps = (dispatch) => {
+    return {
+        updateEntry: (entry) => {
+            dispatch(updateEntry(entry));
+        },
+    }
 };
 
-export default EntryForm;
+EntryForm.propTypes = {
+    entry: React.PropTypes.object,
+};
+
+export default connect(null, mapDispatchToProps)(EntryForm);

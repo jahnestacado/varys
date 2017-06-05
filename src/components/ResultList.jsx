@@ -7,10 +7,10 @@ class ResultList extends Component {
     render(){
         const self = this;
         const { props } = self;
-        const { entries, refresh } = props;
+        const { entries } = props;
         const listItems = entries.map((entry) => {
             return (
-                <ResultListItem onEntryChanged={refresh} entry={entry} key={entry.id} />
+                <ResultListItem entry={entry} key={entry.id} />
             )
         });
         return (
@@ -23,7 +23,6 @@ class ResultList extends Component {
 
 ResultList.propTypes = {
     entries: React.PropTypes.array.isRequired,
-    refresh: React.PropTypes.func.isRequired,
 };
 
 export default ResultList;
