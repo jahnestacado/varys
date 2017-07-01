@@ -1,4 +1,4 @@
-package main
+backend/main.gopackage main
 
 import (
 	"log"
@@ -7,12 +7,14 @@ import (
 	"varys/backend/routes"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 )
 
 func main() {
 	router := httprouter.New()
 	router.NotFound = http.FileServer(http.Dir("../frontend/build/"))
 	routes.RegisterRoutes(router)
+	handler := cors.Default().Handler(router)
 
-	log.Fatal(http.ListenAndServe(":7676", router))
+	log.Fatal(http.ListenAndServe(":7676", handler))
 }

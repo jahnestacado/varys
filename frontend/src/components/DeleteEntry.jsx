@@ -22,9 +22,6 @@ class DeleteEntry extends Component {
 		const url = `http://localhost:7676/entry`;
 		fetch(url, {
 			method: "DELETE",
-			webPreferences: {
-				webSecurity: false
-			},
 			body: JSON.stringify({id: entry.id}),
 			headers: new Headers({
 				'Accept': 'application/json',

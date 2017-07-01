@@ -76,9 +76,10 @@ class App extends Component {
     fetch(url, onDone, onError = console.log) {
         fetch(url, {
             method: "GET",
-            webPreferences: {
-                webSecurity: false
-            },
+            headers: new Headers({
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }),
         })
         .then(handleFetchError)
         .then((response) => response.json())

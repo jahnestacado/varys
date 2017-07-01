@@ -60,9 +60,6 @@ class EntryForm extends Component {
         const url = "http://localhost:7676/entry";
         fetch(url, {
             method: "PUT",
-            webPreferences: {
-                webSecurity: false
-            },
             body: JSON.stringify(state.entry),
             headers: new Headers({
                 'Accept': 'application/json',

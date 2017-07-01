@@ -26,10 +26,15 @@ func search(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	ress := Result{1, []Entry{entry}}
 	result, err := json.Marshal(ress)
 	fmt.Println(result)
-	res.Header().Set("Content-Type", "application/json")
+	res.Header().Set("Access-Control-Allow-Origin", "*")
+	res.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
+	res.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	// // res.Header().Set("Access-Control-Allow-Credentials", "true")
+
 	if err != nil {
 		res.Write([]byte(err.Error()))
 	} else {
+		res.Header().Set("Content-Type", "application/json")
 		res.Write(result)
 	}
 }
