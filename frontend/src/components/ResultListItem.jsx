@@ -36,7 +36,7 @@ class ResultListItem extends Component {
         const keywordLabels = entry.keywords.map((keyword, i) => {
             return (
                 <Label key={i} className="ResultListItem-label">{keyword}</Label>
-            )
+            );
         });
         return (
             <Col sm={6} md={4} >
@@ -62,7 +62,7 @@ class ResultListItem extends Component {
                     <button className="ResultListItem-btn-close" onClick={closeModal}>x</button>
                 </ReactModal>
             </Col>
-        )
+        );
     }
 }
 

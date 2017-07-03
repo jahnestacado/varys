@@ -7,42 +7,42 @@ import { deleteEntry } from "./../actions/entryActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 
 class DeleteEntry extends Component {
-	constructor(props){
-		super(props);
+    constructor(props){
+        super(props);
 
-		const self = this;
-		bindToComponent(self, ["deleteEntry"]);
-	}
+        const self = this;
+        bindToComponent(self, ["deleteEntry"]);
+    }
 
-	deleteEntry(event){
-		event.stopPropagation();
-		console.log("Ask for Confirmation!!!!!", this.props.entry);
-		const self = this;
-		const { entry, deleteEntry } = self.props;
-		const url = `http://localhost:7676/entry`;
-		fetch(url, {
-			method: "DELETE",
-			body: JSON.stringify({id: entry.id}),
-			headers: new Headers({
-				'Accept': 'application/json',
-				'Content-Type': 'application/json',
-			}),
-		})
-		.then(handleFetchError)
-		.then((response) => {
-			deleteEntry(entry);
-		})
-		.catch(console.log);
-	}
+    deleteEntry(event){
+        event.stopPropagation();
+        console.log("Ask for Confirmation!!!!!", this.props.entry);
+        const self = this;
+        const { entry, deleteEntry } = self.props;
+        const url = "http://localhost:7676/entry";
+        fetch(url, {
+            method: "DELETE",
+            body: JSON.stringify({id: entry.id}),
+            headers: new Headers({
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }),
+        })
+        .then(handleFetchError)
+        .then(() => {
+            deleteEntry(entry);
+        })
+        .catch(console.log);
+    }
 
-	render(){
-		const self = this;
-		return (
-			<div className="DeleteEntry">
-				<Glyphicon className="DeleteEntry-btn-delete" glyph="trash" onClick={self.deleteEntry} />
-			</div>
-		)
-	}
+    render(){
+        const self = this;
+        return (
+            <div className="DeleteEntry">
+                <Glyphicon className="DeleteEntry-btn-delete" glyph="trash" onClick={self.deleteEntry} />
+            </div>
+        );
+    }
 }
 
 const mapDispatchToProps = (dispatch) => {
@@ -50,11 +50,11 @@ const mapDispatchToProps = (dispatch) => {
         deleteEntry: (entry) => {
             dispatch(deleteEntry(entry));
         },
-    }
+    };
 };
 
 DeleteEntry.propTypes = {
-	entry: React.PropTypes.object.isRequired,
+    entry: React.PropTypes.object.isRequired,
 };
 
 export default connect(null, mapDispatchToProps)(DeleteEntry);

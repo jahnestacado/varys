@@ -48,7 +48,7 @@ class MarkdownEditor extends Component {
         const markdownInput = event.target.value;
         self.setState({
             markdownInput,
-        })
+        });
         self.renderMarkdown(markdownInput);
     }
 
@@ -60,7 +60,7 @@ class MarkdownEditor extends Component {
                 <textarea value={markdownInput} className="MarkdownEditor-input-area" onChange={self.onMarkdownChanged} />
                 <div className="MarkdownEditor-output-area" dangerouslySetInnerHTML={{__html: generatedHtml}} />
             </div>
-        )
+        );
     }
 }
 

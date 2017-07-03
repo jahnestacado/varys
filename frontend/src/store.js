@@ -5,7 +5,7 @@ const store = createStore(
     combineReducers(
         {
             results: entriesReducer,
-        }
+        },
     ),
     {},
 );

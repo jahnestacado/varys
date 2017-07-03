@@ -11,13 +11,13 @@ class ResultList extends Component {
         const listItems = entries.map((entry) => {
             return (
                 <ResultListItem entry={entry} key={entry.id} />
-            )
+            );
         });
         return (
             <ListGroup className="ResultList">
                 {listItems}
             </ListGroup>
-        )
+        );
     }
 }
 

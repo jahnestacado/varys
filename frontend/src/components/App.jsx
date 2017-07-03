@@ -43,7 +43,7 @@ class App extends Component {
                     activePage: selectedPage,
                 });
                 setEntries(json.payload);
-            }
+            },
         );
     }
 
@@ -61,7 +61,7 @@ class App extends Component {
                         query,
                     });
                     setEntries(json.payload);
-                }
+                },
             );
         } else {
             self.setState({
@@ -77,8 +77,8 @@ class App extends Component {
         fetch(url, {
             method: "GET",
             headers: new Headers({
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
+                "Accept": "application/json",
+                "Content-Type": "application/json",
             }),
         })
         .then(handleFetchError)
@@ -126,7 +126,7 @@ class App extends Component {
 
                 <EntryForm onSubmit={refreshSearchResults}/>
             </div>
-        )
+        );
     }
 }
 
@@ -141,7 +141,7 @@ const mapDispatchToProps = (dispatch) => {
         setEntries: (entries) => {
             dispatch(setEntries(entries));
         },
-    }
+    };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

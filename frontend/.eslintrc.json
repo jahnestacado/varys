@@ -3,11 +3,29 @@
         "es6": true,
         "node": true
     },
+    "plugins": [
+        "react"
+    ],
+    "globals": {
+        "React": true,
+        "fetch": true,
+        "Headers": true,
+        "document": true
+    },
+    "parser": "babel-eslint",
     "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true,
+            "experimentalObjectRestSpread": true
+        }
+    },
     "rules": {
-        "indent": [
-            "error"
-        ],
+        "indent": ["error", 4, {
+            "SwitchCase": 1
+        }],
         "linebreak-style": [
             "error",
             "unix"
@@ -20,6 +38,8 @@
             "error",
             "always"
         ],
+        "react/jsx-uses-vars": 2,
+        "react/jsx-uses-react": 2,
         "no-unused-vars": [1],
         "spaced-comment": [2, "always"],
         "arrow-parens": [2, "always"],
@@ -37,6 +57,11 @@
         "arrow-spacing" : [2, {
             "before": true,
             "after": true
+            }],
+        "comma-dangle": ["error", {
+                "arrays": "always-multiline",
+                "objects": "always-multiline",
+                "functions": "always-multiline"
             }]
         }
 }

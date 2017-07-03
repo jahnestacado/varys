@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Glyphicon, ControlLabel, FormControl, FormGroup, Form , Col} from "react-bootstrap";
+import { Button, FormControl, FormGroup, Form , Col} from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import "./SignUp.css";
@@ -36,8 +36,8 @@ class SignUp extends Component {
             method: "PUT",
             body: JSON.stringify(body),
             headers: new Headers({
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
+                "Accept": "application/json",
+                "Content-Type": "application/json",
             }),
         })
         .then(handleFetchError)
@@ -83,7 +83,7 @@ class SignUp extends Component {
                     <Button type="submit">SignUp</Button>
                 </FormGroup>
             </Form>
-        )
+        );
     }
 }
 

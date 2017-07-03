@@ -10,7 +10,7 @@ const MarkdownViewer = ({entry}) => {
         <div className="MarkdownViewer">
             <div dangerouslySetInnerHTML={{__html: generatedHtml}} />
         </div>
-    )
+    );
 };
 
 export default MarkdownViewer;

@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ReactModal from "react-modal";
-import MarkdownEditor from "./MarkdownEditor.jsx"
+import MarkdownEditor from "./MarkdownEditor.jsx";
 import { Button, Glyphicon, ControlLabel, FormControl, FormGroup, Form } from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import "./EntryForm.css";
@@ -17,7 +17,7 @@ const initializeEntry = () => {
         // username
         // date-created
         // date-edited
-    }
+    };
 };
 
 class EntryForm extends Component {
@@ -62,8 +62,8 @@ class EntryForm extends Component {
             method: "PUT",
             body: JSON.stringify(state.entry),
             headers: new Headers({
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
+                "Accept": "application/json",
+                "Content-Type": "application/json",
             }),
         })
         .then(handleFetchError)
@@ -131,7 +131,7 @@ class EntryForm extends Component {
                     <Form className="EntryForm-title" inline>
                         <FormGroup controlId="formInlineName">
                         <ControlLabel>Title</ControlLabel>
-                        {' '}
+                        {" "}
                         <FormControl placeholder="Set a title.." value={title} onChange={updateTitle} />
                         </FormGroup>
                     </Form>
@@ -145,13 +145,13 @@ class EntryForm extends Component {
                     <Form className="EntryForm-keywords" inline>
                         <FormGroup controlId="formInlineName">
                         <ControlLabel>Keywords</ControlLabel>
-                        {' '}
+                        {" "}
                         <FormControl value={keywords} onChange={updateKeywords} />
                         </FormGroup>
                     </Form>
                 </ReactModal>
             </Form>
-        )
+        );
     }
 }
 
@@ -160,7 +160,7 @@ const mapDispatchToProps = (dispatch) => {
         updateEntry: (entry) => {
             dispatch(updateEntry(entry));
         },
-    }
+    };
 };
 
 EntryForm.propTypes = {
