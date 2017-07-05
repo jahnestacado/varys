@@ -26,11 +26,6 @@ func GetSearchRoute() func(http.ResponseWriter, *http.Request, httprouter.Params
 		fmt.Println(entry)
 		ress := Result{1, []Entry{entry}}
 		result, err := json.Marshal(ress)
-		fmt.Println(result)
-		res.Header().Set("Access-Control-Allow-Origin", "*")
-		res.Header().Set("Access-Control-Allow-Methods", "OPTIONS, GET")
-		res.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		// // res.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		if err != nil {
 			res.Write([]byte(err.Error()))
