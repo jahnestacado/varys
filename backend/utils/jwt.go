@@ -1,6 +1,8 @@
 package utils
 
-import "github.com/dgrijalva/jwt-go"
+import (
+	"fmt"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -15,4 +17,15 @@ func CreateToken(username string) (string, error) {
 	})
 	tokenString, err := token.SignedString([]byte(secret))
 	return tokenString, err
+}
+
+func ParseToken(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(secret), nil
+	})
+	return token, err
 }
