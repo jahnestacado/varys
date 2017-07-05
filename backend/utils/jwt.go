@@ -2,11 +2,17 @@ package utils
 
 import "github.com/dgrijalva/jwt-go"
 
-func CreateJWTToken(username string) (string, error) {
+	"github.com/dgrijalva/jwt-go"
+)
+
+// @TODO Secret should be generated or passed by config file
+const secret = "foo-bar-baz"
+
+func CreateToken(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": username,
+		"exp":      time.Now().Unix(),
 	})
-	// Secret should be pass by command line args or config file
-	tokenString, err := token.SignedString([]byte("the-secret"))
+	tokenString, err := token.SignedString([]byte(secret))
 	return tokenString, err
 }

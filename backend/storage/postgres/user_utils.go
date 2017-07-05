@@ -52,7 +52,7 @@ func (u *userUtils) Login(username string, password string) (string, error) {
 		return "", errors.New("Failed to authenticate user:" + username)
 	}
 
-	return utils.CreateJWTToken(username)
+	return utils.CreateToken(username)
 }
 
 //
