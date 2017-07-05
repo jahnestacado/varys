@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import App from "./components/App.jsx";
 import SignUp from "./components/SignUp.jsx";
+import SignIn from "./components/SignIn.jsx";
 import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store.js";
@@ -13,6 +14,7 @@ ReactDOM.render(
             <Switch>
                 <Route exact path="/" component={App} />
                 <Route exact path="/signup" component={SignUp} />
+                <Route exact path="/signin" component={SignIn} />
             </Switch>
         </BrowserRouter>
     </Provider>,
