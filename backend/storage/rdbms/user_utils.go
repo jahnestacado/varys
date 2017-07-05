@@ -1,4 +1,4 @@
-package postgres
+package rdbms
 
 import (
 	"database/sql"

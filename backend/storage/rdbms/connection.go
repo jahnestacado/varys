@@ -1,4 +1,4 @@
-package postgres
+package rdbms
 
 import (
 	"database/sql"
@@ -13,7 +13,7 @@ func Connect() *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		fmt.Println("connected to PostgresDB")
+		fmt.Println("connected to database")
 	}
 	return db
 }

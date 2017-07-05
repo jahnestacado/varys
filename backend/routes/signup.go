@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"varys/backend/storage/postgres"
+	"varys/backend/storage/rdbms"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -24,7 +24,7 @@ func GetSignUpRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprou
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 		}
-		userUtils := postgres.User(DB)
+		userUtils := rdbms.User(DB)
 		err = userUtils.Register(body.Username, body.Password, body.Email)
 		if err != nil {
 			http.Error(res, err.Error(), 400)

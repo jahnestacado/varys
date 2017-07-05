@@ -6,8 +6,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func Attach(router *httprouter.Router, DB *sql.DB) {
+func Attach(router *httprouter.Router, db *sql.DB) {
 	router.GET("/search/:query", GetSearchRoute())
-	router.POST("/api/v1/signup", GetSignUpRoute(DB))
+	router.POST("/api/v1/signup", GetSignUpRoute(db))
 	router.NotFound = GetNotFoundRoute()
 }
