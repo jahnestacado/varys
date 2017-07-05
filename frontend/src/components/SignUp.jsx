@@ -33,7 +33,7 @@ class SignUp extends Component {
 
         const url = "http://localhost:7676/api/v1/signup";
         fetch(url, {
-            method: "PUT",
+            method: "POST",
             body: JSON.stringify(body),
             headers: new Headers({
                 "Accept": "application/json",
