@@ -3,7 +3,6 @@ package rdbms
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"varys/backend/utils"
 
@@ -32,7 +31,7 @@ func (u *userUtils) Register(username string, password string, email string) err
 	return err
 }
 
-func (u *userUtils) Login(username string, password string) (string, error) {
+func (u *userUtils) Login(username string, password string) error {
 	rows, err := u.DB.Query(`
         SELECT password FROM Users
         WHERE username=$1;
@@ -43,16 +42,15 @@ func (u *userUtils) Login(username string, password string) (string, error) {
 	rows.Next()
 	err = rows.Scan(&storedPasswordHash)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	isValid := utils.CheckPasswordHash(password, storedPasswordHash)
-	fmt.Println(isValid)
 	if !isValid {
-		return "", errors.New("Failed to authenticate user:" + username)
+		return errors.New("Failed to authenticate user:" + username)
 	}
 
-	return utils.CreateToken(username)
+	return err
 }
 
 //
