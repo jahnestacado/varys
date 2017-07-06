@@ -43,6 +43,7 @@ class SignUp extends Component {
         .then(handleFetchError)
         .then(() => {
             console.log("User created successfully");
+            self.props.history.push("/signin");
         })
         .catch(console.log);
     }

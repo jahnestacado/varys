@@ -7,6 +7,7 @@ import "./App.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
+import { signin } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 
 class App extends Component {
@@ -28,7 +29,15 @@ class App extends Component {
     }
 
     componentWillMount(){
-        // verify if user is logged in
+        const self = this;
+        const sessionInfo = window.localStorage.getItem("varys-session");
+        if(sessionInfo) {
+            try {
+                self.props.signin(JSON.parse(sessionInfo));
+            } catch (error){
+                console.log(error);
+            }
+        }
     }
 
     handlePaginationSelect(selectedPage) {
@@ -133,6 +142,7 @@ class App extends Component {
 const mapStateToProps = (state) => {
     return {
         results: state.results,
+        auth: state.auth,
     };
 };
 
@@ -140,6 +150,9 @@ const mapDispatchToProps = (dispatch) => {
     return {
         setEntries: (entries) => {
             dispatch(setEntries(entries));
+        },
+        signin: (sessionInfo) => {
+            dispatch(signin(sessionInfo));
         },
     };
 };

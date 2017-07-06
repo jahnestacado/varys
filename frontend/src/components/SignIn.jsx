@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Button, FormControl, FormGroup, Form , Col} from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import handleFetchError from "./../utils/handleFetchError.js";
+import { connect } from "react-redux";
+import { signin } from "./../actions/authActions.js";
 import "./SignIn.css";
 
 class SignIn extends Component {
@@ -19,13 +21,20 @@ class SignIn extends Component {
         ]);
     }
 
+    componentWillMount(){
+        const self = this;
+        const sessionInfo = window.localStorage.getItem("varys-session");
+        if(sessionInfo){
+            self.props.history.push("/");
+        }
+    }
+
     onSubmit(event){
         event.preventDefault();
         const self = this;
-        const {username, email, password} = self.state;
+        const {username, password} = self.state;
         const body  = {
             username,
-            email,
             password,
         };
 
@@ -41,6 +50,8 @@ class SignIn extends Component {
         .then(handleFetchError)
         .then((response) => response.json())
         .then((json) => {
+            self.props.signin(json);
+            self.props.history.push("/");
             console.log("User successfully Signed In!!!", json);
         })
         .catch(console.log);
@@ -76,4 +87,18 @@ class SignIn extends Component {
     }
 }
 
-export default SignIn;
+const mapStateToProps = (state) => {
+    return {
+        auth: state.auth,
+    };
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        signin: (sessionInfo) => {
+            dispatch(signin(sessionInfo));
+        },
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
