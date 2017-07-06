@@ -31,26 +31,36 @@ func (u *userUtils) Register(username string, password string, email string) err
 	return err
 }
 
-func (u *userUtils) Login(username string, password string) error {
+type UserInfo struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (u *userUtils) Login(username string, password string) (UserInfo, error) {
 	rows, err := u.DB.Query(`
-        SELECT password FROM Users
+        SELECT password, email FROM Users
         WHERE username=$1;
     `, username)
 	defer rows.Close()
 
+	var info UserInfo
+	var email string
 	var storedPasswordHash string
 	rows.Next()
-	err = rows.Scan(&storedPasswordHash)
+	err = rows.Scan(&storedPasswordHash, &email)
 	if err != nil {
-		return err
+		return info, err
 	}
 
 	isValid := utils.CheckPasswordHash(password, storedPasswordHash)
 	if !isValid {
-		return errors.New("Failed to authenticate user:" + username)
+		return info, errors.New("Failed to authenticate user:" + username)
 	}
 
-	return err
+	info = UserInfo{Username: username, Email: email}
+
+	return info, err
 }
 
 //

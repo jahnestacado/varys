@@ -15,8 +15,10 @@ type signInBody struct {
 	Password string `json:"password"`
 }
 
-type tokenJSON struct {
-	Token string `json:"token"`
+type session struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Token    string `json:"token"`
 }
 
 func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
@@ -30,14 +32,14 @@ func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprou
 			return
 		}
 		userUtils := rdbms.User(db)
-		err = userUtils.Login(body.Username, body.Password)
+		info, err := userUtils.Login(body.Username, body.Password)
 		if err != nil {
 			http.Error(res, err.Error(), 401)
 			return
 		}
 
 		token, err := utils.CreateToken(body.Username)
-		result, err := json.Marshal(tokenJSON{token})
+		result, err := json.Marshal(session{info.Username, info.Email, token})
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return

@@ -9,17 +9,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type signUpBody struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func GetSignUpRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
-		var body signUpBody
+		var body rdbms.UserInfo
 		err := bodyDecoder.Decode(&body)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
