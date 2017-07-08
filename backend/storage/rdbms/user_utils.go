@@ -32,46 +32,34 @@ func (u *userUtils) Register(username string, password string, email string) err
 }
 
 type UserInfo struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID          string
+	Password    string
+	Username    string
+	Email       string
+	Role        string
+	MemberSince string
+	Verified    string
 }
 
-func (u *userUtils) Login(username string, password string) (UserInfo, error) {
+func (u *userUtils) VerifyCredentials(username string, password string) (UserInfo, error) {
 	rows, err := u.DB.Query(`
-        SELECT password, email FROM Users
+        SELECT user_id, password, email, role, member_since, verified FROM Users
         WHERE username=$1;
     `, username)
 	defer rows.Close()
 
-	var info UserInfo
-	var email string
-	var storedPasswordHash string
 	rows.Next()
-	err = rows.Scan(&storedPasswordHash, &email)
+	var info UserInfo
+	info.Username = username
+	err = rows.Scan(&info.ID, &info.Password, &info.Email, &info.Role, &info.MemberSince, &info.Verified)
 	if err != nil {
 		return info, err
 	}
 
-	isValid := utils.CheckPasswordHash(password, storedPasswordHash)
+	isValid := utils.CheckPasswordHash(password, info.Password)
 	if !isValid {
 		return info, errors.New("Failed to authenticate user:" + username)
 	}
 
-	info = UserInfo{Username: username, Email: email}
-
 	return info, err
 }
-
-//
-// func (u *userUtils) Logout(token string) {
-//
-// }
-//
-// func (u *userUtils) Verify(username string) {
-//
-// }
-//
-// func (u *userUtils) ChangePassword(username string, oldPassword string, newPassword string) {
-//
-// }

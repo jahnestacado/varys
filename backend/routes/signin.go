@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -16,9 +18,7 @@ type signInBody struct {
 }
 
 type session struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Token    string `json:"token"`
+	Token string `json:"token"`
 }
 
 func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
@@ -32,14 +32,22 @@ func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprou
 			return
 		}
 		userUtils := rdbms.User(db)
-		info, err := userUtils.Login(body.Username, body.Password)
+		info, err := userUtils.VerifyCredentials(body.Username, body.Password)
 		if err != nil {
 			http.Error(res, err.Error(), 401)
 			return
 		}
 
-		token, err := utils.CreateToken(body.Username)
-		result, err := json.Marshal(session{info.Username, info.Email, token})
+		token, err := utils.CreateToken(jwt.MapClaims{
+			"id":           info.ID,
+			"username":     info.Username,
+			"email":        info.Email,
+			"role":         info.Role,
+			"member_since": info.MemberSince,
+			"exp":          time.Now().Unix(),
+		})
+
+		result, err := json.Marshal(session{token})
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
