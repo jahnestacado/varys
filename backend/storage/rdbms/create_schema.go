@@ -11,12 +11,12 @@ import (
 const USERS_TABLE = `
     CREATE TABLE IF NOT EXISTS Users (
         user_id serial PRIMARY KEY,
-        email varchar(254) UNIQUE,
-        username varchar(80) UNIQUE,
-        password varchar(255),
+        email varchar(254) UNIQUE NOT NULL,
+        username varchar(80) UNIQUE NOT NULL,
+        password varchar(80) NOT NULL,
         verified boolean DEFAULT false,
-        type text DEFAULT 'member',
-        joined timestamp DEFAULT current_timestamp
+        role text DEFAULT 'user',
+        member_since timestamp DEFAULT current_timestamp
     )
 `
 
