@@ -50,7 +50,7 @@ class SignIn extends Component {
         .then(handleFetchError)
         .then((response) => response.json())
         .then((json) => {
-            self.props.signin(json);
+            self.props.signin(json.token);
             self.props.history.push("/");
             console.log("User successfully Signed In!!!", json);
         })
