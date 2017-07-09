@@ -38,14 +38,18 @@ func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprou
 			return
 		}
 
-		token, err := utils.CreateToken(jwt.MapClaims{
-			"id":           info.ID,
+		jwtClaims := jwt.MapClaims{
 			"username":     info.Username,
 			"email":        info.Email,
 			"role":         info.Role,
 			"member_since": info.MemberSince,
 			"exp":          time.Now().Unix(),
-		})
+		}
+		salt := utils.Salt{
+			Prefix: "username",
+			Suffix: "role",
+		}
+		token, err := utils.CreateToken(jwtClaims, salt)
 
 		result, err := json.Marshal(session{token})
 		if err != nil {

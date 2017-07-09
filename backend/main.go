@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	db := rdbms.Connect()
 	err := rdbms.CreateSchema(db)
 	if err != nil {
