@@ -1,7 +1,6 @@
 import { SIGN_IN} from "../utils/constants.js";
 
 const defaultState = {
-    id: null,
     username: null,
     email: null,
     role: null,
@@ -14,10 +13,9 @@ const authReducer = (state = defaultState, action) => {
     switch (action.type) {
         case SIGN_IN:
             const { token } = action.payload;
-            const tokenPayload = window.atob(token.split(".")[1]);
-            console.log(tokenPayload);
-            const { id, username, email, role, member_since } = JSON.parse(tokenPayload);
-            newState = { id, username, email, role, member_since, token };
+            const tokenPayload = window.atob(token.split(".")[0]);
+            const { username, email, role, member_since } = JSON.parse(tokenPayload);
+            newState = { username, email, role, member_since, token };
             window.localStorage.setItem("varys-session", JSON.stringify(action.payload));
             break;
         default:
