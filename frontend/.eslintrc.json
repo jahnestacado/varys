@@ -10,7 +10,8 @@
         "React": true,
         "fetch": true,
         "Headers": true,
-        "document": true
+        "document": true,
+        "window": true
     },
     "parser": "babel-eslint",
     "extends": "eslint:recommended",
