@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"varys/backend/utils"
 
 	_ "github.com/lib/pq"
 )
 
-func Connect() *sql.DB {
-	db, err := sql.Open("postgres", "user='varys-dev' password='12345' dbname='varys-dev'")
+func Connect(config utils.Postgres) *sql.DB {
+	db, err := sql.Open("postgres", "user='"+config.User+"' password='"+config.Password+"' dbname='"+config.DBName+"'")
 	if err != nil {
 		log.Fatal(err)
 	} else {

@@ -10,15 +10,12 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-// @TODO Secret should be passed by config file
-const secret = "foo-bar-baz"
-
 type Salt struct {
 	Prefix string
 	Suffix string
 }
 
-func CreateToken(claims jwt.MapClaims, saltFromClaimsSpecs Salt) (string, error) {
+func CreateToken(secret string, claims jwt.MapClaims, saltFromClaimsSpecs Salt) (string, error) {
 	token := jwt.NewWithClaims(getSigningMethod(), claims)
 	payloadBytes, err := json.Marshal(claims)
 	if err != nil {
@@ -28,12 +25,12 @@ func CreateToken(claims jwt.MapClaims, saltFromClaimsSpecs Salt) (string, error)
 	if err != nil {
 		return "", err
 	}
-	tokenString, err := token.SignedString([]byte(getSaltedSecret(salt)))
+	tokenString, err := token.SignedString([]byte(getSaltedSecret(secret, salt)))
 	headerlessTokenString := getHeaderlessToken(tokenString)
 	return headerlessTokenString, err
 }
 
-func ParseToken(headerlessTokenString string, saltFromClaimsSpecs Salt) (*jwt.Token, error) {
+func ParseToken(secret string, headerlessTokenString string, saltFromClaimsSpecs Salt) (*jwt.Token, error) {
 	signingMethod := getSigningMethod()
 	tokenHeader := getB64TokenHeader(signingMethod.Alg())
 	tokenString := tokenHeader + "." + headerlessTokenString
@@ -52,7 +49,7 @@ func ParseToken(headerlessTokenString string, saltFromClaimsSpecs Salt) (*jwt.To
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return []byte(getSaltedSecret(salt)), nil
+		return []byte(getSaltedSecret(secret, salt)), nil
 	})
 
 	return token, err
@@ -70,7 +67,7 @@ func getHeaderlessToken(tokenString string) string {
 	return headerlessToken
 }
 
-func getSaltedSecret(salt Salt) string {
+func getSaltedSecret(secret string, salt Salt) string {
 	return salt.Prefix + secret + salt.Suffix
 }
 

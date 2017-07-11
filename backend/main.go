@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"varys/backend/utils"
 
 	"varys/backend/routes"
 	"varys/backend/storage/rdbms"
@@ -12,15 +13,20 @@ import (
 )
 
 func main() {
-	db := rdbms.Connect()
-	err := rdbms.CreateSchema(db)
+	config, err := utils.GetConfig("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	db := rdbms.Connect(config.Postgres)
+	err = rdbms.CreateSchema(db)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	router := httprouter.New()
 	handler := cors.Default().Handler(router)
-	routes.Attach(router, db)
+	routes.Attach(router, db, config)
 
-	log.Fatal(http.ListenAndServe(":7676", handler))
+	log.Fatal(http.ListenAndServe(config.Hostname+":"+config.Port, handler))
 }

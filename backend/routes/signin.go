@@ -21,7 +21,7 @@ type session struct {
 	Token string `json:"token"`
 }
 
-func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func GetSignInRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
@@ -49,7 +49,7 @@ func GetSignInRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprou
 			Prefix: "username",
 			Suffix: "role",
 		}
-		token, err := utils.CreateToken(jwtClaims, salt)
+		token, err := utils.CreateToken(jwtSecret, jwtClaims, salt)
 
 		result, err := json.Marshal(session{token})
 		if err != nil {
