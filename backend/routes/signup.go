@@ -54,8 +54,8 @@ func getEmailMessage(body *rdbms.UserInfo, hostURI string, jwtSecret string) (st
 		"exp":      2 * 24 * time.Hour,
 	}
 	salt := utils.Salt{
-		Prefix: "username",
-		Suffix: "email",
+		Prefix: body.Username,
+		Suffix: body.Email,
 	}
 	token, err := utils.CreateToken(jwtSecret, jwtClaims, salt)
 	if err != nil {

@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"varys/backend/utils"
 
 	"database/sql"
@@ -14,12 +13,26 @@ func GetVerifyRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *htt
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		username := params.ByName("username")
 		token := params.ByName("token")
-		fmt.Println(username, token)
-		salt := utils.Salt{
-			Prefix: "username",
-			Suffix: "email",
+
+		rows, err := db.Query("SELECT email FROM users WHERE username=$1", username)
+		defer rows.Close()
+		if err != nil {
+			http.Error(res, err.Error(), 404)
+			return
 		}
-		err := utils.ValidateToken(jwtSecret, token, salt)
+		rows.Next()
+		var email string
+		err = rows.Scan(&email)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		salt := utils.Salt{
+			Prefix: username,
+			Suffix: email,
+		}
+		err = utils.ValidateToken(jwtSecret, token, salt)
 		if err != nil {
 			http.Error(res, err.Error(), 401)
 			return
