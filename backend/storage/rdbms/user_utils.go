@@ -38,7 +38,7 @@ type UserInfo struct {
 	Email       string
 	Role        string
 	MemberSince string
-	Verified    string
+	Verified    bool
 }
 
 func (u *userUtils) VerifyCredentials(username string, password string) (UserInfo, error) {
@@ -54,6 +54,10 @@ func (u *userUtils) VerifyCredentials(username string, password string) (UserInf
 	err = rows.Scan(&info.ID, &info.Password, &info.Email, &info.Role, &info.MemberSince, &info.Verified)
 	if err != nil {
 		return info, err
+	}
+
+	if !info.Verified {
+		return info, errors.New("User email is not verified.")
 	}
 
 	isValid := utils.CheckPasswordHash(password, info.Password)

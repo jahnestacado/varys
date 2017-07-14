@@ -6,20 +6,24 @@ import (
 )
 
 type Config struct {
-	JWTSecret                 string `json:"jwt-secret"`
-	VerificationEmail         string `json:"verification-email"`
-	VerificationEmailPassword string `json:"verification-email-password"`
-
-	Postgres Postgres `json:"postgres"`
-
-	Hostname string `json:"hostname"`
-	Port     string `json:"port"`
+	JWTSecret string   `json:"jwt-secret"`
+	Email     Email    `json:"email"`
+	Postgres  Postgres `json:"postgres"`
+	Hostname  string   `json:"hostname"`
+	Port      string   `json:"port"`
 }
 
 type Postgres struct {
 	User     string `json:"user"`
 	Password string `json:"password"`
 	DBName   string `json:"dbname"`
+}
+
+type Email struct {
+	Adress   string `json:"address"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
 }
 
 func GetConfig(filepath string) (Config, error) {
