@@ -30,29 +30,28 @@ func CreateToken(secret string, claims jwt.MapClaims, saltFromClaimsSpecs Salt) 
 	return headerlessTokenString, err
 }
 
-func ParseToken(secret string, headerlessTokenString string, saltFromClaimsSpecs Salt) (*jwt.Token, error) {
+func ValidateToken(secret string, headerlessTokenString string, saltFromClaimsSpecs Salt) error {
 	signingMethod := getSigningMethod()
 	tokenHeader := getB64TokenHeader(signingMethod.Alg())
 	tokenString := tokenHeader + "." + headerlessTokenString
 	payloadBytes, err := b64.RawStdEncoding.DecodeString(strings.Split(tokenString, ".")[1])
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	salt, err := getSaltFromClaims(payloadBytes, saltFromClaimsSpecs)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	_, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-
 		return []byte(getSaltedSecret(secret, salt)), nil
 	})
 
-	return token, err
+	return err
 }
 
 func getB64TokenHeader(alg string) string {
