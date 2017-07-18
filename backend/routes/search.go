@@ -1,37 +1,36 @@
 package routes
 
 import (
+	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
+	"varys/backend/storage/rdbms"
 
 	"github.com/julienschmidt/httprouter"
 )
 
-type Entry struct {
-	Title    string   `json:"title"`
-	Body     string   `json:"body"`
-	ID       int      `json:"id"`
-	Keywords []string `json:"keywords"`
-}
-
 type Result struct {
-	TotalMatches int     `json:"totalMatches"`
-	Payload      []Entry `json:"payload"`
+	TotalMatches int           `json:"totalMatches"`
+	Payload      []rdbms.Entry `json:"payload"`
 }
 
-func GetSearchRoute() func(http.ResponseWriter, *http.Request, httprouter.Params) {
-	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		entry := Entry{"Hello from GO", "Dummy body text", 1, []string{"*", "first"}}
-		fmt.Println(entry)
-		ress := Result{1, []Entry{entry}}
-		result, err := json.Marshal(ress)
+func GetSearchRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		query := params.ByName("query")
+		entryUtils := rdbms.CreateEntryWrapper(DB)
+		entries, err := entryUtils.GetMatchedEntries(query)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+		result := Result{len(entries), entries}
+		r, err := json.Marshal(result)
 
 		if err != nil {
 			res.Write([]byte(err.Error()))
 		} else {
 			res.Header().Set("Content-Type", "application/json")
-			res.Write(result)
+			res.Write(r)
 		}
 	}
 }
