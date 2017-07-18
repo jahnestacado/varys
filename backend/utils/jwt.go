@@ -2,6 +2,7 @@ package utils
 
 import (
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -33,6 +34,25 @@ func ValidateToken(secret string, headerlessTokenString string, salt Salt) error
 	})
 
 	return err
+}
+
+func GetClaimsFromToken(token string) (map[string]interface{}, error) {
+	isHeaderless := strings.Count(token, ".") == 1
+	splitIndex := 1
+	if isHeaderless {
+		splitIndex = 0
+	}
+	claimsB64 := strings.Split(token, ".")[splitIndex]
+	claimsInBytes, err := b64.RawStdEncoding.DecodeString(claimsB64)
+	if err != nil {
+		return nil, err
+	}
+
+	var claimsMapTemplate interface{}
+	err = json.Unmarshal(claimsInBytes, &claimsMapTemplate)
+	claims := claimsMapTemplate.(map[string]interface{})
+
+	return claims, err
 }
 
 func getB64TokenHeader(alg string) string {
