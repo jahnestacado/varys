@@ -43,11 +43,11 @@ func GetSignInRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *htt
 			"email":        info.Email,
 			"role":         info.Role,
 			"member_since": info.MemberSince,
-			"exp":          time.Now().Unix(),
+			"exp":          7 * 24 * time.Hour,
 		}
 		salt := utils.Salt{
-			Prefix: "username",
-			Suffix: "role",
+			Prefix: info.Password,
+			Suffix: info.Role,
 		}
 		token, err := utils.CreateToken(jwtSecret, jwtClaims, salt)
 
