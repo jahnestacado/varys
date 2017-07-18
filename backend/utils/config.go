@@ -11,6 +11,7 @@ type Config struct {
 	Postgres  Postgres `json:"postgres"`
 	Hostname  string   `json:"hostname"`
 	Port      string   `json:"port"`
+	Mode      string   `json:"mode"`
 }
 
 type Postgres struct {

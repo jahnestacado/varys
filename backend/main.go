@@ -25,8 +25,16 @@ func main() {
 	}
 
 	router := httprouter.New()
-	handler := cors.Default().Handler(router)
 	routes.Attach(router, db, config)
-
-	log.Fatal(http.ListenAndServe(config.Hostname+":"+config.Port, handler))
+	if config.Mode == "dev" {
+		preflight := cors.New(cors.Options{
+			AllowedOrigins: []string{"*"},
+			AllowedMethods: []string{"GET", "PUT", "POST", "DELETE"},
+			AllowedHeaders: []string{"content-type", "jwt"},
+		})
+		handler := preflight.Handler(router)
+		log.Fatal(http.ListenAndServe(config.Hostname+":"+config.Port, handler))
+	} else {
+		log.Fatal(http.ListenAndServe(config.Hostname+":"+config.Port, router))
+	}
 }
