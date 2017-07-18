@@ -14,6 +14,7 @@ const initializeEntry = ({ username }) => {
         body: "",
         tags: [],
         author: username,
+        id: -1,
     };
 };
 
@@ -55,9 +56,8 @@ class EntryForm extends Component {
         const self = this;
         const { setState, closeModal, state } = self;
         const url = "http://localhost:7676/api/v1/entry";
-        const method = state.entry.id ? "PUT" : "POST";
         fetch(url, {
-            method,
+            method: "PUT",
             body: JSON.stringify(state.entry),
             headers: new Headers({
                 "Accept": "application/json",
@@ -67,7 +67,7 @@ class EntryForm extends Component {
         })
         .then(handleFetchError)
         .then(() => {
-            if (method === "PUT") {
+            if (state.id  !== -1) {
                 self.props.updateEntry(state.entry);
             }
             setState({

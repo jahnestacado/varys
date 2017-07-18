@@ -10,7 +10,7 @@ import (
 
 func Attach(router *httprouter.Router, db *sql.DB, config utils.Config) {
 	router.GET("/api/v1/search/:query", GetSearchRoute(db))
-	router.POST("/api/v1/entry", CreateGetEntryRoute(db, config.JWTSecret))
+	router.PUT("/api/v1/entry", GetEntryRoute(db, config.JWTSecret))
 	router.POST("/api/v1/signup", GetSignUpRoute(db, &config))
 	router.GET("/api/v1/verify/:username/:token", GetVerifyRoute(db, config.JWTSecret))
 	router.POST("/api/v1/signin", GetSignInRoute(db, config.JWTSecret))
