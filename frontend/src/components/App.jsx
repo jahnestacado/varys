@@ -30,10 +30,10 @@ class App extends Component {
 
     componentWillMount(){
         const self = this;
-        const sessionInfo = window.localStorage.getItem("varys-session");
-        if(sessionInfo) {
+        const sessionToken = window.localStorage.getItem("varys-session");
+        if(sessionToken) {
             try {
-                self.props.signin(JSON.parse(sessionInfo));
+                self.props.signin(sessionToken);
             } catch (error){
                 console.log(error);
             }
@@ -44,7 +44,7 @@ class App extends Component {
         const self = this;
         const { setEntries } = self.props;
         let offset = self.state.limit * selectedPage;
-        const url = `http://localhost:7676/search/${this.state.query}/?limit=${self.state.limit}&offset=${selectedPage -1}`;
+        const url = `http://localhost:7676/api/v1/search/${this.state.query}/?limit=${self.state.limit}&offset=${selectedPage -1}`;
         self.fetch(
             url,
             (json) => {
@@ -60,7 +60,7 @@ class App extends Component {
         const self = this;
         const { setEntries } = self.props;
         if(query){
-            const url = `http://localhost:7676/search/${query}/?limit=${self.state.limit}&offset=0`;
+            const url = `http://localhost:7676/api/v1/search/${query}/?limit=${self.state.limit}&offset=0`;
             self.fetch(
                 url,
                 (json) => {
@@ -106,6 +106,8 @@ class App extends Component {
         const { handlePaginationSelect , requestSearch, refreshSearchResults, state } = self;
         const { activePage, totalPages } = state;
         const { entries } = self.props.results;
+
+        console.log(self.props.auth, entries);
         return (
             <div className="App" >
                 <div className="App-header">
@@ -151,8 +153,8 @@ const mapDispatchToProps = (dispatch) => {
         setEntries: (entries) => {
             dispatch(setEntries(entries));
         },
-        signin: (sessionInfo) => {
-            dispatch(signin(sessionInfo));
+        signin: (sessionToken) => {
+            dispatch(signin(sessionToken));
         },
     };
 };

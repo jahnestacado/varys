@@ -57,18 +57,22 @@ class EntryForm extends Component {
     submit(){
         const self = this;
         const { setState, closeModal, state } = self;
-        const url = "http://localhost:7676/entry";
+        const url = "http://localhost:7676/api/v1/entry";
+        const method = state.entry.id ? "PUT" : "POST";
         fetch(url, {
-            method: "PUT",
+            method,
             body: JSON.stringify(state.entry),
             headers: new Headers({
                 "Accept": "application/json",
                 "Content-Type": "application/json",
+                "JWT": self.props.auth.token,
             }),
         })
         .then(handleFetchError)
         .then(() => {
-            self.props.updateEntry(state.entry);
+            if (method === "PUT") {
+                self.props.updateEntry(state.entry);
+            }
             setState({
                 entry: {
                     body: "",
