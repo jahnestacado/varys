@@ -32,7 +32,7 @@ const entriesReducer = (state = defaultState, action) => {
             };
             break;
         case SET_ENTRIES:
-            newState = {entries: action.payload};
+            newState = {entries: action.payload || []};
             break;
         default:
             newState = state;
