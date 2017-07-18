@@ -8,15 +8,12 @@ import { connect } from "react-redux";
 import { updateEntry } from "./../actions/entryActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 
-const initializeEntry = () => {
+const initializeEntry = ({ username }) => {
     return {
         title: "",
-        keywords: [],
         body: "",
-        id: null,
-        // username
-        // date-created
-        // date-edited
+        tags: [],
+        author: username,
     };
 };
 
@@ -24,7 +21,7 @@ class EntryForm extends Component {
     constructor(props){
         super(props);
         const self = this;
-        const entry = props.entry || initializeEntry();
+        const entry = props.entry || initializeEntry(self.props.auth);
         this.state = {
             showModal: false,
             entry,
@@ -74,11 +71,7 @@ class EntryForm extends Component {
                 self.props.updateEntry(state.entry);
             }
             setState({
-                entry: {
-                    body: "",
-                    title: "",
-                    keywords: "",
-                },
+                entry: initializeEntry(self.props.auth),
             });
             closeModal();
         })
@@ -102,10 +95,10 @@ class EntryForm extends Component {
 
     updateKeywords(event){
         const self = this;
-        const keywordsText = event.target.value;
-        const keywords = keywordsText.split(",").map((keyword) => keyword.trim());
+        const tagsText = event.target.value;
+        const tags = tagsText.split(",").map((keyword) => keyword.trim());
         self.setState({
-            entry: {...self.state.entry, keywords},
+            entry: {...self.state.entry, tags},
         });
     }
 
@@ -120,7 +113,7 @@ class EntryForm extends Component {
             submit,
         } = self;
         const { entry, showModal, glyph } = this.state;
-        const { title, keywords } = entry;
+        const { title, tags } = entry;
         return (
             <Form className="EntryForm">
                 <div className="EntryForm-btn-open" onClick={openModal} >
@@ -146,11 +139,11 @@ class EntryForm extends Component {
                     <Button className="EntryForm-btn-submit btn btn-success" onClick={submit} >
                         Save
                     </Button>
-                    <Form className="EntryForm-keywords" inline>
+                    <Form className="EntryForm-tags" inline>
                         <FormGroup controlId="formInlineName">
                         <ControlLabel>Keywords</ControlLabel>
                         {" "}
-                        <FormControl value={keywords} onChange={updateKeywords} />
+                        <FormControl value={tags} onChange={updateKeywords} />
                         </FormGroup>
                     </Form>
                 </ReactModal>
@@ -158,6 +151,12 @@ class EntryForm extends Component {
         );
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        auth: state.auth,
+    };
+};
 
 const mapDispatchToProps = (dispatch) => {
     return {
@@ -171,4 +170,4 @@ EntryForm.propTypes = {
     entry: React.PropTypes.object,
 };
 
-export default connect(null, mapDispatchToProps)(EntryForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EntryForm);

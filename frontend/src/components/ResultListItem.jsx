@@ -33,7 +33,7 @@ class ResultListItem extends Component {
         const self = this;
         const { openModal, closeModal } = self;
         const { entry } = self.state;
-        const keywordLabels = entry.keywords.map((keyword, i) => {
+        const keywordLabels = entry.tags.map((keyword, i) => {
             return (
                 <Label key={i} className="ResultListItem-label">{keyword}</Label>
             );
