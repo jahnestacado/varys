@@ -3,6 +3,7 @@ package rdbms
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -130,14 +131,22 @@ func (e *entryUtils) GetTags(entryID int) ([]string, error) {
 }
 
 func (e *entryUtils) MapEntryToTags(entryID int, tagIDs []int) error {
-	for _, tagID := range tagIDs {
-		_, err := e.DB.Exec(`
-            INSERT INTO EntryTag (entry_id, tag_id)
-            VALUES ($1, $2);
-            `, entryID, tagID)
-		if err != nil {
-			return err
+	var values string
+	for i, tagID := range tagIDs {
+		values += "(" + strconv.Itoa(entryID) + "," + strconv.Itoa(tagID) + ")"
+		if i < len(tagIDs)-1 {
+			values += ", "
 		}
 	}
-	return nil
+
+	var err error
+	if values != "" {
+		query := `
+        INSERT INTO EntryTag (entry_id, tag_id)
+        VALUES ` + values + `;`
+
+		_, err = e.DB.Exec(query)
+	}
+
+	return err
 }
