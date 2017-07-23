@@ -150,3 +150,26 @@ func (e *entryUtils) MapEntryToTags(entryID int, tagIDs []int) error {
 
 	return err
 }
+
+func (e *entryUtils) UpdateEntryTSV(entryID int) error {
+	_, err := e.DB.Exec(`
+        UPDATE Entries
+        SET tsv = SETWEIGHT(to_tsvector(title), 'A') || '. '
+        || SETWEIGHT(to_tsvector(
+                    (
+                        SELECT string_agg(name, ', ')
+                        FROM Tags
+                        INNER JOIN EntryTag
+                        ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
+                    )
+                ),
+            'B'
+        ) || '. '
+        || SETWEIGHT(to_tsvector(body), 'C') || '. '
+        || SETWEIGHT(to_tsvector(author), 'D')
+        WHERE ID = $2
+        ;
+    `, entryID, entryID)
+
+	return err
+}

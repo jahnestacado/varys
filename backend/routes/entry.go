@@ -63,12 +63,13 @@ func GetEntryRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http
 			return
 		}
 
-		fmt.Println(len(tagIDs), tagIDs)
 		err = entryUtils.MapEntryToTags(entryID, tagIDs)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
 		}
+
+		err = entryUtils.UpdateEntryTSV(entryID)
 
 		res.WriteHeader(200)
 	}
