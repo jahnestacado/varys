@@ -15,8 +15,8 @@ func GetEntryRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
-		var body rdbms.Entry
-		err := bodyDecoder.Decode(&body)
+		var newEntry rdbms.Entry
+		err := bodyDecoder.Decode(&newEntry)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
@@ -51,25 +51,38 @@ func GetEntryRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http
 		}
 
 		entryUtils := rdbms.CreateEntryWrapper(db)
-		entryID, err := entryUtils.AddEntry(body.Title, body.Body, body.Author)
+
+		tx, err := db.Begin()
+		defer tx.Commit()
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+		entryID, err := entryUtils.AddEntry(tx, newEntry)
 		fmt.Println(err)
 		if err != nil || entryID == 0 {
+			tx.Rollback()
 			http.Error(res, "Could not insert entry!", 500)
 			return
 		}
-		tagIDs, err := entryUtils.AddTags(body.Tags)
+		tagIDs, err := entryUtils.AddTags(tx, newEntry.Tags)
 		if err != nil {
+			tx.Rollback()
 			http.Error(res, err.Error(), 500)
 			return
 		}
 
-		err = entryUtils.MapEntryToTags(entryID, tagIDs)
-		if err != nil {
+		if err = entryUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
+			tx.Rollback()
 			http.Error(res, err.Error(), 500)
 			return
 		}
 
-		err = entryUtils.UpdateEntryTSV(entryID)
+		if err = entryUtils.UpdateEntryTSV(tx, entryID); err != nil {
+			tx.Rollback()
+			http.Error(res, err.Error(), 500)
+			return
+		}
 
 		res.WriteHeader(200)
 	}

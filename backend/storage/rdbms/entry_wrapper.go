@@ -3,7 +3,6 @@ package rdbms
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -30,28 +29,44 @@ func CreateEntryWrapper(db *sql.DB) entryUtils {
 	return entryUtils{db}
 }
 
-func (e *entryUtils) AddEntry(title string, body string, author string) (int, error) {
+func (e *entryUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
 	var entryID int
-	row, err := e.DB.Query(`
+	stmt, err := tx.Prepare(`
         INSERT INTO Entries (title, body, author)
         VALUES ($1, $2, $3)
         RETURNING id;
-        `, title, body, author)
+        `)
+	defer stmt.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	row, err := stmt.Query(newEntry.Title, newEntry.Body, newEntry.Author)
 	defer row.Close()
 	if err != nil {
 		return 0, err
 	}
 	row.Next()
-	err = row.Scan(&entryID)
-	if err != nil {
+	if err = row.Scan(&entryID); err != nil {
 		return 0, err
 	}
+
 	return entryID, err
 }
 
-func (e *entryUtils) AddTags(tags []string) ([]int, error) {
+func (e *entryUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
 	numOfTags := len(tags)
 	tagIDs := make([]int, numOfTags)
+	stmt, err := tx.Prepare(`
+            INSERT INTO Tags (name)
+            VALUES ($1)
+            RETURNING id;
+        `)
+	defer stmt.Close()
+	if err != nil {
+		return nil, err
+	}
+
 	for index, tag := range tags {
 		row, err := e.DB.Query("SELECT id FROM Tags WHERE name = $1;", tag)
 		defer row.Close()
@@ -61,11 +76,10 @@ func (e *entryUtils) AddTags(tags []string) ([]int, error) {
 
 		tagExists := row.Next()
 		if !tagExists {
-			row, err = e.DB.Query(`
-                    INSERT INTO Tags (name)
-                    VALUES ($1)
-                    RETURNING id;
-                     `, tag)
+			row, err = stmt.Query(tag)
+			if err != nil {
+				return nil, err
+			}
 			row.Next()
 		}
 
@@ -74,7 +88,7 @@ func (e *entryUtils) AddTags(tags []string) ([]int, error) {
 		if err != nil {
 			return nil, err
 		}
-
+		row.Close()
 		tagIDs[index] = tagID
 	}
 
@@ -112,6 +126,7 @@ func (e *entryUtils) GetTags(entryID int) ([]string, error) {
         INNER JOIN EntryTag
         ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
         `, entryID)
+	defer rows.Close()
 
 	var tags []string
 	if err != nil {
@@ -130,29 +145,25 @@ func (e *entryUtils) GetTags(entryID int) ([]string, error) {
 	return tags, err
 }
 
-func (e *entryUtils) MapEntryToTags(entryID int, tagIDs []int) error {
-	var values string
-	for i, tagID := range tagIDs {
-		values += "(" + strconv.Itoa(entryID) + "," + strconv.Itoa(tagID) + ")"
-		if i < len(tagIDs)-1 {
-			values += ", "
+func (e *entryUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) error {
+	stmt, err := tx.Prepare(`
+        INSERT INTO EntryTag (entry_id, tag_id)
+        VALUES ($1, $2);
+        `)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	for _, tagID := range tagIDs {
+		if _, err := stmt.Exec(entryID, tagID); err != nil {
+			return err
 		}
 	}
-
-	var err error
-	if values != "" {
-		query := `
-        INSERT INTO EntryTag (entry_id, tag_id)
-        VALUES ` + values + `;`
-
-		_, err = e.DB.Exec(query)
-	}
-
-	return err
+	return nil
 }
 
-func (e *entryUtils) UpdateEntryTSV(entryID int) error {
-	_, err := e.DB.Exec(`
+func (e *entryUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
+	stmt, err := tx.Prepare(`
         UPDATE Entries
         SET tsv = SETWEIGHT(to_tsvector(title), 'A') || '. '
         || SETWEIGHT(to_tsvector(
@@ -169,7 +180,12 @@ func (e *entryUtils) UpdateEntryTSV(entryID int) error {
         || SETWEIGHT(to_tsvector(author), 'D')
         WHERE ID = $2
         ;
-    `, entryID, entryID)
+    `)
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(entryID, entryID)
 
 	return err
 }
