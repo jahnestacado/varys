@@ -3,7 +3,6 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
@@ -50,40 +49,44 @@ func GetEntryRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http
 			return
 		}
 
-		entryUtils := rdbms.CreateEntryWrapper(db)
-
-		tx, err := db.Begin()
-		defer tx.Commit()
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
-		entryID, err := entryUtils.AddEntry(tx, newEntry)
-		fmt.Println(err)
-		if err != nil || entryID == 0 {
-			tx.Rollback()
-			http.Error(res, "Could not insert entry!", 500)
-			return
-		}
-		tagIDs, err := entryUtils.AddTags(tx, newEntry.Tags)
-		if err != nil {
-			tx.Rollback()
-			http.Error(res, err.Error(), 500)
-			return
-		}
-
-		if err = entryUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
-			tx.Rollback()
-			http.Error(res, err.Error(), 500)
-			return
-		}
-
-		if err = entryUtils.UpdateEntryTSV(tx, entryID); err != nil {
-			tx.Rollback()
+		if err = insertEntry(db, newEntry); err != nil {
 			http.Error(res, err.Error(), 500)
 			return
 		}
 
 		res.WriteHeader(200)
 	}
+}
+
+func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
+	entryUtils := rdbms.CreateEntryWrapper(db)
+
+	tx, err := db.Begin()
+	defer tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	entryID, err := entryUtils.AddEntry(tx, newEntry)
+	if err != nil || entryID == 0 {
+		tx.Rollback()
+		return err
+	}
+	tagIDs, err := entryUtils.AddTags(tx, newEntry.Tags)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = entryUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = entryUtils.UpdateEntryTSV(tx, entryID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return err
 }
