@@ -2,17 +2,10 @@ package rdbms
 
 import (
 	"database/sql"
-	"fmt"
 	"strconv"
 
 	_ "github.com/lib/pq"
 )
-
-const fullTextSearchQuery = `SELECT id, title, body, author, ts_rank(tsv, plainto_tsquery('%s')) as rank
- FROM entries
- WHERE tsv @@ plainto_tsquery('%s')
- ORDER BY rank DESC;
-`
 
 type Entry struct {
 	ID     int      `json:"id"`
@@ -149,7 +142,7 @@ func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, newRowIDs []int) 
         DELETE FROM EntryTag
         WHERE entry_id = $1
         AND tag_id NOT IN (` + values + `)
-        `)
+    `)
 	defer stmt.Close()
 	if _, err = stmt.Exec(entry.ID); err != nil {
 		return err
@@ -158,7 +151,7 @@ func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, newRowIDs []int) 
 	stmt, err = tx.Prepare(`
         DELETE FROM Tags
         WHERE id NOT IN  (SELECT tag_id FROM EntryTag);
-        `)
+    `)
 	defer stmt.Close()
 	if _, err = stmt.Exec(); err != nil {
 		return err
@@ -169,11 +162,22 @@ func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, newRowIDs []int) 
 
 func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	var entries []Entry
-	rows, err := e.DB.Query(fmt.Sprintf(fullTextSearchQuery, query, query))
+	stmt, err := e.DB.Prepare(`
+        SELECT id, title, body, author, ts_rank(tsv, plainto_tsquery($1)) as rank
+        FROM entries
+        WHERE tsv @@ plainto_tsquery($1)
+        ORDER BY rank DESC;
+    `)
+	defer stmt.Close()
 	if err != nil {
 		return nil, err
 	}
+
+	rows, err := stmt.Query(query)
 	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	for rows.Next() {
 		var entry Entry
@@ -184,7 +188,6 @@ func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
 			return nil, err
 		}
 		entry.Tags = tags
-
 		entries = append(entries, entry)
 	}
 
@@ -192,15 +195,20 @@ func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
 }
 
 func (e *entryUtils) GetTags(entryID int) ([]string, error) {
-	rows, err := e.DB.Query(`
+	var tags []string
+	stmt, err := e.DB.Prepare(`
         SELECT name
         FROM tags
         INNER JOIN EntryTag
         ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
-        `, entryID)
-	defer rows.Close()
+    `)
+	defer stmt.Close()
+	if err != nil {
+		return tags, err
+	}
 
-	var tags []string
+	rows, err := stmt.Query(entryID)
+	defer rows.Close()
 	if err != nil {
 		return tags, err
 	}
