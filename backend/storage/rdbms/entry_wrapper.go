@@ -129,15 +129,15 @@ func (e *entryUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
 	return tagIDs, err
 }
 
-func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, newRowIDs []int) error {
+func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) error {
 	var placeholders string
-	numOfIDs := len(newRowIDs)
-	queryArgs := make([]interface{}, numOfIDs+1)
+	numOfTags := len(tagIDs)
+	queryArgs := make([]interface{}, numOfTags+1)
 	queryArgs[0] = entry.ID
-	for i, newRowID := range newRowIDs {
-		queryArgs[i+1] = newRowID
+	for i, tagID := range tagIDs {
+		queryArgs[i+1] = tagID
 		placeholders += "$" + strconv.Itoa(i+2)
-		if i < numOfIDs-1 {
+		if i < numOfTags-1 {
 			placeholders += ", "
 		}
 	}
