@@ -12,7 +12,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func GetSignUpRoute(DB *sql.DB, config *utils.Config) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreatePostRouteSignUp(DB *sql.DB, config *utils.Config) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()

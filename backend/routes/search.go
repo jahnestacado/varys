@@ -14,7 +14,7 @@ type Result struct {
 	Payload      []rdbms.Entry `json:"payload"`
 }
 
-func GetSearchRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateGetRouteSearch(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		query := params.ByName("query")
 		entryUtils := rdbms.CreateEntryWrapper(DB)
