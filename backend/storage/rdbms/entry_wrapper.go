@@ -3,6 +3,7 @@ package rdbms
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -54,35 +55,57 @@ func (e *entryUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
 	return entryID, err
 }
 
+func (e *entryUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
+	stmt, err := tx.Prepare(`
+        UPDATE Entries
+        SET title = $2, body = $3, author = $4
+        WHERE id = $1
+        `)
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(newEntry.ID, newEntry.Title, newEntry.Body, newEntry.Author)
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 func (e *entryUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
 	numOfTags := len(tags)
 	tagIDs := make([]int, numOfTags)
 	stmt, err := tx.Prepare(`
-            INSERT INTO Tags (name)
-            VALUES ($1)
-            RETURNING id;
-        `)
+        WITH existingRow AS (
+            SELECT id
+            FROM Tags
+            WHERE name = $1
+        ), newRow AS (
+            INSERT INTO Tags ( name )
+            SELECT $1
+            WHERE NOT EXISTS (SELECT 1 FROM existingRow)
+            RETURNING id
+        )
+        SELECT id
+        FROM newRow
+        UNION ALL
+        SELECT id
+        FROM existingRow
+    `)
 	defer stmt.Close()
 	if err != nil {
 		return nil, err
 	}
 
 	for index, tag := range tags {
-		row, err := e.DB.Query("SELECT id FROM Tags WHERE name = $1;", tag)
-		defer row.Close()
+		row, err := stmt.Query(tag)
 		if err != nil {
 			return nil, err
 		}
 
-		tagExists := row.Next()
-		if !tagExists {
-			row, err = stmt.Query(tag)
-			if err != nil {
-				return nil, err
-			}
-			row.Next()
-		}
-
+		row.Next()
 		var tagID int
 		err = row.Scan(&tagID)
 		if err != nil {
@@ -90,9 +113,58 @@ func (e *entryUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
 		}
 		row.Close()
 		tagIDs[index] = tagID
+
 	}
 
 	return tagIDs, nil
+}
+
+func (e *entryUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
+	tagIDs, err := e.AddTags(tx, entry.Tags)
+	if err != nil {
+		return nil, err
+	}
+	err = e.MapEntryToTags(tx, entry.ID, tagIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tagIDs) > 0 {
+		err = e.CleanupStaleTags(tx, entry, tagIDs)
+	}
+
+	return tagIDs, err
+}
+
+func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, newRowIDs []int) error {
+	var values string
+	for i, tagID := range newRowIDs {
+		values += strconv.Itoa(tagID)
+		if i < len(newRowIDs)-1 {
+			values += ", "
+		}
+	}
+
+	stmt, err := tx.Prepare(`
+        DELETE FROM EntryTag
+        WHERE entry_id = $1
+        AND tag_id NOT IN (` + values + `)
+        `)
+	defer stmt.Close()
+	if _, err = stmt.Exec(entry.ID); err != nil {
+		return err
+	}
+
+	stmt, err = tx.Prepare(`
+        DELETE FROM Tags
+        WHERE id NOT IN  (SELECT tag_id FROM EntryTag);
+        `)
+	defer stmt.Close()
+	if _, err = stmt.Exec(); err != nil {
+		return err
+	}
+
+	return err
 }
 
 func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
@@ -148,8 +220,9 @@ func (e *entryUtils) GetTags(entryID int) ([]string, error) {
 func (e *entryUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) error {
 	stmt, err := tx.Prepare(`
         INSERT INTO EntryTag (entry_id, tag_id)
-        VALUES ($1, $2);
-        `)
+        SELECT $1, $2
+        WHERE NOT EXISTS (SELECT * FROM EntryTag WHERE entry_id = $1 AND tag_id = $2)
+    `)
 	if err != nil {
 		return err
 	}
@@ -178,8 +251,7 @@ func (e *entryUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
         ) || '. '
         || SETWEIGHT(to_tsvector(body), 'C') || '. '
         || SETWEIGHT(to_tsvector(author), 'D')
-        WHERE ID = $2
-        ;
+        WHERE ID = $2;
     `)
 	defer stmt.Close()
 	if err != nil {
