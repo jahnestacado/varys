@@ -130,21 +130,26 @@ func (e *entryUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
 }
 
 func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, newRowIDs []int) error {
-	var values string
-	for i, tagID := range newRowIDs {
-		values += strconv.Itoa(tagID)
-		if i < len(newRowIDs)-1 {
-			values += ", "
+	var placeholders string
+	numOfIDs := len(newRowIDs)
+	queryArgs := make([]interface{}, numOfIDs+1)
+	queryArgs[0] = entry.ID
+	for i, newRowID := range newRowIDs {
+		queryArgs[i+1] = newRowID
+		placeholders += "$" + strconv.Itoa(i+2)
+		if i < numOfIDs-1 {
+			placeholders += ", "
 		}
 	}
 
 	stmt, err := tx.Prepare(`
         DELETE FROM EntryTag
         WHERE entry_id = $1
-        AND tag_id NOT IN (` + values + `)
+        AND tag_id NOT IN (` + placeholders + `)
     `)
 	defer stmt.Close()
-	if _, err = stmt.Exec(entry.ID); err != nil {
+
+	if _, err = stmt.Exec(queryArgs...); err != nil {
 		return err
 	}
 
