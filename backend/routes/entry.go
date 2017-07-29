@@ -103,8 +103,8 @@ func CreateDeleteRouteEntry(db *sql.DB, jwtSecret string) func(http.ResponseWrit
 		}
 
 		tagIDs := []int{0}
-		entryUtils := rdbms.CreateEntryWrapper(db)
-		err = entryUtils.CleanupStaleTags(tx, targetEntry, tagIDs)
+		entryTxUtils := rdbms.CreateEntryTxUtils(db)
+		err = entryTxUtils.CleanupStaleTags(tx, targetEntry, tagIDs)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
@@ -115,7 +115,7 @@ func CreateDeleteRouteEntry(db *sql.DB, jwtSecret string) func(http.ResponseWrit
 }
 
 func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
-	entryUtils := rdbms.CreateEntryWrapper(db)
+	entryTxUtils := rdbms.CreateEntryTxUtils(db)
 
 	tx, err := db.Begin()
 	defer tx.Commit()
@@ -123,23 +123,23 @@ func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
 		return err
 	}
 
-	entryID, err := entryUtils.AddEntry(tx, newEntry)
+	entryID, err := entryTxUtils.AddEntry(tx, newEntry)
 	if err != nil || entryID == 0 {
 		tx.Rollback()
 		return err
 	}
-	tagIDs, err := entryUtils.AddTags(tx, newEntry.Tags)
+	tagIDs, err := entryTxUtils.AddTags(tx, newEntry.Tags)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
+	if err = entryTxUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryUtils.UpdateEntryTSV(tx, entryID); err != nil {
+	if err = entryTxUtils.UpdateEntryTSV(tx, entryID); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -148,7 +148,7 @@ func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
 }
 
 func updateEntry(db *sql.DB, newEntry rdbms.Entry) error {
-	entryUtils := rdbms.CreateEntryWrapper(db)
+	entryTxUtils := rdbms.CreateEntryTxUtils(db)
 
 	tx, err := db.Begin()
 	defer tx.Commit()
@@ -156,22 +156,22 @@ func updateEntry(db *sql.DB, newEntry rdbms.Entry) error {
 		return err
 	}
 
-	if err = entryUtils.UpdateEntry(tx, newEntry); err != nil {
+	if err = entryTxUtils.UpdateEntry(tx, newEntry); err != nil {
 		tx.Rollback()
 		return err
 	}
-	tagIDs, err := entryUtils.UpdateTags(tx, newEntry)
+	tagIDs, err := entryTxUtils.UpdateTags(tx, newEntry)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryUtils.MapEntryToTags(tx, newEntry.ID, tagIDs); err != nil {
+	if err = entryTxUtils.MapEntryToTags(tx, newEntry.ID, tagIDs); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryUtils.UpdateEntryTSV(tx, newEntry.ID); err != nil {
+	if err = entryTxUtils.UpdateEntryTSV(tx, newEntry.ID); err != nil {
 		tx.Rollback()
 		return err
 	}

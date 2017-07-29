@@ -20,15 +20,15 @@ type Tag struct {
 	Name string
 }
 
-type entryUtils struct {
+type entryTxUtils struct {
 	DB *sql.DB
 }
 
-func CreateEntryWrapper(db *sql.DB) entryUtils {
-	return entryUtils{db}
+func CreateEntryTxUtils(db *sql.DB) entryTxUtils {
+	return entryTxUtils{db}
 }
 
-func (e *entryUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
+func (e *entryTxUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
 	var entryID int
 	stmt, err := tx.Prepare(`
         INSERT INTO Entries (title, body, author)
@@ -53,7 +53,7 @@ func (e *entryUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
 	return entryID, err
 }
 
-func (e *entryUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
+func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
 	stmt, err := tx.Prepare(`
         UPDATE Entries
         SET title = $2, body = $3, author = $4
@@ -72,7 +72,7 @@ func (e *entryUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
 	return err
 }
 
-func (e *entryUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
+func (e *entryTxUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
 	numOfTags := len(tags)
 	tagIDs := make([]int, numOfTags)
 	stmt, err := tx.Prepare(`
@@ -117,7 +117,7 @@ func (e *entryUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
 	return tagIDs, nil
 }
 
-func (e *entryUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
+func (e *entryTxUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
 	tagIDs, err := e.AddTags(tx, entry.Tags)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (e *entryUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
 	return tagIDs, err
 }
 
-func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) error {
+func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) error {
 	var placeholders string
 	numOfTags := len(tagIDs)
 	queryArgs := make([]interface{}, numOfTags+1)
@@ -169,7 +169,7 @@ func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) err
 	return err
 }
 
-func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
+func (e *entryTxUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	var entries []Entry
 	stmt, err := e.DB.Prepare(`
         SELECT id, title, body, author, ts_rank(tsv, plainto_tsquery($1)) as rank
@@ -207,7 +207,7 @@ func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	return entries, err
 }
 
-func (e *entryUtils) GetTags(entryID int) ([]Tag, error) {
+func (e *entryTxUtils) GetTags(entryID int) ([]Tag, error) {
 	var tags []Tag
 	stmt, err := e.DB.Prepare(`
         SELECT id, name
@@ -238,7 +238,7 @@ func (e *entryUtils) GetTags(entryID int) ([]Tag, error) {
 	return tags, err
 }
 
-func (e *entryUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) error {
+func (e *entryTxUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) error {
 	stmt, err := tx.Prepare(`
         INSERT INTO EntryTag (entry_id, tag_id)
         SELECT $1, $2
@@ -256,11 +256,12 @@ func (e *entryUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) error
 	return nil
 }
 
-func (e *entryUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
+func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
 	stmt, err := tx.Prepare(`
         UPDATE Entries
-        SET tsv = SETWEIGHT(to_tsvector(title), 'A') || '. '
+        SET tsv = SETWEIGHT(to_tsvector('english', title), 'A') || '. '
         || SETWEIGHT(to_tsvector(
+                    'english',
                     (
                         SELECT string_agg(name, ', ')
                         FROM Tags
@@ -270,15 +271,15 @@ func (e *entryUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
                 ),
             'B'
         ) || '. '
-        || SETWEIGHT(to_tsvector(body), 'C') || '. '
-        || SETWEIGHT(to_tsvector(author), 'D')
-        WHERE ID = $2;
+        || SETWEIGHT(to_tsvector('english', body), 'C') || '. '
+        || SETWEIGHT(to_tsvector('english', author), 'D')
+        WHERE ID = $1;
     `)
 	defer stmt.Close()
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(entryID, entryID)
+	_, err = stmt.Exec(entryID)
 
 	return err
 }

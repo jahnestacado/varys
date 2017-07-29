@@ -17,8 +17,8 @@ type Result struct {
 func CreateGetRouteSearch(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		query := params.ByName("query")
-		entryUtils := rdbms.CreateEntryWrapper(DB)
-		entries, err := entryUtils.GetMatchedEntries(query)
+		entryTxUtils := rdbms.CreateEntryTxUtils(DB)
+		entries, err := entryTxUtils.GetMatchedEntries(query)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
