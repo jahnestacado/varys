@@ -18,14 +18,15 @@ class DeleteEntry extends Component {
         event.stopPropagation();
         console.log("Ask for Confirmation!!!!!", this.props.entry);
         const self = this;
-        const { entry, deleteEntry } = self.props;
-        const url = "http://localhost:7676/entry";
+        const { entry, deleteEntry, auth } = self.props;
+        const url = "http://localhost:7676/api/v1/entry";
         fetch(url, {
             method: "DELETE",
             body: JSON.stringify({id: entry.id}),
             headers: new Headers({
                 "Accept": "application/json",
                 "Content-Type": "application/json",
+                "JWT": auth.token,
             }),
         })
         .then(handleFetchError)
@@ -45,6 +46,12 @@ class DeleteEntry extends Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
+        auth: state.auth,
+    };
+};
+
 const mapDispatchToProps = (dispatch) => {
     return {
         deleteEntry: (entry) => {
@@ -57,4 +64,4 @@ DeleteEntry.propTypes = {
     entry: React.PropTypes.object.isRequired,
 };
 
-export default connect(null, mapDispatchToProps)(DeleteEntry);
+export default connect(mapStateToProps, mapDispatchToProps)(DeleteEntry);
