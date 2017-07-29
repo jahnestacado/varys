@@ -9,15 +9,25 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type userUtils struct {
+type userTxUtils struct {
 	DB *sql.DB
 }
 
-func User(db *sql.DB) userUtils {
-	return userUtils{db}
+func CreateUserTxUtils(db *sql.DB) userTxUtils {
+	return userTxUtils{db}
 }
 
-func (u *userUtils) Register(username string, password string, email string) error {
+type UserInfo struct {
+	ID          string
+	Password    string
+	Username    string
+	Email       string
+	Role        string
+	MemberSince string
+	Verified    bool
+}
+
+func (u *userTxUtils) Register(username string, password string, email string) error {
 	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		return err
@@ -31,17 +41,7 @@ func (u *userUtils) Register(username string, password string, email string) err
 	return err
 }
 
-type UserInfo struct {
-	ID          string
-	Password    string
-	Username    string
-	Email       string
-	Role        string
-	MemberSince string
-	Verified    bool
-}
-
-func (u *userUtils) VerifyCredentials(username string, password string) (UserInfo, error) {
+func (u *userTxUtils) VerifyCredentials(username string, password string) (UserInfo, error) {
 	rows, err := u.DB.Query(`
         SELECT user_id, password, email, role, member_since, verified FROM Users
         WHERE username=$1;

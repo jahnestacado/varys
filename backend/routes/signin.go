@@ -31,8 +31,8 @@ func CreatePostRouteSignIn(db *sql.DB, jwtSecret string) func(http.ResponseWrite
 			http.Error(res, err.Error(), 500)
 			return
 		}
-		userUtils := rdbms.User(db)
-		info, err := userUtils.VerifyCredentials(body.Username, body.Password)
+		userTxUtils := rdbms.CreateUserTxUtils(db)
+		info, err := userTxUtils.VerifyCredentials(body.Username, body.Password)
 		if err != nil {
 			http.Error(res, err.Error(), 401)
 			return

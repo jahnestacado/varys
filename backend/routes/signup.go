@@ -22,8 +22,8 @@ func CreatePostRouteSignUp(DB *sql.DB, config *utils.Config) func(http.ResponseW
 			http.Error(res, err.Error(), 500)
 			return
 		}
-		userUtils := rdbms.User(DB)
-		err = userUtils.Register(body.Username, body.Password, body.Email)
+		userTxUtils := rdbms.CreateUserTxUtils(DB)
+		err = userTxUtils.Register(body.Username, body.Password, body.Email)
 		if err != nil {
 			http.Error(res, err.Error(), 400)
 			return
