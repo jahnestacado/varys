@@ -15,6 +15,11 @@ type Entry struct {
 	Author string   `json:"author"`
 }
 
+type Tag struct {
+	ID   int
+	Name string
+}
+
 type entryUtils struct {
 	DB *sql.DB
 }
@@ -145,10 +150,9 @@ func (e *entryUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) err
 	stmt, err := tx.Prepare(`
         DELETE FROM EntryTag
         WHERE entry_id = $1
-        AND tag_id NOT IN (` + placeholders + `)
+        AND tag_id NOT IN (` + placeholders + `);
     `)
 	defer stmt.Close()
-
 	if _, err = stmt.Exec(queryArgs...); err != nil {
 		return err
 	}
@@ -192,17 +196,21 @@ func (e *entryUtils) GetMatchedEntries(query string) ([]Entry, error) {
 		if err != nil {
 			return nil, err
 		}
-		entry.Tags = tags
+		var tagNames []string
+		for _, tag := range tags {
+			tagNames = append(tagNames, tag.Name)
+		}
+		entry.Tags = tagNames
 		entries = append(entries, entry)
 	}
 
 	return entries, err
 }
 
-func (e *entryUtils) GetTags(entryID int) ([]string, error) {
-	var tags []string
+func (e *entryUtils) GetTags(entryID int) ([]Tag, error) {
+	var tags []Tag
 	stmt, err := e.DB.Prepare(`
-        SELECT name
+        SELECT id, name
         FROM tags
         INNER JOIN EntryTag
         ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
@@ -219,8 +227,8 @@ func (e *entryUtils) GetTags(entryID int) ([]string, error) {
 	}
 
 	for rows.Next() {
-		var tag string
-		err = rows.Scan(&tag)
+		var tag Tag
+		err = rows.Scan(&tag.ID, &tag.Name)
 		if err != nil {
 			return tags, err
 		}
