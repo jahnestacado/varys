@@ -172,9 +172,9 @@ func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) e
 func (e *entryTxUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	var entries []Entry
 	stmt, err := e.DB.Prepare(`
-        SELECT id, title, body, author, ts_rank(tsv, plainto_tsquery($1)) as rank
-        FROM entries
-        WHERE tsv @@ plainto_tsquery($1)
+        SELECT id, title, body, author, ts_rank(tsv, to_tsquery('varys_fts', $1)) as rank
+        FROM Entries
+        WHERE tsv @@ to_tsquery('varys_fts', $1)
         ORDER BY rank DESC;
     `)
 	defer stmt.Close()
@@ -211,7 +211,7 @@ func (e *entryTxUtils) GetTags(entryID int) ([]Tag, error) {
 	var tags []Tag
 	stmt, err := e.DB.Prepare(`
         SELECT id, name
-        FROM tags
+        FROM Tags
         INNER JOIN EntryTag
         ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
     `)
@@ -259,9 +259,9 @@ func (e *entryTxUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) err
 func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
 	stmt, err := tx.Prepare(`
         UPDATE Entries
-        SET tsv = SETWEIGHT(to_tsvector('english', title), 'A') || '. '
+        SET tsv = SETWEIGHT(to_tsvector('varys_fts', title), 'A') || '. '
         || SETWEIGHT(to_tsvector(
-                    'english',
+                    'varys_fts',
                     (
                         SELECT string_agg(name, ', ')
                         FROM Tags
@@ -271,8 +271,8 @@ func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
                 ),
             'B'
         ) || '. '
-        || SETWEIGHT(to_tsvector('english', body), 'C') || '. '
-        || SETWEIGHT(to_tsvector('english', author), 'D')
+        || SETWEIGHT(to_tsvector('varys_fts', body), 'C') || '. '
+        || SETWEIGHT(to_tsvector('varys_fts', author), 'D')
         WHERE ID = $1;
     `)
 	defer stmt.Close()
