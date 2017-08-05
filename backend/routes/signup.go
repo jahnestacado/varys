@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
@@ -61,7 +62,7 @@ func getEmailMessage(body *rdbms.UserInfo, hostURI string, jwtSecret string) (st
 	if err != nil {
 		return "", err
 	}
-	emailBody := "http://" + hostURI + "/api/v1/verify/" + body.Username + "/" + token
+	emailBody := "http://" + hostURI + "/api/v1/verify/" + body.Username + "/" + token + "/" + strconv.Itoa(time.Now().Nanosecond())
 
 	message := "To: " + body.Email + "\r\n" +
 		"Subject: Varys User Verification!\r\n" +

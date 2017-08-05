@@ -13,7 +13,7 @@ func Attach(router *httprouter.Router, db *sql.DB, config utils.Config) {
 	router.PUT("/api/v1/entry", CreatePutRouteEntry(db, config.JWTSecret))
 	router.DELETE("/api/v1/entry", CreateDeleteRouteEntry(db, config.JWTSecret))
 	router.POST("/api/v1/signup", CreatePostRouteSignUp(db, &config))
-	router.GET("/api/v1/verify/:username/:token", CreateGetRouteVerify(db, config.JWTSecret))
+	router.GET("/api/v1/verify/:username/:token/:timestamp", CreateGetRouteVerify(db, config.JWTSecret))
 	router.POST("/api/v1/signin", CreatePostRouteSignIn(db, config.JWTSecret))
 	router.NotFound = GetNotFoundRoute()
 }
