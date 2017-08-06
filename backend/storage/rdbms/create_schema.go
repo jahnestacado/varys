@@ -13,6 +13,19 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 	const createSchema = `CREATE SCHEMA IF NOT EXISTS Varys;`
 	var setSearchPath = `ALTER DATABASE ` + config.DBName + ` SET search_path TO Varys;`
 
+	const createWordPool = `
+        CREATE TABLE IF NOT EXISTS WordPool (
+            id serial PRIMARY KEY,
+            word varchar(80) UNIQUE NOT NULL
+        )
+    `
+	const createEntryWord = `
+        CREATE TABLE IF NOT EXISTS EntryWord (
+            word_id integer,
+            entry_id integer,
+            PRIMARY KEY(word_id, entry_id)
+        )
+    `
 	const createUsersTable = `
         CREATE TABLE IF NOT EXISTS Users (
             user_id serial PRIMARY KEY,
@@ -64,22 +77,27 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
         );
     `
 	const installUnaccentDict = `CREATE EXTENSION unaccent;`
+	const installTrigrams = `CREATE EXTENSION pg_trgm;`
 	const dropFTSConstructs = `
-        DROP TEXT SEARCH CONFIGURATION IF EXISTS varys_fts;
-        DROP TEXT SEARCH DICTIONARY IF EXISTS english_ispell;
-        DROP EXTENSION IF EXISTS unaccent;
+        DROP TEXT SEARCH CONFIGURATION IF EXISTS varys_fts CASCADE;
+        DROP TEXT SEARCH DICTIONARY IF EXISTS english_ispell CASCADE;
+        DROP EXTENSION IF EXISTS unaccent CASCADE;
+        DROP EXTENSION IF EXISTS pg_trgm CASCADE;
     `
 	const createTSVGIN = `CREATE INDEX IF NOT EXISTS tsvGin ON Entries USING gin(tsv);`
 
-	var commands = [12]string{
+	var commands = [15]string{
 		createSchema,
 		setSearchPath,
+		createWordPool,
+		createEntryWord,
 		createUsersTable,
 		createEntriesTable,
 		createTagsTable,
 		createEntryTagTable,
 		createTSVGIN,
 		dropFTSConstructs,
+		installTrigrams,
 		installUnaccentDict,
 		createEngIspellDict,
 		createVarysFTSConfig,
