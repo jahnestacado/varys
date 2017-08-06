@@ -3,6 +3,7 @@ package rdbms
 import (
 	"database/sql"
 	"strconv"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -139,6 +140,7 @@ func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) e
 	numOfTags := len(tagIDs)
 	queryArgs := make([]interface{}, numOfTags+1)
 	queryArgs[0] = entry.ID
+	// @TODO Use generateValuePlaceholders
 	for i, tagID := range tagIDs {
 		queryArgs[i+1] = tagID
 		placeholders += "$" + strconv.Itoa(i+2)
@@ -282,4 +284,122 @@ func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
 	_, err = stmt.Exec(entryID)
 
 	return err
+}
+
+func (e *entryTxUtils) UpdateWordPool(tx *sql.Tx, entryID int) error {
+	words, err := e.getEntryWords(tx, entryID)
+	if err != nil {
+		return err
+	}
+
+	numOfArgs := len(words)
+	insertToWordPoolQuery := make([]interface{}, numOfArgs)
+	insertToEntryWordQuery := make([]interface{}, numOfArgs*2)
+	for i, word := range words {
+		insertToWordPoolQuery[i] = word
+	}
+
+	placeholders := generateValuePlaceholders(numOfArgs, 1)
+	stmt, err := tx.Prepare(`
+        INSERT INTO WordPool (word)
+        VALUES ` + placeholders + `
+        ON CONFLICT (word) DO NOTHING
+        RETURNING id;
+    `)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(insertToWordPoolQuery...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	var wordIDs []int
+	var wordID int
+	for rows.Next() {
+		err = rows.Scan(&wordID)
+		if err != nil {
+			return err
+		}
+		wordIDs = append(wordIDs, wordID)
+	}
+
+	for i, wordID := range wordIDs {
+		insertToEntryWordQuery[i*2] = wordID
+		insertToEntryWordQuery[i*2+1] = entryID
+	}
+
+	placeholders = generateValuePlaceholders(len(wordIDs)*2, 2)
+	stmt, err = tx.Prepare(`
+	    INSERT INTO EntryWord (word_id, entry_id)
+	    VALUES ` + placeholders + `
+	    ON CONFLICT (word_id, entry_id) DO NOTHING;
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(insertToEntryWordQuery...)
+
+	return err
+}
+
+func (e *entryTxUtils) getEntryWords(tx *sql.Tx, entryID int) ([]string, error) {
+	stmt, err := tx.Prepare(`
+            SELECT tsvector_to_array(to_tsvector(title) || '. '
+            || to_tsvector(
+                (
+                    SELECT string_agg(name, ', ')
+                    FROM Tags
+                    INNER JOIN EntryTag
+                    ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
+                )
+            ) || '. '
+            || to_tsvector(body) || '. '
+            || to_tsvector(author))
+            FROM Entries
+            WHERE ID = $1;
+    `)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(entryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var wordsString string
+	if rows.Next() {
+		err = rows.Scan(&wordsString)
+	}
+
+	strLen := len(wordsString)
+	if strLen > 2 {
+		wordsString = wordsString[1 : strLen-1]
+	} else {
+		wordsString = ""
+	}
+
+	return strings.Split(wordsString, ","), err
+}
+
+func generateValuePlaceholders(numOfArgs int, valueTupleLength int) string {
+	placeholders := ""
+	for i := 0; i < numOfArgs; i += valueTupleLength {
+		placeholders += "("
+		for n := 0; n < valueTupleLength; n++ {
+			placeholders += "$" + strconv.Itoa(i+n+1)
+			if n < valueTupleLength-1 {
+				placeholders += ", "
+			}
+		}
+		placeholders += ")"
+
+		if i < numOfArgs-valueTupleLength {
+			placeholders += ", "
+		}
+	}
+
+	return placeholders
 }
