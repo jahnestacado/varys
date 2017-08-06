@@ -18,6 +18,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = rdbms.CreateDatabase(config.Postgres)
+	if err != nil {
+		log.Fatal(err)
+	}
 	db := rdbms.Connect(config.Postgres)
 	err = rdbms.CreateSchema(db, config.Postgres)
 	if err != nil {
