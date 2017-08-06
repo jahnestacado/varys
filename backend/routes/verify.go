@@ -13,8 +13,7 @@ func CreateGetRouteVerify(db *sql.DB, jwtSecret string) func(http.ResponseWriter
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		username := params.ByName("username")
 		token := params.ByName("token")
-
-		rows, err := db.Query("SELECT email FROM users WHERE username=$1", username)
+		rows, err := db.Query("SELECT email FROM Users WHERE username=$1", username)
 		defer rows.Close()
 		if err != nil {
 			http.Error(res, err.Error(), 404)
@@ -38,7 +37,7 @@ func CreateGetRouteVerify(db *sql.DB, jwtSecret string) func(http.ResponseWriter
 			return
 		}
 
-		query := "UPDATE users SET verified = TRUE WHERE username = $1"
+		query := "UPDATE Users SET verified = TRUE WHERE username = $1"
 		_, err = db.Exec(query, username)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
