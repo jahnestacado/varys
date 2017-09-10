@@ -144,6 +144,11 @@ func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
 		return err
 	}
 
+	if err = entryTxUtils.UpdateWordPool(tx, entryID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	return err
 }
 
@@ -152,6 +157,11 @@ func updateEntry(db *sql.DB, newEntry rdbms.Entry) error {
 
 	tx, err := db.Begin()
 	defer tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	registeredEntryWords, err := entryTxUtils.GetEntryWords(tx, newEntry.ID)
 	if err != nil {
 		return err
 	}
@@ -172,6 +182,16 @@ func updateEntry(db *sql.DB, newEntry rdbms.Entry) error {
 	}
 
 	if err = entryTxUtils.UpdateEntryTSV(tx, newEntry.ID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = entryTxUtils.UpdateWordPool(tx, newEntry.ID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = entryTxUtils.CleanStaleWords(tx, newEntry.ID, registeredEntryWords); err != nil {
 		tx.Rollback()
 		return err
 	}
