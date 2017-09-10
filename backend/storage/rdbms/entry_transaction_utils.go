@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strconv"
 	"strings"
+	"varys/backend/utils"
 
 	_ "github.com/lib/pq"
 )
@@ -19,6 +20,11 @@ type Entry struct {
 type Tag struct {
 	ID   int
 	Name string
+}
+
+type EntryWord struct {
+	ID   int
+	Word string
 }
 
 type entryTxUtils struct {
@@ -140,7 +146,7 @@ func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) e
 	numOfTags := len(tagIDs)
 	queryArgs := make([]interface{}, numOfTags+1)
 	queryArgs[0] = entry.ID
-	// @TODO Use generateValuePlaceholders
+	// @TODO Use utils.CreateSQLValuesPlaceholders
 	for i, tagID := range tagIDs {
 		queryArgs[i+1] = tagID
 		placeholders += "$" + strconv.Itoa(i+2)
@@ -161,7 +167,7 @@ func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) e
 
 	stmt, err = tx.Prepare(`
         DELETE FROM Tags
-        WHERE id NOT IN  (SELECT tag_id FROM EntryTag);
+        WHERE id NOT IN (SELECT tag_id FROM EntryTag);
     `)
 	defer stmt.Close()
 	if _, err = stmt.Exec(); err != nil {
@@ -287,19 +293,18 @@ func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
 }
 
 func (e *entryTxUtils) UpdateWordPool(tx *sql.Tx, entryID int) error {
-	words, err := e.getEntryWords(tx, entryID)
+	words, err := e.GetWords(tx, entryID)
 	if err != nil {
 		return err
 	}
 
 	numOfArgs := len(words)
 	insertToWordPoolQuery := make([]interface{}, numOfArgs)
-	insertToEntryWordQuery := make([]interface{}, numOfArgs*2)
 	for i, word := range words {
 		insertToWordPoolQuery[i] = word
 	}
 
-	placeholders := generateValuePlaceholders(numOfArgs, 1)
+	placeholders := utils.CreateSQLValuesPlaceholders(numOfArgs, 1, 0)
 	stmt, err := tx.Prepare(`
         INSERT INTO WordPool (word)
         VALUES ` + placeholders + `
@@ -325,36 +330,32 @@ func (e *entryTxUtils) UpdateWordPool(tx *sql.Tx, entryID int) error {
 		wordIDs = append(wordIDs, wordID)
 	}
 
+	numOfWordIds := len(wordIDs)
+	insertToEntryWordQuery := make([]interface{}, numOfWordIds*2)
 	for i, wordID := range wordIDs {
 		insertToEntryWordQuery[i*2] = wordID
 		insertToEntryWordQuery[i*2+1] = entryID
 	}
 
-	placeholders = generateValuePlaceholders(len(wordIDs)*2, 2)
-	stmt, err = tx.Prepare(`
+	if numOfWordIds > 0 {
+		placeholders = utils.CreateSQLValuesPlaceholders(numOfWordIds*2, 2, 0)
+		stmt, err = tx.Prepare(`
 	    INSERT INTO EntryWord (word_id, entry_id)
 	    VALUES ` + placeholders + `
 	    ON CONFLICT (word_id, entry_id) DO NOTHING;
 	`)
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
+		_, err = stmt.Exec(insertToEntryWordQuery...)
 	}
-	_, err = stmt.Exec(insertToEntryWordQuery...)
 
 	return err
 }
 
-func (e *entryTxUtils) getEntryWords(tx *sql.Tx, entryID int) ([]string, error) {
+func (e *entryTxUtils) GetWords(tx *sql.Tx, entryID int) ([]string, error) {
 	stmt, err := tx.Prepare(`
             SELECT tsvector_to_array(to_tsvector(title) || '. '
-            || to_tsvector(
-                (
-                    SELECT string_agg(name, ', ')
-                    FROM Tags
-                    INNER JOIN EntryTag
-                    ON EntryTag.entry_id = $1 AND Tags.id = EntryTag.tag_id
-                )
-            ) || '. '
             || to_tsvector(body) || '. '
             || to_tsvector(author))
             FROM Entries
@@ -384,22 +385,81 @@ func (e *entryTxUtils) getEntryWords(tx *sql.Tx, entryID int) ([]string, error) 
 	return strings.Split(wordsString, ","), err
 }
 
-func generateValuePlaceholders(numOfArgs int, valueTupleLength int) string {
-	placeholders := ""
-	for i := 0; i < numOfArgs; i += valueTupleLength {
-		placeholders += "("
-		for n := 0; n < valueTupleLength; n++ {
-			placeholders += "$" + strconv.Itoa(i+n+1)
-			if n < valueTupleLength-1 {
-				placeholders += ", "
-			}
-		}
-		placeholders += ")"
+func (e *entryTxUtils) GetEntryWords(tx *sql.Tx, entryID int) ([]EntryWord, error) {
+	stmt, err := tx.Prepare(`
+        SELECT id, word
+        FROM WordPool
+        WHERE id IN (SELECT word_id FROM EntryWord WHERE entry_id = $1);
+    `)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
 
-		if i < numOfArgs-valueTupleLength {
-			placeholders += ", "
+	rows, err := stmt.Query(entryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entryWords []EntryWord
+	var entryWord EntryWord
+	for rows.Next() {
+		err = rows.Scan(&entryWord.ID, &entryWord.Word)
+		if err != nil {
+			return nil, err
 		}
+		entryWords = append(entryWords, entryWord)
 	}
 
-	return placeholders
+	return entryWords, err
+}
+
+func (e *entryTxUtils) CleanStaleWords(tx *sql.Tx, entryID int, registeredWords []EntryWord) error {
+	newWords, err := e.GetWords(tx, entryID)
+	if err != nil {
+		return err
+	}
+	var staleEntryWords []EntryWord
+	for _, entryWord := range registeredWords {
+		if isReferencedWord, _ := utils.Contains(newWords, entryWord.Word); !isReferencedWord {
+			staleEntryWords = append(staleEntryWords, entryWord)
+		}
+	}
+	numOfStaleWords := len(staleEntryWords)
+	placeholders := utils.CreateSQLSetPlaceholders(numOfStaleWords, 1)
+	stmt, err := tx.Prepare(`
+        DELETE
+        FROM EntryWord
+        WHERE entry_id = $1 AND word_id IN` + placeholders + `;
+    `)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	var args []interface{}
+	args = append(args, entryID)
+	var staleEntryIDs []interface{}
+
+	for _, staleEntryWord := range staleEntryWords {
+		args = append(args, staleEntryWord.ID)
+		staleEntryIDs = append(staleEntryIDs, staleEntryWord.ID)
+	}
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	placeholders = utils.CreateSQLSetPlaceholders(numOfStaleWords, 0)
+	stmt, err = tx.Prepare(`
+        DELETE
+        FROM WordPool
+        WHERE id NOT IN (SELECT word_id FROM EntryWord WHERE word_id NOT IN` + placeholders + `)
+    `)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(staleEntryIDs...)
+
+	return err
 }
