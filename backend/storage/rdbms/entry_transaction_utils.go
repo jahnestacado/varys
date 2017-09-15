@@ -355,11 +355,13 @@ func (e *entryTxUtils) UpdateWordPool(tx *sql.Tx, entryID int) error {
 
 func (e *entryTxUtils) GetWords(tx *sql.Tx, entryID int) ([]string, error) {
 	stmt, err := tx.Prepare(`
-            SELECT tsvector_to_array(to_tsvector(title) || '. '
-            || to_tsvector(body) || '. '
-            || to_tsvector(author))
-            FROM Entries
-            WHERE ID = $1;
+        SELECT tsvector_to_array(
+            to_tsvector('english_simple', title) || ' '
+            || to_tsvector('english_simple', body) || ' '
+            || to_tsvector('english_simple', author)
+        )
+        FROM Entries
+        WHERE ID = $1;
     `)
 	if err != nil {
 		return nil, err
