@@ -267,7 +267,7 @@ func (e *entryTxUtils) MapEntryToTags(tx *sql.Tx, entryID int, tagIDs []int) err
 func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
 	stmt, err := tx.Prepare(`
         UPDATE Entries
-        SET tsv = SETWEIGHT(to_tsvector('varys_fts', title), 'A') || '. '
+        SET tsv = SETWEIGHT(to_tsvector('varys_fts', title), 'A') || ' '
         || SETWEIGHT(to_tsvector(
                     'varys_fts',
                     (
@@ -278,8 +278,8 @@ func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
                     )
                 ),
             'B'
-        ) || '. '
-        || SETWEIGHT(to_tsvector('varys_fts', body), 'C') || '. '
+        ) || ' '
+        || SETWEIGHT(to_tsvector('varys_fts', body), 'C') || ' '
         || SETWEIGHT(to_tsvector('varys_fts', author), 'D')
         WHERE ID = $1;
     `)
