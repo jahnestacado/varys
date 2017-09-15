@@ -68,11 +68,25 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
                           word, hword, hword_part
         WITH unaccent, english_ispell, english_stem;
     `
-	const createEngIspellDict = `
+
+	const createEnglishSimpleFTSConfig = `CREATE TEXT SEARCH CONFIGURATION english_simple ( COPY = pg_catalog.english );`
+	const alterEnglishSimpleFTSMapping = `
+        ALTER TEXT SEARCH CONFIGURATION english_simple
+        ALTER MAPPING FOR asciihword, asciiword, hword, hword_asciipart, hword_part, word
+        WITH english_simple;
+    `
+
+	const createEnglishIspellDict = `
         CREATE TEXT SEARCH DICTIONARY english_ispell (
             TEMPLATE = ispell,
             DictFile = english,
             AffFile = english,
+            StopWords = english
+        );
+    `
+	const createEnglishSimpleDict = `
+        CREATE TEXT SEARCH DICTIONARY english_simple (
+            TEMPLATE = simple,
             StopWords = english
         );
     `
@@ -81,12 +95,13 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 	const dropFTSConstructs = `
         DROP TEXT SEARCH CONFIGURATION IF EXISTS varys_fts CASCADE;
         DROP TEXT SEARCH DICTIONARY IF EXISTS english_ispell CASCADE;
+        DROP TEXT SEARCH DICTIONARY IF EXISTS english_simple CASCADE;
         DROP EXTENSION IF EXISTS unaccent CASCADE;
         DROP EXTENSION IF EXISTS pg_trgm CASCADE;
     `
 	const createTSVGIN = `CREATE INDEX IF NOT EXISTS tsvGin ON Entries USING gin(tsv);`
 
-	var commands = [15]string{
+	var commands = [18]string{
 		createSchema,
 		setSearchPath,
 		createWordPool,
@@ -99,9 +114,12 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 		dropFTSConstructs,
 		installTrigrams,
 		installUnaccentDict,
-		createEngIspellDict,
+		createEnglishIspellDict,
+		createEnglishSimpleDict,
 		createVarysFTSConfig,
+		createEnglishSimpleFTSConfig,
 		alterFTSMapping,
+		alterEnglishSimpleFTSMapping,
 	}
 
 	for _, command := range commands {
