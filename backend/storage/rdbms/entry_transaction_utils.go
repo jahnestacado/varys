@@ -65,7 +65,7 @@ func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
         UPDATE Entries
         SET title = $2, body = $3, author = $4
         WHERE id = $1
-        `)
+    `)
 	defer stmt.Close()
 	if err != nil {
 		return err
@@ -427,39 +427,41 @@ func (e *entryTxUtils) CleanStaleWords(tx *sql.Tx, entryID int, registeredWords 
 		}
 	}
 	numOfStaleWords := len(staleEntryWords)
-	placeholders := utils.CreateSQLSetPlaceholders(numOfStaleWords, 1)
-	stmt, err := tx.Prepare(`
-        DELETE
-        FROM EntryWord
-        WHERE entry_id = $1 AND word_id IN` + placeholders + `;
-    `)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-	var args []interface{}
-	args = append(args, entryID)
-	var staleEntryIDs []interface{}
+	if numOfStaleWords > 0 {
+		placeholders := utils.CreateSQLSetPlaceholders(numOfStaleWords, 1)
+		stmt, err := tx.Prepare(`
+            DELETE
+            FROM EntryWord
+            WHERE entry_id = $1 AND word_id IN` + placeholders + `;
+            `)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+		var args []interface{}
+		args = append(args, entryID)
+		var staleEntryIDs []interface{}
 
-	for _, staleEntryWord := range staleEntryWords {
-		args = append(args, staleEntryWord.ID)
-		staleEntryIDs = append(staleEntryIDs, staleEntryWord.ID)
-	}
-	_, err = stmt.Exec(args...)
-	if err != nil {
-		return err
-	}
+		for _, staleEntryWord := range staleEntryWords {
+			args = append(args, staleEntryWord.ID)
+			staleEntryIDs = append(staleEntryIDs, staleEntryWord.ID)
+		}
+		_, err = stmt.Exec(args...)
+		if err != nil {
+			return err
+		}
 
-	placeholders = utils.CreateSQLSetPlaceholders(numOfStaleWords, 0)
-	stmt, err = tx.Prepare(`
-        DELETE
-        FROM WordPool
-        WHERE id NOT IN (SELECT word_id FROM EntryWord WHERE word_id NOT IN` + placeholders + `)
-    `)
-	if err != nil {
-		return err
+		placeholders = utils.CreateSQLSetPlaceholders(numOfStaleWords, 0)
+		stmt, err = tx.Prepare(`
+            DELETE
+            FROM WordPool
+            WHERE id NOT IN (SELECT word_id FROM EntryWord WHERE word_id NOT IN ` + placeholders + `)
+            `)
+		if err != nil {
+			return err
+		}
+		_, err = stmt.Exec(staleEntryIDs...)
 	}
-	_, err = stmt.Exec(staleEntryIDs...)
 
 	return err
 }
