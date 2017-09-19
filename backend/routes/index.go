@@ -9,7 +9,7 @@ import (
 )
 
 func Attach(router *httprouter.Router, db *sql.DB, config utils.Config) {
-	router.GET("/api/v1/search/:query", CreateSearchGetRoute(db))
+	router.GET("/api/v1/search", CreateSearchGetRoute(db))
 	router.GET("/api/v1/match", CreateMatchGetRoute(db))
 	router.PUT("/api/v1/entry", CreateEntryPutRoute(db, config.JWTSecret))
 	router.DELETE("/api/v1/entry", CreateEntryDeleteRoute(db, config.JWTSecret))

@@ -60,7 +60,7 @@ class App extends Component {
         const self = this;
         const { setEntries } = self.props;
         if(query){
-            const url = `http://localhost:7676/api/v1/search/${query}/?limit=${self.state.limit}&offset=0`;
+            const url = `http://localhost:7676/api/v1/search?query=${query}&limit=${self.state.limit}&offset=0`;
             self.fetch(
                 url,
                 (json) => {
