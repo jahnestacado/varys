@@ -9,7 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func CreateGetRouteMatch(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateMatchGetRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		queryParams := req.URL.Query()
 		substring := queryParams.Get("substring")

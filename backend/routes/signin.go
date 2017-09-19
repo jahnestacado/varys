@@ -21,7 +21,7 @@ type session struct {
 	Token string `json:"token"`
 }
 
-func CreatePostRouteSignIn(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateSignInPostRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()

@@ -10,7 +10,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func CreatePutRouteEntry(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
@@ -43,7 +43,7 @@ func CreatePutRouteEntry(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 	}
 }
 
-func CreateDeleteRouteEntry(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
