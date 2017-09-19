@@ -215,6 +215,56 @@ func (e *entryTxUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	return entries, err
 }
 
+func (e *entryTxUtils) GetMatchedWords(matcherType string, substring string) ([]string, error) {
+	var words []string
+	matchAllQuery := `
+        WITH allWords AS (
+            SELECT word
+            FROM WordPool
+            UNION
+            SELECT name
+            FROM Tags
+        )
+        SELECT *
+        FROM allWords
+        WHERE similarity(word, $1) >= 0.25
+        LIMIT 50;
+    `
+	matchTagsQuery := `
+        SELECT name
+        FROM Tags
+        WHERE similarity(name, $1) >= 0.25
+        LIMIT 50;
+    `
+	query := matchAllQuery
+	if matcherType == "tag" {
+		query = matchTagsQuery
+	}
+	stmt, err := e.DB.Prepare(query)
+	defer stmt.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query(substring)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var word string
+		err = rows.Scan(&word)
+		if err != nil {
+			return nil, err
+		}
+
+		words = append(words, word)
+	}
+
+	return words, err
+}
+
 func (e *entryTxUtils) GetTags(entryID int) ([]Tag, error) {
 	var tags []Tag
 	stmt, err := e.DB.Prepare(`
