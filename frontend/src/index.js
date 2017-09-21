@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import App from "./components/App.jsx";
 import SignUp from "./components/SignUp.jsx";
 import SignIn from "./components/SignIn.jsx";
+import "semantic-ui-css/semantic.min.css";
 import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store.js";
@@ -18,5 +19,5 @@ ReactDOM.render(
             </Switch>
         </BrowserRouter>
     </Provider>,
-  document.getElementById("root"),
+    document.getElementById("root"),
 );
