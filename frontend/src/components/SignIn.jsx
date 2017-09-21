@@ -1,88 +1,128 @@
-import React, { Component } from "react";
-import { Button, FormControl, FormGroup, Form , Col} from "react-bootstrap";
+import React from "react";
+import { Form, Grid, Segment, Header } from "semantic-ui-react";
+import ValidationComponent from "./ValidationComponent.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import { connect } from "react-redux";
 import { signin } from "./../actions/authActions.js";
 import "./SignIn.css";
 
-class SignIn extends Component {
-    constructor(props){
+class SignIn extends ValidationComponent {
+    constructor(props) {
         super(props);
         const self = this;
-        this.state = {
+        self.state = {
             username: "",
             password: "",
+            errors: {},
         };
 
-        bindToComponent(self, [
-            "onSubmit",
-            "onChange",
-        ]);
+        bindToComponent(self, ["onSubmit", "validateInput"]);
     }
 
-    componentWillMount(){
+    componentWillMount() {
         const self = this;
         const sessionInfo = window.localStorage.getItem("varys-session");
-        if(sessionInfo){
+        if (sessionInfo) {
             self.props.history.push("/");
         }
     }
 
-    onSubmit(event){
+    onSubmit(event) {
         event.preventDefault();
         const self = this;
-        const {username, password} = self.state;
-        const body  = {
+        const { username, password } = self.state;
+        const body = {
             username,
             password,
         };
-
-        const url = "http://localhost:7676/api/v1/SignIn";
-        fetch(url, {
-            method: "POST",
-            body: JSON.stringify(body),
-            headers: new Headers({
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            }),
-        })
-        .then(handleFetchError)
-        .then((response) => response.json())
-        .then((json) => {
-            self.props.signin(json.token);
-            self.props.history.push("/");
-            console.log("User successfully Signed In!!!", json);
-        })
-        .catch(console.log);
+        const errors = self.validateInput();
+        if (Object.keys(errors).length) {
+            self.setState({ errors });
+        } else {
+            const url = "http://localhost:7676/api/v1/SignIn";
+            fetch(url, {
+                method: "POST",
+                body: JSON.stringify(body),
+                headers: new Headers({
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                }),
+            })
+                .then(handleFetchError)
+                .then((response) => response.json())
+                .then((json) => {
+                    self.props.signin(json.token);
+                    self.props.history.push("/");
+                })
+                .catch((error) => {
+                    self.setState({ errors: { request: error.message } });
+                });
+        }
     }
 
-    onChange(event, fieldName){
+    validateInput() {
         const self = this;
-        const newValue = event.target.value;
-        self.setState({
-            [fieldName]: newValue,
-        });
+        const { username, password } = self.state;
+        const errors = {};
+        if (username.length === 0) {
+            errors.username = "is required";
+        }
+        if (password.length === 0) {
+            errors.password = "is required";
+        }
+
+        return errors;
     }
 
-    render(){
+    render() {
         const self = this;
+        const { onSubmit, onChange, generateErrorMessages } = self;
+
+        const { username, password, errors } = self.state;
+        const containErrors = !!Object.keys(errors).length;
+
         return (
-            <Form className="SignIn-form" onSubmit={self.onSubmit} horizontal>
-                <FormGroup>
-                    <Col sm={10}>
-                        <FormControl onChange={(e) => self.onChange(e, "username")} className="form-control" placeholder="Username" />
-                    </Col>
-                </FormGroup>
-                <FormGroup>
-                    <Col sm={10}>
-                        <FormControl type="password" placeholder="Password" className="form-control" onChange={(e) => self.onChange(e, "password")} />
-                    </Col>
-                </FormGroup>
-                <FormGroup>
-                    <Button type="submit">SignIn</Button>
-                </FormGroup>
-            </Form>
+            <Grid className="SignIn-form" centered>
+                <Grid.Column mobile={16} tablet={8} computer={6}>
+                    <Segment
+                        attached
+                        color={"teal"}
+                        textAlign={"center"}
+                        padded
+                    >
+                        <Header dividing size="large">
+                            Sign In
+                        </Header>
+                        <Form onSubmit={onSubmit} error={containErrors}>
+                            <Form.Input
+                                label="Username"
+                                placeholder="Username"
+                                name="username"
+                                value={username}
+                                error={!!errors.username}
+                                onChange={onChange}
+                            />
+                            <Form.Input
+                                label="Password"
+                                placeholder="Password"
+                                name="password"
+                                type="password"
+                                value={password}
+                                error={!!errors.password}
+                                onChange={onChange}
+                            />
+                            <Form.Button
+                                content="SignIn"
+                                color="teal"
+                                size="big"
+                                fluid
+                            />
+                            {containErrors && generateErrorMessages(errors)}
+                        </Form>
+                    </Segment>
+                </Grid.Column>
+            </Grid>
         );
     }
 }
