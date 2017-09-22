@@ -55,30 +55,28 @@ class AutoCompleteDropdown extends Component {
                 .then(handleFetchError)
                 .then((response) => response.json())
                 .then((result) => {
-                    setTimeout(() => {
-                        if (result) {
-                            const disabledOptions = self.disableOptions(
-                                self.state.options,
-                            );
-                            self.setState({
-                                options: result
-                                    .map((value, i) => {
-                                        return {
-                                            key: `${Date.now()}${value}${i}`,
-                                            text: value,
-                                            value: value,
-                                            /* Hack in order to force cleanup of
+                    if (result) {
+                        const disabledOptions = self.disableOptions(
+                            self.state.options,
+                        );
+                        self.setState({
+                            options: result
+                                .map((value, i) => {
+                                    return {
+                                        key: `${Date.now()}${value}${i}`,
+                                        text: value,
+                                        value: value,
+                                        /* Hack in order to force cleanup of
                                         *  input field  after item selection
                                         */
-                                            "data-additional": true,
-                                        };
-                                    })
-                                    .concat(disabledOptions),
-                                isDropdownOpen: true,
-                                isFetchingData: false,
-                            });
-                        }
-                    }, 3000);
+                                        "data-additional": true,
+                                    };
+                                })
+                                .concat(disabledOptions),
+                            isDropdownOpen: true,
+                            isFetchingData: false,
+                        });
+                    }
                 })
                 .catch((error) => {
                     console.error(error);
