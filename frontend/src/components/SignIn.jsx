@@ -127,12 +127,6 @@ class SignIn extends ValidationComponent {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        auth: state.auth,
-    };
-};
-
 const mapDispatchToProps = (dispatch) => {
     return {
         signin: (sessionInfo) => {
@@ -141,4 +135,4 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default connect(null, mapDispatchToProps)(SignIn);
