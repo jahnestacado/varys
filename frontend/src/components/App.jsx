@@ -2,13 +2,14 @@ import React, { Component } from "react";
 import AutoCompleteDropdown from "./AutoCompleteDropdown";
 import ResultList from "./ResultList.jsx";
 import EntryForm from "./EntryForm.jsx";
-import { Col, Pagination } from "react-bootstrap";
+import { Pagination } from "react-bootstrap";
 import "./App.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
 import { signin } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
+import { Header, Icon, Grid } from "semantic-ui-react";
 
 class App extends Component {
     constructor(props) {
@@ -40,7 +41,7 @@ class App extends Component {
     }
 
     convertQuery(q) {
-        return q.length ? q[0] : "";
+        return q.length ? q.join(window.encodeURIComponent("&")) : "";
     }
 
     handlePaginationSelect(selectedPage) {
@@ -115,25 +116,28 @@ class App extends Component {
 
         return (
             <div className="App">
-                <div className="App-header">
-                    <h2>Welcome to Varys</h2>
+                <Header
+                    className="App-header"
+                    as="h2"
+                    icon
+                    textAlign="center"
+                    size="large"
+                    dividing={true}
+                    inverted={true}
+                >
+                    <Icon name="computer" circular />
+                    <Header.Content>Varys</Header.Content>
+                </Header>
+                <div className="dropdown-container">
                     <AutoCompleteDropdown />
                 </div>
-                <Col sm={8} md={10} smOffset={2} mdOffset={1}>
-                    <ResultList
-                        refresh={refreshSearchResults}
-                        entries={entries}
-                    />
-                </Col>
-
-                <Col sm={12}>
-                    <Pagination
-                        onSelect={handlePaginationSelect}
-                        bsSize={"medium"}
-                        activePage={activePage}
-                        items={totalPages}
-                    />
-                </Col>
+                <ResultList refresh={refreshSearchResults} entries={entries} />
+                <Pagination
+                    onSelect={handlePaginationSelect}
+                    bsSize={"medium"}
+                    activePage={activePage}
+                    items={totalPages}
+                />
 
                 <EntryForm onSubmit={refreshSearchResults} />
             </div>
