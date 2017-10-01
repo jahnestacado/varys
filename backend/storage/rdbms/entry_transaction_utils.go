@@ -225,16 +225,18 @@ func (e *entryTxUtils) GetMatchedWords(matcherType string, substring string) ([]
             SELECT name
             FROM Tags
         )
-        SELECT *
+        SELECT word
         FROM allWords
         WHERE similarity(word, $1) >= 0.25
-        LIMIT 50;
+        ORDER BY similarity(word, $1) DESC
+        LIMIT 30;
     `
 	matchTagsQuery := `
         SELECT name
         FROM Tags
         WHERE similarity(name, $1) >= 0.25
-        LIMIT 50;
+        ORDER BY similarity(name, $1) DESC
+        LIMIT 30;
     `
 	query := matchAllQuery
 	if matcherType == "tag" {
