@@ -22,7 +22,7 @@ class AutoCompleteDropdown extends Component {
     }
 
     filterSearch(options) {
-        /* Due to limitations in Semantic-UI-Dropdown which clearSearchQuery the
+        /* Due to limitations in Semantic-UI-Dropdown which clears the
         * dropdown query if new options are set we mark the 'old'
         * as disabled and then we filter this items out when we display the dropdown list
         */
@@ -30,7 +30,7 @@ class AutoCompleteDropdown extends Component {
     }
 
     disableOptions(oldOptions) {
-        /* Due to limitations in Semantic-UI-Dropdown which clearSearchQuery the
+        /* Due to limitations in Semantic-UI-Dropdown which clears the
         * dropdown query if new options are set we mark the 'old'
         * as disabled and then we filter this items out when we display the dropdown list
         */
@@ -79,6 +79,7 @@ class AutoCompleteDropdown extends Component {
                     }
                 })
                 .catch((error) => {
+                    // @TODO Show error message
                     console.error(error);
                     self.setState({ isFetchingData: false });
                 });
@@ -92,7 +93,6 @@ class AutoCompleteDropdown extends Component {
             newQuery.some((v) => v === d.text),
         );
 
-        console.log("OnChange", newQuery);
         self.setState({
             options: res,
             isDropdownOpen: false,
@@ -105,7 +105,6 @@ class AutoCompleteDropdown extends Component {
         const self = this;
         const { onSearchChange, onQueryChange, filterSearch } = self;
         const { options, isDropdownOpen, isFetchingData } = self.state;
-        console.log("OnRender", options, self.props.query);
         return (
             <Dropdown
                 multiple={true}
