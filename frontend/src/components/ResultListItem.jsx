@@ -1,32 +1,29 @@
 import React, { Component } from "react";
-import { Col, ListGroupItem, Label } from "react-bootstrap";
 import ReactModal from "react-modal";
 import MarkdownViewer from "./MarkdownViewer.jsx";
 import EntryForm from "./EntryForm.jsx";
 import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
+import { Card, Label } from "semantic-ui-react";
 
 class ResultListItem extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         const self = this;
         self.state = {
             showModal: false,
             entry: props.entry,
         };
-        bindToComponent(self, [
-            "openModal",
-            "closeModal",
-        ]);
+        bindToComponent(self, ["openModal", "closeModal"]);
     }
 
-    openModal(){
-        this.setState({showModal: true});
+    openModal() {
+        this.setState({ showModal: true });
     }
 
-    closeModal(){
-        this.setState({showModal: false});
+    closeModal() {
+        this.setState({ showModal: false });
     }
 
     render() {
@@ -35,22 +32,36 @@ class ResultListItem extends Component {
         const { entry } = self.state;
         const keywordLabels = entry.tags.map((keyword, i) => {
             return (
-                <Label key={i} className="ResultListItem-label">{keyword}</Label>
+                <Label
+                    key={i}
+                    color="teal"
+                    size="tiny"
+                    className="ResultListItem-label"
+                >
+                    {keyword}
+                </Label>
             );
         });
+
         return (
-            <Col sm={6} md={4} >
-                <ListGroupItem
-                    className="ResultListItem"
-                    onClick={openModal}
-                >
-                    <div className="ResultListItem-btn-panel">
-                        <EntryForm entry={self.props.entry} />
-                        <DeleteEntry entry={self.props.entry} />
-                    </div>
-                    <div className="ResultListItem-title">{self.props.entry.title}</div>
-                    <div>{keywordLabels}</div>
-                </ListGroupItem>
+            <Card className="ResultListItem" fluid centered onClick={openModal}>
+                <Card.Content>
+                    <Card.Meta>
+                        <div className="ResultListItem-btn-panel">
+                            <EntryForm entry={self.props.entry} />
+                            <DeleteEntry entry={self.props.entry} />
+                        </div>
+                    </Card.Meta>
+                    <Card.Header className="ResultListItem-title">
+                        {self.props.entry.title}
+                    </Card.Header>
+                    <Card.Description className="ResultListItem-description">
+                        {`${entry.body.substring(0, 140)}...`}
+                    </Card.Description>
+                </Card.Content>
+                <Card.Content extra className="ResultListItem-label-panel">
+                    {keywordLabels}
+                </Card.Content>
                 <ReactModal
                     isOpen={this.state.showModal}
                     contentLabel={entry.title}
@@ -59,9 +70,14 @@ class ResultListItem extends Component {
                 >
                     <MarkdownViewer entry={self.props.entry} />
 
-                    <button className="ResultListItem-btn-close" onClick={closeModal}>x</button>
+                    <button
+                        className="ResultListItem-btn-close"
+                        onClick={closeModal}
+                    >
+                        x
+                    </button>
                 </ReactModal>
-            </Col>
+            </Card>
         );
     }
 }

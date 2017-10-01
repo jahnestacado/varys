@@ -7,25 +7,36 @@
 
 .ResultListItem {
     text-transform: capitalize;
-    height: 80px;
-    margin-top: 20px;
+    height: 140px;
+    font-size: 12px;
+    z-index: 0 !important;
 }
 
 .ResultListItem-title {
     text-decoration: underline;
     font-size: 15px;
+    float: left;
+}
+
+.ResultListItem-description {
+    font-size: 12px;
+    text-align: left;
 }
 
 .ResultListItem-label {
     margin-right: 2px;
+    float: left;
     background-color: #333;
 }
 
 .ResultListItem-btn-panel {
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 5px;
+    right: 5px;
     display: inline-flex;
+}
+
+.ResultListItem-label-panel {
 }
 
 .ResultListItem .EntryForm {
