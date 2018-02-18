@@ -1,28 +1,28 @@
 {
-  "name": "varys",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "react": "^15.5.4",
-    "react-bootstrap": "^0.31.0",
-    "react-dom": "^15.5.4",
-    "react-modal": "^1.7.7",
-    "react-redux": "^5.0.5",
-    "react-router-dom": "^4.1.1",
-    "redux": "^3.6.0",
-    "semantic-ui-css": "^2.2.12",
-    "semantic-ui-react": "^0.73.1",
-    "showdown": "^1.6.4"
-  },
-  "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-plugin-react": "^7.1.0",
-    "react-scripts": "0.9.5"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
-  }
+    "name": "varys",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "react": "^15.5.4",
+        "react-bootstrap": "^0.31.0",
+        "react-dom": "^15.5.4",
+        "react-modal": "^1.7.7",
+        "react-redux": "^5.0.5",
+        "react-router-dom": "^4.1.1",
+        "redux": "^3.6.0",
+        "semantic-ui-css": "^2.2.12",
+        "semantic-ui-react": "0.78.2",
+        "showdown": "^1.6.4"
+    },
+    "devDependencies": {
+        "eslint": "^3.19.0",
+        "eslint-plugin-react": "^7.1.0",
+        "react-scripts": "0.9.5"
+    },
+    "scripts": {
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "test": "react-scripts test --env=jsdom",
+        "eject": "react-scripts eject"
+    }
 }
