@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
 import { signin } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
-import { Header, Icon, Grid } from "semantic-ui-react";
+import { Header, Icon } from "semantic-ui-react";
 import "./App.css";
 
 class App extends Component {
@@ -18,14 +18,8 @@ class App extends Component {
         self.state = {
             activePage: 0,
             limit: 15,
-            offset: 0,
-            totalPages: 0,
         };
-        bindToComponent(self, [
-            "handlePaginationSelect",
-            "requestSearch",
-            "refreshSearchResults",
-        ]);
+        bindToComponent(self, ["handlePaginationSelect", "requestSearch", "refreshSearchResults"]);
     }
 
     componentWillMount() {
@@ -46,16 +40,8 @@ class App extends Component {
 
     handlePaginationSelect(selectedPage) {
         const self = this;
-        const { setEntries, searchQuery } = self.props;
-        const offset = selectedPage - 1;
-        const query = self.convertQuery(searchQuery);
-        const url = `http://localhost:7676/api/v1/search/?query=${query}&limit=${self
-            .state.limit}&offset=${offset}`;
-        self.fetch(url, (json) => {
-            self.setState({
-                activePage: selectedPage,
-            });
-            setEntries(json.payload);
+        self.setState({
+            activePage: selectedPage,
         });
     }
 
@@ -64,18 +50,15 @@ class App extends Component {
         const { setEntries, searchQuery } = props;
         const query = self.convertQuery(searchQuery);
         if (query) {
-            const url = `http://localhost:7676/api/v1/search?query=${query}&limit=${self
-                .state.limit}&offset=0`;
+            const url = `http://localhost:7676/api/v1/search?query=${query}`;
             self.fetch(url, (json) => {
                 self.setState({
-                    totalPages: Math.ceil(json.totalMatches / self.state.limit),
                     activePage: 1,
                 });
                 setEntries(json.payload);
             });
         } else {
             self.setState({
-                totalPages: 0,
                 activePage: 0,
             });
             setEntries([]);
@@ -111,8 +94,14 @@ class App extends Component {
     render() {
         const self = this;
         const { handlePaginationSelect, refreshSearchResults, state } = self;
-        const { activePage, totalPages } = state;
+        const { activePage, limit } = state;
         const { entries } = self.props.results;
+        const totalPages = Math.ceil(entries.length / self.state.limit);
+        const displayedEntriesOffset = (activePage - 1) * limit;
+        const displayedEntries = entries.slice(
+            displayedEntriesOffset,
+            displayedEntriesOffset + limit
+        );
 
         return (
             <div className="App">
@@ -131,7 +120,7 @@ class App extends Component {
                 <div className="dropdown-container">
                     <AutoCompleteDropdown />
                 </div>
-                <ResultList refresh={refreshSearchResults} entries={entries} />
+                <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
                 <Pagination
                     onSelect={handlePaginationSelect}
                     bsSize={"medium"}
@@ -156,7 +145,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
     return {
         setEntries: (entries) => {
-            2;
             dispatch(setEntries(entries));
         },
         signin: (sessionToken) => {
