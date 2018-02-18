@@ -3,13 +3,13 @@ import AutoCompleteDropdown from "./AutoCompleteDropdown";
 import ResultList from "./ResultList.jsx";
 import EntryForm from "./EntryForm.jsx";
 import { Pagination } from "react-bootstrap";
-import "./App.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
 import { signin } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import { Header, Icon, Grid } from "semantic-ui-react";
+import "./App.css";
 
 class App extends Component {
     constructor(props) {
@@ -47,10 +47,10 @@ class App extends Component {
     handlePaginationSelect(selectedPage) {
         const self = this;
         const { setEntries, searchQuery } = self.props;
-        const offset = self.state.limit * selectedPage;
-        const temp = self.convertQuery(searchQuery);
-        const url = `http://localhost:7676/api/v1/search/${temp}/?limit=${self
-            .state.limit}&offset=${selectedPage - 1}`;
+        const offset = selectedPage - 1;
+        const query = self.convertQuery(searchQuery);
+        const url = `http://localhost:7676/api/v1/search/?query=${query}&limit=${self
+            .state.limit}&offset=${offset}`;
         self.fetch(url, (json) => {
             self.setState({
                 activePage: selectedPage,
