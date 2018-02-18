@@ -1,5 +1,11 @@
+#root {
+    height: 100%;
+    margin: 0;
+}
+
 .App {
     text-align: center;
+    max-height: 100%;
 }
 
 .App-header {
@@ -20,8 +26,10 @@
     box-shadow: 1px 0.5px 1px 0.1px #ccc !important;
 }
 
-.App .pagination .active a {
-    z-index: 0;
+/*@TODO Need to center it properly*/
+.App-pagination-bar {
+    position: absolute;
+    bottom: 30px;
 }
 
 .App .EntryForm-btn-open .glyphicon-plus-sign {

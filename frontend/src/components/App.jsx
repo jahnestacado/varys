@@ -2,13 +2,12 @@ import React, { Component } from "react";
 import AutoCompleteDropdown from "./AutoCompleteDropdown";
 import ResultList from "./ResultList.jsx";
 import EntryForm from "./EntryForm.jsx";
-import { Pagination } from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
 import { signin } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
-import { Header, Icon } from "semantic-ui-react";
+import { Header, Icon, Pagination } from "semantic-ui-react";
 import "./App.css";
 
 class App extends Component {
@@ -38,10 +37,10 @@ class App extends Component {
         return q.length ? q.join(window.encodeURIComponent("&")) : "";
     }
 
-    handlePaginationSelect(selectedPage) {
+    handlePaginationSelect(event, { activePage }) {
         const self = this;
         self.setState({
-            activePage: selectedPage,
+            activePage,
         });
     }
 
@@ -121,14 +120,23 @@ class App extends Component {
                     <AutoCompleteDropdown />
                 </div>
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
-                <Pagination
-                    onSelect={handlePaginationSelect}
-                    bsSize={"medium"}
-                    activePage={activePage}
-                    items={totalPages}
-                />
 
                 <EntryForm onSubmit={refreshSearchResults} />
+
+                {entries.length ? (
+                    <Pagination
+                        className="App-pagination-bar"
+                        totalPages={totalPages}
+                        onPageChange={handlePaginationSelect}
+                        activePage={activePage}
+                        firstItem={null}
+                        lastItem={null}
+                        prevItem={null}
+                        nextItem={null}
+                    />
+                ) : (
+                    ""
+                )}
             </div>
         );
     }
