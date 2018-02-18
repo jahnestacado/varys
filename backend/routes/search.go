@@ -3,7 +3,6 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"varys/backend/storage/cache"
@@ -24,16 +23,7 @@ func CreateSearchGetRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, h
 		var requestedEntries RequestedResult
 		queryParams := req.URL.Query()
 		query := queryParams.Get("query")
-		limit, err := strconv.Atoi(queryParams.Get("limit"))
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
-		offset, err := strconv.Atoi(queryParams.Get("offset"))
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
+		var err error
 
 		cachedEntries, exists := cache.GetCachedEntries(query)
 		if exists {
@@ -50,17 +40,29 @@ func CreateSearchGetRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, h
 		}
 
 		numOfEntries := len(matchedEntries)
-		fmt.Print(numOfEntries)
-		start := offset * limit
-		end := utils.Math().Min(start+limit, numOfEntries)
-		requestedEntries = RequestedResult{numOfEntries, matchedEntries[start:end]}
-		r, err := json.Marshal(requestedEntries)
+		limit, err := getNumericParameter(queryParams.Get("limit"), numOfEntries)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+		end := utils.Math().Min(limit, numOfEntries)
+		requestedEntries = RequestedResult{numOfEntries, matchedEntries[0:end]}
+		result, err := json.Marshal(requestedEntries)
 
 		if err != nil {
 			res.Write([]byte(err.Error()))
 		} else {
 			res.Header().Set("Content-Type", "application/json")
-			res.Write(r)
+			res.Write(result)
 		}
 	}
+}
+
+func getNumericParameter(param string, defaultValue int) (int, error) {
+	limit := defaultValue
+	var err error
+	if param != "" {
+		limit, err = strconv.Atoi(param)
+	}
+	return limit, err
 }
