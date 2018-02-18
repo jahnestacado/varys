@@ -26,7 +26,7 @@ class AutoCompleteDropdown extends Component {
         * dropdown query if new options are set we mark the 'old'
         * as disabled and then we filter this items out when we display the dropdown list
         */
-        return options.filter((o) => !o.disabled);
+        return options.filter(o => !o.disabled);
     }
 
     disableOptions(oldOptions) {
@@ -34,27 +34,30 @@ class AutoCompleteDropdown extends Component {
         * dropdown query if new options are set we mark the 'old'
         * as disabled and then we filter this items out when we display the dropdown list
         */
-        const disabledOptions = oldOptions.map((o) => {
+        const disabledOptions = oldOptions.map(o => {
             o.disabled = true;
             return o;
         });
         return disabledOptions;
     }
 
-    onSearchChange(event, substring) {
+    onSearchChange(event, { searchQuery }) {
         const self = this;
-        if (substring.length > 1) {
+        if (searchQuery.length > 1) {
             self.setState({ isFetchingData: true });
-            fetch(`http://localhost:7676/api/v1/match?substring=${substring}`, {
-                method: "GET",
-                headers: new Headers({
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                }),
-            })
+            fetch(
+                `http://localhost:7676/api/v1/match?substring=${searchQuery}`,
+                {
+                    method: "GET",
+                    headers: new Headers({
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    }),
+                },
+            )
                 .then(handleFetchError)
-                .then((response) => response.json())
-                .then((result) => {
+                .then(response => response.json())
+                .then(result => {
                     if (result) {
                         const disabledOptions = self.disableOptions(
                             self.state.options,
@@ -78,7 +81,7 @@ class AutoCompleteDropdown extends Component {
                         });
                     }
                 })
-                .catch((error) => {
+                .catch(error => {
                     // @TODO Show error message
                     console.error(error);
                     self.setState({ isFetchingData: false });
@@ -89,8 +92,8 @@ class AutoCompleteDropdown extends Component {
     onQueryChange(event, data) {
         const self = this;
         const newQuery = data.value;
-        const res = self.state.options.filter((d) =>
-            newQuery.some((v) => v === d.text),
+        const res = self.state.options.filter(d =>
+            newQuery.some(v => v === d.text),
         );
 
         self.setState({
@@ -126,15 +129,15 @@ class AutoCompleteDropdown extends Component {
         );
     }
 }
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         query: state.searchQuery,
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
+const mapDispatchToProps = dispatch => {
     return {
-        updateSearchQuery: (query) => {
+        updateSearchQuery: query => {
             dispatch(updateSearchQuery(query));
         },
     };
