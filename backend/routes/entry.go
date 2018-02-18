@@ -3,7 +3,9 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
+	"varys/backend/storage/cache"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
 
@@ -14,8 +16,8 @@ func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
-		var newEntry rdbms.Entry
-		err := bodyDecoder.Decode(&newEntry)
+		var entry rdbms.Entry
+		err := bodyDecoder.Decode(&entry)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
@@ -27,16 +29,32 @@ func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 			return
 		}
 
-		if newEntry.ID > 0 {
-			if err = updateEntry(db, newEntry); err != nil {
+		// @TODO Below code is insufficient. We also need to check if the ID exists in the Database
+		if entry.ID > 0 {
+			if err = updateEntry(db, entry); err != nil {
 				http.Error(res, err.Error(), 500)
 				return
 			}
+			cache.DeleteCachedEntries(func(cachedEntries []rdbms.Entry, key string, index int) bool {
+				return cachedEntries[index].ID == entry.ID
+			})
 		} else {
-			if err = insertEntry(db, newEntry); err != nil {
+			if err = insertEntry(db, entry); err != nil {
 				http.Error(res, err.Error(), 500)
 				return
 			}
+			cache.DeleteCachedEntries(func(cachedEntries []rdbms.Entry, key string, index int) bool {
+				entryTxUtils := rdbms.CreateEntryTxUtils(db)
+				matchedEntries, err := entryTxUtils.GetMatchedEntries(key)
+				if err != nil {
+					http.Error(res, err.Error(), 500)
+					return false
+				}
+				numOfEntries := len(matchedEntries)
+				numOfCachedEntries := len(cachedEntries)
+
+				return numOfEntries != numOfCachedEntries
+			})
 		}
 
 		res.WriteHeader(200)
@@ -47,8 +65,8 @@ func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWrit
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
-		var targetEntry rdbms.Entry
-		err := bodyDecoder.Decode(&targetEntry)
+		var entry rdbms.Entry
+		err := bodyDecoder.Decode(&entry)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
@@ -60,61 +78,77 @@ func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWrit
 			return
 		}
 
-		tx, err := db.Begin()
-		defer tx.Commit()
+		err = deleteEntry(db, entry, claims)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
-			return
-		}
-
-		stmt, err := tx.Prepare(`
-            WITH deletedRow AS (
-                DELETE FROM Entries
-                WHERE id = $1
-                RETURNING *
-            )
-            SELECT author
-            FROM deletedRow;
-        `)
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
-		defer stmt.Close()
-
-		row, err := stmt.Query(targetEntry.ID)
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
-
-		row.Next()
-		var entryAuthor string
-		if err = row.Scan(&entryAuthor); err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
-		row.Close()
-
-		if claims["username"] != entryAuthor && claims["role"] != "admin" {
-			tx.Rollback()
-			http.Error(res, err.Error(), 401)
-			return
-		}
-
-		tagIDs := []int{0}
-		entryTxUtils := rdbms.CreateEntryTxUtils(db)
-		err = entryTxUtils.CleanupStaleTags(tx, targetEntry, tagIDs)
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
 		}
 
 		res.WriteHeader(200)
 	}
 }
 
-func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
+func deleteEntry(db *sql.DB, entry rdbms.Entry, claims map[string]interface{}) error {
+	tx, err := db.Begin()
+	defer tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	entryTxUtils := rdbms.CreateEntryTxUtils(db)
+	entryWords, err := entryTxUtils.GetEntryWords(tx, entry.ID)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare(`
+		WITH deletedRow AS (
+			DELETE FROM Entries
+			WHERE id = $1
+			RETURNING *
+		)
+		SELECT author
+		FROM deletedRow;
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	row, err := stmt.Query(entry.ID)
+	if err != nil {
+		return err
+	}
+
+	row.Next()
+	var entryAuthor string
+	if err = row.Scan(&entryAuthor); err != nil {
+		return err
+	}
+	row.Close()
+
+	if claims["username"] != entryAuthor && claims["role"] != "admin" {
+		tx.Rollback()
+		return errors.New("Unauthorized action for user: " + claims["username"].(string) + " with role: " + claims["role"].(string))
+	}
+
+	tagIDs := []int{0}
+	err = entryTxUtils.CleanupStaleTags(tx, entry, tagIDs)
+	if err != nil {
+		return err
+	}
+	cache.DeleteCachedEntries(func(cachedEntries []rdbms.Entry, key string, index int) bool {
+		return cachedEntries[index].ID == entry.ID
+	})
+
+	if err = entryTxUtils.CleanStaleWords(tx, -1, entryWords); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return err
+}
+
+func insertEntry(db *sql.DB, entry rdbms.Entry) error {
 	entryTxUtils := rdbms.CreateEntryTxUtils(db)
 
 	tx, err := db.Begin()
@@ -123,12 +157,12 @@ func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
 		return err
 	}
 
-	entryID, err := entryTxUtils.AddEntry(tx, newEntry)
+	entryID, err := entryTxUtils.AddEntry(tx, entry)
 	if err != nil || entryID == 0 {
 		tx.Rollback()
 		return err
 	}
-	tagIDs, err := entryTxUtils.AddTags(tx, newEntry.Tags)
+	tagIDs, err := entryTxUtils.AddTags(tx, entry.Tags)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -152,7 +186,7 @@ func insertEntry(db *sql.DB, newEntry rdbms.Entry) error {
 	return err
 }
 
-func updateEntry(db *sql.DB, newEntry rdbms.Entry) error {
+func updateEntry(db *sql.DB, entry rdbms.Entry) error {
 	entryTxUtils := rdbms.CreateEntryTxUtils(db)
 
 	tx, err := db.Begin()
@@ -161,37 +195,37 @@ func updateEntry(db *sql.DB, newEntry rdbms.Entry) error {
 		return err
 	}
 
-	registeredEntryWords, err := entryTxUtils.GetEntryWords(tx, newEntry.ID)
+	registeredEntryWords, err := entryTxUtils.GetEntryWords(tx, entry.ID)
 	if err != nil {
 		return err
 	}
 
-	if err = entryTxUtils.UpdateEntry(tx, newEntry); err != nil {
+	if err = entryTxUtils.UpdateEntry(tx, entry); err != nil {
 		tx.Rollback()
 		return err
 	}
-	tagIDs, err := entryTxUtils.UpdateTags(tx, newEntry)
+	tagIDs, err := entryTxUtils.UpdateTags(tx, entry)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.MapEntryToTags(tx, newEntry.ID, tagIDs); err != nil {
+	if err = entryTxUtils.MapEntryToTags(tx, entry.ID, tagIDs); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.UpdateEntryTSV(tx, newEntry.ID); err != nil {
+	if err = entryTxUtils.UpdateEntryTSV(tx, entry.ID); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.UpdateWordPool(tx, newEntry.ID); err != nil {
+	if err = entryTxUtils.UpdateWordPool(tx, entry.ID); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.CleanStaleWords(tx, newEntry.ID, registeredEntryWords); err != nil {
+	if err = entryTxUtils.CleanStaleWords(tx, entry.ID, registeredEntryWords); err != nil {
 		tx.Rollback()
 		return err
 	}
