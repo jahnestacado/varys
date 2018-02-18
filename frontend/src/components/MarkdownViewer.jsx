@@ -1,15 +1,19 @@
 import React from "react";
 import showdown from "showdown";
-import "./MarkdownViewer.css";
 const converter = new showdown.Converter();
+import { Container } from "semantic-ui-react";
+const style = {
+    fontSize: 14,
+};
 
-const MarkdownViewer = ({entry}) => {
+const MarkdownViewer = ({ entry, noTitle }) => {
     const { title, body } = entry;
-    const generatedHtml = converter.makeHtml(`# ${title} \n${body}`);
+    const content = noTitle ? body : `# ${title} \n${body}`;
+    const generatedHtml = converter.makeHtml(content);
     return (
-        <div className="MarkdownViewer">
-            <div dangerouslySetInnerHTML={{__html: generatedHtml}} />
-        </div>
+        <Container className="MarkdownViewer" text style={style}>
+            <div dangerouslySetInnerHTML={{ __html: generatedHtml }} />
+        </Container>
     );
 };
 

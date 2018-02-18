@@ -1,11 +1,10 @@
 import React, { Component } from "react";
-import ReactModal from "react-modal";
 import MarkdownViewer from "./MarkdownViewer.jsx";
 import EntryForm from "./EntryForm.jsx";
 import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
-import { Card, Image, Dropdown } from "semantic-ui-react";
+import { Card, Image, Dropdown, Modal, Header } from "semantic-ui-react";
 
 class ResultListItem extends Component {
     constructor(props) {
@@ -28,9 +27,8 @@ class ResultListItem extends Component {
 
     render() {
         const self = this;
-        const { openModal, closeModal } = self;
-        const { entry } = self.state;
-
+        const { openModal, closeModal, state } = self;
+        const { entry } = self.props;
         return (
             <Card className="ResultListItem" fluid centered onClick={openModal}>
                 <Card.Content>
@@ -41,13 +39,13 @@ class ResultListItem extends Component {
                             icon="ellipsis vertical"
                         >
                             <Dropdown.Menu>
-                                <EntryForm entry={self.props.entry} />
-                                <DeleteEntry entry={self.props.entry} />
+                                <EntryForm entry={entry} />
+                                <DeleteEntry entry={entry} />
                             </Dropdown.Menu>
                         </Dropdown>
                     </Card.Meta>
-                    <Card.Header className="ResultListItem-title" title={self.props.entry.title}>
-                        {self.props.entry.title}
+                    <Card.Header className="ResultListItem-title" title={entry.title}>
+                        {entry.title}
                     </Card.Header>
                     <Image
                         className="ResultListItem-avatar"
@@ -58,18 +56,19 @@ class ResultListItem extends Component {
                         src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
                     />
                 </Card.Content>
-                <ReactModal
-                    isOpen={this.state.showModal}
-                    contentLabel={entry.title}
-                    shouldCloseOnOverlayClick={true}
-                    onRequestClose={closeModal}
+                <Modal
+                    open={state.showModal}
+                    className="EntryForm-modal"
+                    closeIcon
+                    size="large"
+                    onClose={closeModal}
                 >
-                    <MarkdownViewer entry={self.props.entry} />
-
-                    <button className="ResultListItem-btn-close" onClick={closeModal}>
-                        x
-                    </button>
-                </ReactModal>
+                    {" "}
+                    <Header icon="file text outline" content={entry.title} />
+                    <Modal.Content scrolling>
+                        <MarkdownViewer entry={entry} noTitle />
+                    </Modal.Content>
+                </Modal>
             </Card>
         );
     }
