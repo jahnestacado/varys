@@ -18,8 +18,8 @@ func GetCachedEntries(key string) (CachedSearchResult, bool) {
 }
 
 func SetCachedEntries(key string, entries []rdbms.Entry) {
-	// cachedResult := CachedSearchResult{entries, time.Now()}
-	// cache[key] = cachedResult
+	cachedResult := CachedSearchResult{entries, time.Now()}
+	cache[key] = cachedResult
 }
 
 func DeleteCachedEntries(shouldDelete func([]rdbms.Entry, string, int) bool) {
