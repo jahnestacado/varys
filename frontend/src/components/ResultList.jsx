@@ -11,15 +11,13 @@ class ResultList extends Component {
         const { entries } = props;
         const numOfEmptyColumns = numOfColsPerRow - 1;
 
-        const listItems = entries
-            .concat(new Array(numOfEmptyColumns).fill(null))
-            .map((entry) => {
-                let htmlEntry = "";
-                if (entry) {
-                    htmlEntry = <ResultListItem entry={entry} key={entry.id} />;
-                }
-                return htmlEntry;
-            });
+        const listItems = entries.concat(new Array(numOfEmptyColumns).fill(null)).map((entry) => {
+            let htmlEntry = "";
+            if (entry) {
+                htmlEntry = <ResultListItem entry={entry} key={entry.id} />;
+            }
+            return htmlEntry;
+        });
 
         return (
             <Grid centered className="ResultList-grid">

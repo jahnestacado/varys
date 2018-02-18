@@ -5,7 +5,7 @@ import EntryForm from "./EntryForm.jsx";
 import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
-import { Card, Label } from "semantic-ui-react";
+import { Card, Image, Dropdown } from "semantic-ui-react";
 
 class ResultListItem extends Component {
     constructor(props) {
@@ -30,37 +30,33 @@ class ResultListItem extends Component {
         const self = this;
         const { openModal, closeModal } = self;
         const { entry } = self.state;
-        const keywordLabels = entry.tags.map((keyword, i) => {
-            return (
-                <Label
-                    key={i}
-                    color="teal"
-                    size="tiny"
-                    className="ResultListItem-label"
-                >
-                    {keyword}
-                </Label>
-            );
-        });
 
         return (
             <Card className="ResultListItem" fluid centered onClick={openModal}>
                 <Card.Content>
                     <Card.Meta>
-                        <div className="ResultListItem-btn-panel">
-                            <EntryForm entry={self.props.entry} />
-                            <DeleteEntry entry={self.props.entry} />
-                        </div>
+                        <Dropdown
+                            className="ResultListItem-btn-panel"
+                            item
+                            icon="ellipsis vertical"
+                        >
+                            <Dropdown.Menu>
+                                <EntryForm entry={self.props.entry} />
+                                <DeleteEntry entry={self.props.entry} />
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </Card.Meta>
-                    <Card.Header className="ResultListItem-title">
+                    <Card.Header className="ResultListItem-title" title={self.props.entry.title}>
                         {self.props.entry.title}
                     </Card.Header>
-                    <Card.Description className="ResultListItem-description">
-                        {`${entry.body.substring(0, 140)}...`}
-                    </Card.Description>
-                </Card.Content>
-                <Card.Content extra className="ResultListItem-label-panel">
-                    {keywordLabels}
+                    <Image
+                        className="ResultListItem-avatar"
+                        bordered
+                        rounded
+                        floated="right"
+                        size="mini"
+                        src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
+                    />
                 </Card.Content>
                 <ReactModal
                     isOpen={this.state.showModal}
@@ -70,10 +66,7 @@ class ResultListItem extends Component {
                 >
                     <MarkdownViewer entry={self.props.entry} />
 
-                    <button
-                        className="ResultListItem-btn-close"
-                        onClick={closeModal}
-                    >
+                    <button className="ResultListItem-btn-close" onClick={closeModal}>
                         x
                     </button>
                 </ReactModal>

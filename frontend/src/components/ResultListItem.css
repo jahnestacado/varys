@@ -7,42 +7,43 @@
 
 .ResultListItem {
     text-transform: capitalize;
-    height: 140px;
-    font-size: 12px;
+    height: 50px;
+    font-size: 10px;
     z-index: 0 !important;
 }
 
 .ResultListItem-title {
-    text-decoration: underline;
-    font-size: 15px;
-    float: left;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    white-space: nowrap;
+    -webkit-box-orient: vertical;
+
+    width: 80%;
+    top: 50%;
+    left: 42%;
+    transform: translate(-50%, -50%);
+    position: absolute;
 }
 
-.ResultListItem-description {
-    font-size: 12px;
-    text-align: left;
-}
-
-.ResultListItem-label {
-    margin-right: 2px;
-    float: left;
-    background-color: #333;
+.ResultListItem-avatar {
+    margin-left: 15px;
+    width: 30px !important;
+    height: 30px !important;
+    right: 10px;
 }
 
 .ResultListItem-btn-panel {
-    position: absolute;
+    position: absolute !important;
+    float: right;
     top: 5px;
-    right: 5px;
-    display: inline-flex;
+    font-size: 14px !important;
+    right: 0px;
+    padding: 0;
 }
 
-.ResultListItem-label-panel {
-}
-
-.ResultListItem .EntryForm {
-    margin: 5px;
-}
-
+.ResultListItem .EntryForm,
 .ResultListItem .DeleteEntry {
     margin: 5px;
 }
