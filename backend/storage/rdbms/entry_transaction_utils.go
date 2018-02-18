@@ -470,14 +470,17 @@ func (e *entryTxUtils) GetEntryWords(tx *sql.Tx, entryID int) ([]EntryWord, erro
 }
 
 func (e *entryTxUtils) CleanStaleWords(tx *sql.Tx, entryID int, registeredWords []EntryWord) error {
-	newWords, err := e.GetWords(tx, entryID)
-	if err != nil {
-		return err
-	}
-	var staleEntryWords []EntryWord
-	for _, entryWord := range registeredWords {
-		if isReferencedWord, _ := utils.Contains(newWords, entryWord.Word); !isReferencedWord {
-			staleEntryWords = append(staleEntryWords, entryWord)
+	staleEntryWords := registeredWords
+	var err error
+	if entryID > 0 {
+		newWords, err := e.GetWords(tx, entryID)
+		if err != nil {
+			return err
+		}
+		for _, entryWord := range registeredWords {
+			if isReferencedWord, _ := utils.Contains(newWords, entryWord.Word); !isReferencedWord {
+				staleEntryWords = append(staleEntryWords, entryWord)
+			}
 		}
 	}
 	numOfStaleWords := len(staleEntryWords)
