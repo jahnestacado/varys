@@ -17,8 +17,14 @@ class App extends Component {
         self.state = {
             activePage: 0,
             limit: 15,
+            searchQuery: [],
         };
-        bindToComponent(self, ["handlePaginationSelect", "requestSearch", "refreshSearchResults"]);
+        bindToComponent(self, [
+            "handlePaginationSelect",
+            "requestSearch",
+            "refreshSearchResults",
+            "onQueryChange",
+        ]);
     }
 
     componentWillMount() {
@@ -44,9 +50,9 @@ class App extends Component {
         });
     }
 
-    requestSearch(props) {
+    requestSearch(searchQuery) {
         const self = this;
-        const { setEntries, searchQuery } = props;
+        const { setEntries } = self.props;
         const query = self.convertQuery(searchQuery);
         if (query) {
             const url = `http://localhost:7676/api/v1/search?query=${query}`;
@@ -80,19 +86,24 @@ class App extends Component {
 
     refreshSearchResults() {
         const self = this;
-        self.requestSearch(self.props);
+        self.requestSearch(self.state.searchQuery);
     }
 
-    componentWillReceiveProps(nextProps) {
+    componentWillUpdate(newProps, newState) {
         const self = this;
-        if (self.props.searchQuery !== nextProps.searchQuery) {
-            self.requestSearch(nextProps);
+        if (self.state.searchQuery !== newState.searchQuery) {
+            self.requestSearch(newState.searchQuery);
         }
+    }
+
+    onQueryChange(newQuery) {
+        const self = this;
+        self.setState({ searchQuery: newQuery });
     }
 
     render() {
         const self = this;
-        const { handlePaginationSelect, refreshSearchResults, state } = self;
+        const { handlePaginationSelect, refreshSearchResults, state, onQueryChange } = self;
         const { activePage, limit } = state;
         const { entries } = self.props.results;
         const totalPages = Math.ceil(entries.length / self.state.limit);
@@ -117,7 +128,7 @@ class App extends Component {
                     <Header.Content>Varys</Header.Content>
                 </Header>
                 <div className="dropdown-container">
-                    <AutoCompleteDropdown />
+                    <AutoCompleteDropdown onSelectionChange={onQueryChange} fluid />
                 </div>
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
 
@@ -146,7 +157,6 @@ const mapStateToProps = (state) => {
     return {
         results: state.results,
         auth: state.auth,
-        searchQuery: state.searchQuery,
     };
 };
 
