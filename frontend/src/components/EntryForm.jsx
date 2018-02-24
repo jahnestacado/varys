@@ -5,7 +5,7 @@ import "./EntryForm.css";
 import { connect } from "react-redux";
 import { updateEntry } from "./../actions/entryActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
-import { Modal, Icon, Form, Input, Button, Label } from "semantic-ui-react";
+import { Modal, Icon, Form, Input, Button } from "semantic-ui-react";
 import AutoCompleteDropdown from "./AutoCompleteDropdown";
 
 const initializeEntry = ({ username }) => {
