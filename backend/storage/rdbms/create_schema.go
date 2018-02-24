@@ -43,7 +43,8 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
             title varchar(254) NOT NULL,
             body text,
             author varchar(80) NOT NULL,
-            timestamp timestamp DEFAULT current_timestamp,
+            created_timestamp timestamp DEFAULT current_timestamp,
+            updated_timestamp timestam DEFAULT current_timestamp,
             tsv tsvector
         )
     `

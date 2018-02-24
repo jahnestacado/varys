@@ -63,7 +63,7 @@ func (e *entryTxUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
 func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
 	stmt, err := tx.Prepare(`
         UPDATE Entries
-        SET title = $2, body = $3, author = $4
+        SET title = $2, body = $3, author = $4, updated_timestamp = now()
         WHERE id = $1
     `)
 	defer stmt.Close()
