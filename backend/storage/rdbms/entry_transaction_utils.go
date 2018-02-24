@@ -10,11 +10,13 @@ import (
 )
 
 type Entry struct {
-	ID     int      `json:"id"`
-	Title  string   `json:"title"`
-	Body   string   `json:"body"`
-	Tags   []string `json:"tags"`
-	Author string   `json:"author"`
+	ID      int      `json:"id"`
+	Title   string   `json:"title"`
+	Body    string   `json:"body"`
+	Tags    []string `json:"tags"`
+	Author  string   `json:"author"`
+	Created string   `json:"created"`
+	Updated string   `json:"updated"`
 }
 
 type Tag struct {
@@ -180,7 +182,7 @@ func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) e
 func (e *entryTxUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	var entries []Entry
 	stmt, err := e.DB.Prepare(`
-        SELECT id, title, body, author, ts_rank(tsv, to_tsquery('varys_fts', $1)) as rank
+        SELECT id, title, body, author, created_timestamp, updated_timestamp, ts_rank(tsv, to_tsquery('varys_fts', $1)) as rank
         FROM Entries
         WHERE tsv @@ to_tsquery('varys_fts', $1)
         ORDER BY rank DESC;
@@ -199,7 +201,7 @@ func (e *entryTxUtils) GetMatchedEntries(query string) ([]Entry, error) {
 	for rows.Next() {
 		var entry Entry
 		var dummy string
-		err = rows.Scan(&entry.ID, &entry.Title, &entry.Body, &entry.Author, &dummy)
+		err = rows.Scan(&entry.ID, &entry.Title, &entry.Body, &entry.Author, &entry.Created, &entry.Updated, &dummy)
 		tags, err := e.GetTags(entry.ID)
 		if err != nil {
 			return nil, err
