@@ -2,11 +2,11 @@
     position: absolute;
     height: 85%;
     background-color: black;
-    font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+    font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace;
     -webkit-font-smoothing: antialiased !important;
     color: #ffcc00;
     width: 50%;
-    left:0;
+    left: 0;
     top: 50px;
     line-height: 1.5;
     cursor: text;
@@ -18,10 +18,14 @@
 .MarkdownEditor-output-area {
     position: absolute;
     height: 85%;
-    width: 50%;
+    width: 50% !important;
     right: 0;
     overflow: auto;
     top: 50px;
     padding: 20px 10px 20px 10px;
     border: 1px solid rgb(242, 242, 242);
+}
+
+.MarkdownEditor-output-area div {
+    width: 100% !important;
 }

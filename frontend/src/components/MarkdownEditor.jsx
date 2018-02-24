@@ -2,9 +2,10 @@ import React, { Component } from "react";
 import showdown from "showdown";
 import "./MarkdownEditor.css";
 import bindToComponent from "./../utils/bindToComponent.js";
+import { TextArea, Container } from "semantic-ui-react";
 
 class MarkdownEditor extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         const self = this;
         const { body, id } = props.entry;
@@ -18,20 +19,20 @@ class MarkdownEditor extends Component {
         bindToComponent(self, ["onMarkdownChanged"]);
     }
 
-    componentDidUpdate(){
+    componentDidUpdate() {
         const self = this;
         const { markdownInput, markdownWithTitle } = self.state;
-        if(!markdownWithTitle.startsWith(self.getMarkdownTitleField())){
+        if (!markdownWithTitle.startsWith(self.getMarkdownTitleField())) {
             self.renderMarkdown(markdownInput);
         }
     }
 
-    getMarkdownTitleField(){
+    getMarkdownTitleField() {
         const { title } = this.props.entry;
         return `# ${title} \n`;
     }
 
-    renderMarkdown(markdownInput = ""){
+    renderMarkdown(markdownInput = "") {
         const self = this;
         const { title } = self.props.entry;
         const markdownWithTitle = `# ${title} \n${markdownInput}`;
@@ -57,8 +58,14 @@ class MarkdownEditor extends Component {
         const { markdownInput, generatedHtml } = self.state;
         return (
             <div>
-                <textarea value={markdownInput} className="MarkdownEditor-input-area" onChange={self.onMarkdownChanged} />
-                <div className="MarkdownEditor-output-area" dangerouslySetInnerHTML={{__html: generatedHtml}} />
+                <TextArea
+                    value={markdownInput}
+                    className="MarkdownEditor-input-area"
+                    onChange={self.onMarkdownChanged}
+                />
+                <Container text className="MarkdownEditor-output-area">
+                    <div dangerouslySetInnerHTML={{ __html: generatedHtml }} />
+                </Container>
             </div>
         );
     }

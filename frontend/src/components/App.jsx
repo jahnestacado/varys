@@ -128,11 +128,15 @@ class App extends Component {
                     <Header.Content>Varys</Header.Content>
                 </Header>
                 <div className="dropdown-container">
-                    <AutoCompleteDropdown onSelectionChange={onQueryChange} fluid />
+                    <AutoCompleteDropdown
+                        onSelectionChange={onQueryChange}
+                        placeholder={"Search..."}
+                        fluid
+                    />
                 </div>
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
 
-                <EntryForm onSubmit={refreshSearchResults} />
+                <EntryForm onSubmit={refreshSearchResults} type="add" />
 
                 {entries.length ? (
                     <Pagination

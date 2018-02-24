@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import ReactModal from "react-modal";
 import MarkdownEditor from "./MarkdownEditor.jsx";
-import { Button, Glyphicon, ControlLabel, FormControl, FormGroup, Form } from "react-bootstrap";
 import bindToComponent from "./../utils/bindToComponent.js";
 import "./EntryForm.css";
 import { connect } from "react-redux";
 import { updateEntry } from "./../actions/entryActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
+import { Modal, Icon, Form, Input, Button, Label } from "semantic-ui-react";
+import AutoCompleteDropdown from "./AutoCompleteDropdown";
 
 const initializeEntry = ({ username }) => {
     return {
@@ -19,134 +19,134 @@ const initializeEntry = ({ username }) => {
 };
 
 class EntryForm extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         const self = this;
         const entry = props.entry || initializeEntry(self.props.auth);
         this.state = {
             showModal: false,
             entry,
-            glyph: props.entry ? "pencil" : "plus-sign",
         };
 
         bindToComponent(self, [
             "openModal",
             "closeModal",
             "submit",
-            "updateKeywords",
             "updateBody",
             "updateTitle",
             "setState",
+            "updateTags",
         ]);
     }
 
-    openModal(event){
+    openModal(event) {
         const self = this;
         event && event.stopPropagation();
-        self.setState({showModal: true});
+        self.setState({ showModal: true });
     }
 
-    closeModal(event){
+    closeModal() {
         const self = this;
-        event && event.stopPropagation();
-        self.setState({showModal: false});
+        self.setState({ showModal: false });
+        self.tags = [];
     }
 
-    submit(){
+    submit() {
         const self = this;
         const { setState, closeModal, state } = self;
+        const { type } = self.props;
         const url = "http://localhost:7676/api/v1/entry";
         fetch(url, {
             method: "PUT",
             body: JSON.stringify(state.entry),
             headers: new Headers({
-                "Accept": "application/json",
+                Accept: "application/json",
                 "Content-Type": "application/json",
-                "JWT": self.props.auth.token,
+                JWT: self.props.auth.token,
             }),
         })
-        .then(handleFetchError)
-        .then(() => {
-            if (state.id  !== -1) {
-                self.props.updateEntry(state.entry);
-            }
-            setState({
-                entry: initializeEntry(self.props.auth),
-            });
-            closeModal();
-        })
-        .catch(console.log);
+            .then(handleFetchError)
+            .then(() => {
+                if (state.id !== -1) {
+                    self.props.updateEntry(state.entry);
+                }
+
+                if (type === "add") {
+                    setState({
+                        entry: initializeEntry(self.props.auth),
+                    });
+                }
+                closeModal();
+            })
+            .catch(console.log);
     }
 
-    updateBody(body){
+    updateBody(body) {
         const self = this;
         self.setState({
-            entry: {...this.state.entry, body},
+            entry: { ...this.state.entry, body },
         });
     }
 
-    updateTitle(event){
+    updateTitle(event) {
         const self = this;
         const title = event.target.value;
         self.setState({
-            entry: {...self.state.entry, title},
+            entry: { ...self.state.entry, title },
         });
     }
 
-    updateKeywords(event){
+    updateTags(tags) {
         const self = this;
-        const tagsText = event.target.value;
-        const tags = tagsText.split(",").map((keyword) => keyword.trim());
         self.setState({
-            entry: {...self.state.entry, tags},
+            entry: { ...self.state.entry, tags },
         });
     }
 
     render() {
         const self = this;
-        const {
-            openModal,
-            closeModal,
-            updateTitle,
-            updateBody,
-            updateKeywords,
-            submit,
-        } = self;
-        const { entry, showModal, glyph } = this.state;
+        const { openModal, closeModal, updateTitle, updateBody, submit, updateTags, state } = self;
+        const { entry, showModal } = state;
         const { title, tags } = entry;
         return (
             <Form className="EntryForm">
-                <div className="EntryForm-btn-open" onClick={openModal} >
-                    <Glyphicon glyph={glyph}></Glyphicon>
+                <div className="EntryForm-btn-open" onClick={openModal}>
+                    <Icon name="add square" />
                 </div>
-                <ReactModal
-                    isOpen={showModal}
-                    contentLabel={title}
-                    shouldCloseOnOverlayClick={true}
-                    onRequestClose={closeModal}
+                <Modal
+                    open={showModal}
+                    className="EntryForm-modal"
+                    closeIcon
+                    size="fullscreen"
+                    onClose={closeModal}
                 >
-                    <Form className="EntryForm-title" inline>
-                        <FormGroup controlId="formInlineName">
-                        <ControlLabel>Title</ControlLabel>
-                        {" "}
-                        <FormControl placeholder="Set a title.." value={title} onChange={updateTitle} />
-                        </FormGroup>
+                    <Form>
+                        <Form.Group className="EntryForm-header">
+                            <Form.Field
+                                placeholder="Set a title.."
+                                control={Input}
+                                onChange={updateTitle}
+                                value={title}
+                                className="EntryForm-title"
+                            />
+                        </Form.Group>
                     </Form>
-                    <MarkdownEditor entry={entry} updateBody={updateBody}/>
-                    <Button className="EntryForm-btn-close" onClick={closeModal} >
-                        x
-                    </Button>
-                    <Button className="EntryForm-btn-submit btn btn-success" onClick={submit} >
-                        Save
-                    </Button>
-                    <Form className="EntryForm-tags" inline>
-                        <FormGroup controlId="formInlineName">
-                        <ControlLabel>Keywords</ControlLabel>
-                        {" "}
-                        <FormControl value={tags} onChange={updateKeywords} />
-                        </FormGroup>
-                    </Form>
-                </ReactModal>
+                    <MarkdownEditor entry={entry} updateBody={updateBody} />
+                    <Form.Group className="EntryForm-footer" widths="10">
+                        <Button className="EntryForm-btn-submit" color="green" onClick={submit}>
+                            Save
+                        </Button>
+                        <AutoCompleteDropdown
+                            type="tag"
+                            allowAdditions
+                            upward
+                            multiple
+                            onSelectionChange={updateTags}
+                            value={tags}
+                            placeholder={"Select tag..."}
+                        />
+                    </Form.Group>
+                </Modal>
             </Form>
         );
     }

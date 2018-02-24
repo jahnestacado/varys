@@ -2,23 +2,24 @@ import React, { Component } from "react";
 import { Dropdown } from "semantic-ui-react";
 import bindToComponent from "./../utils/bindToComponent.js";
 import handleFetchError from "./../utils/handleFetchError.js";
-import { connect } from "react-redux";
-import { updateSearchQuery } from "./../actions/searchQueryActions.js";
 
 class AutoCompleteDropdown extends Component {
     constructor(props) {
         super(props);
         const self = this;
-        self.state = {
-            options: [],
-            isDropdownOpen: false,
-            isFetchingData: false,
-        };
         bindToComponent(self, [
             "onQueryChange",
             "onSearchChange",
             "filterSearch",
+            "onItemAddition",
         ]);
+        const value = self.props.value;
+        self.state = {
+            options: value ? value.map((c, i) => self.createDropdownItem(c, i)) : [],
+            isDropdownOpen: false,
+            isFetchingData: false,
+            value: value || [],
+        };
     }
 
     filterSearch(options) {
@@ -26,7 +27,7 @@ class AutoCompleteDropdown extends Component {
         * dropdown query if new options are set we mark the 'old'
         * as disabled and then we filter this items out when we display the dropdown list
         */
-        return options.filter(o => !o.disabled);
+        return options.filter((o) => !o.disabled);
     }
 
     disableOptions(oldOptions) {
@@ -34,7 +35,7 @@ class AutoCompleteDropdown extends Component {
         * dropdown query if new options are set we mark the 'old'
         * as disabled and then we filter this items out when we display the dropdown list
         */
-        const disabledOptions = oldOptions.map(o => {
+        const disabledOptions = oldOptions.map((o) => {
             o.disabled = true;
             return o;
         });
@@ -46,42 +47,37 @@ class AutoCompleteDropdown extends Component {
         if (searchQuery.length > 1) {
             self.setState({ isFetchingData: true });
             fetch(
-                `http://localhost:7676/api/v1/match?substring=${searchQuery}`,
+                `http://localhost:7676/api/v1/match?substring=${searchQuery}&type=${
+                    self.props.type
+                }`,
                 {
                     method: "GET",
                     headers: new Headers({
                         Accept: "application/json",
                         "Content-Type": "application/json",
                     }),
-                },
+                }
             )
                 .then(handleFetchError)
-                .then(response => response.json())
-                .then(result => {
-                    if (result) {
-                        const disabledOptions = self.disableOptions(
-                            self.state.options,
-                        );
+                .then((response) => response.json())
+                .then((result) => {
+                    if (result && result.length) {
+                        const disabledOptions = self.disableOptions(self.state.options);
                         self.setState({
                             options: result
-                                .map((value, i) => {
-                                    return {
-                                        key: `${Date.now()}${value}${i}`,
-                                        text: value,
-                                        value: value,
-                                        /* Hack in order to force cleanup of
-                                        *  input field  after item selection
-                                        */
-                                        "data-additional": true,
-                                    };
-                                })
+                                .map((value, i) => self.createDropdownItem(value, i))
                                 .concat(disabledOptions),
                             isDropdownOpen: true,
                             isFetchingData: false,
                         });
+                    } else {
+                        self.setState({
+                            isFetchingData: false,
+                            isDropdownOpen: true,
+                        });
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     // @TODO Show error message
                     console.error(error);
                     self.setState({ isFetchingData: false });
@@ -91,58 +87,75 @@ class AutoCompleteDropdown extends Component {
 
     onQueryChange(event, data) {
         const self = this;
-        const newQuery = data.value;
-        const res = self.state.options.filter(d =>
-            newQuery.some(v => v === d.text),
-        );
+        const newQuery = [].concat(data.value);
+        const res = self.state.options.filter((d) => newQuery.some((v) => v === d.text));
 
         self.setState({
             options: res,
             isDropdownOpen: false,
+            value: newQuery,
         });
 
-        self.props.updateSearchQuery(newQuery);
+        self.props.onSelectionChange && self.props.onSelectionChange(newQuery);
+    }
+
+    onItemAddition(event, data) {
+        const self = this;
+        const { options } = self.state;
+        const newItem = data.value;
+        const newOptions = options.concat(
+            self.state.value.concat(newItem).map((c, i) => self.createDropdownItem(newItem, i))
+        );
+
+        self.setState({
+            options: newOptions,
+            isDropdownOpen: false,
+            value: self.state.value.concat(newItem),
+        });
+    }
+
+    createDropdownItem(itemName) {
+        const dropdownItem = {
+            key: `${Date.now()}${itemName}`,
+            text: itemName,
+            value: itemName,
+            /* Hack in order to force cleanup of
+        *  input field  after item selection
+        */
+            "data-additional": true,
+        };
+
+        return dropdownItem;
     }
 
     render() {
         const self = this;
-        const { onSearchChange, onQueryChange, filterSearch } = self;
-        const { options, isDropdownOpen, isFetchingData } = self.state;
+        const { onSearchChange, onQueryChange, onItemAddition, filterSearch, props, state } = self;
+        const { options, isDropdownOpen, isFetchingData, value } = state;
+        const { upward, placeholder, allowAdditions, fluid } = props;
+
         return (
             <Dropdown
-                multiple={true}
-                fluid
+                fluid={fluid}
                 selection
+                multiple
                 onSearchChange={onSearchChange}
                 onChange={onQueryChange}
                 options={options}
-                value={self.props.query}
+                value={value}
                 minCharacters={2}
                 open={isDropdownOpen}
                 search={filterSearch}
                 closeOnChange={true}
-                onAddItem={() => true}
-                placeholder={"Search..."}
+                placeholder={placeholder}
                 loading={isFetchingData}
                 disabled={isFetchingData}
+                upward={upward}
+                allowAdditions={allowAdditions}
+                onAddItem={onItemAddition}
             />
         );
     }
 }
-const mapStateToProps = state => {
-    return {
-        query: state.searchQuery,
-    };
-};
 
-const mapDispatchToProps = dispatch => {
-    return {
-        updateSearchQuery: query => {
-            dispatch(updateSearchQuery(query));
-        },
-    };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(
-    AutoCompleteDropdown,
-);
+export default AutoCompleteDropdown;

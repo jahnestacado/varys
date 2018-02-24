@@ -1,10 +1,3 @@
-.EntryForm-btn-close {
-    position: fixed;
-    top: 0;
-    right: 0;
-    margin: 10px;
-}
-
 .EntryForm-btn-submit {
     position: absolute;
     bottom: 0;
@@ -24,22 +17,39 @@
 .EntryForm-btn-open .glyphicon-pencil:hover {
     font-size: 14px;
     opacity: 1;
+    float: right;
+}
+
+.EntryForm-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 10px;
+}
+
+.EntryForm-header {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    padding: 10px;
 }
 
 .EntryForm-tags {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    margin: 10px;
+    float: left;
 }
 
 .EntryForm-tags input {
-    min-width: 556px;
+    /*min-width: 500px;*/
 }
 
 .EntryForm-title {
-    position: absolute;
+    width: 50% !important;
+    /*position: absolute;
     top: 0;
     left: 0;
-    margin: 10px;
+    margin: 10px;*/
+}
+
+.EntryForm-modal {
+    height: 90% !important;
 }
