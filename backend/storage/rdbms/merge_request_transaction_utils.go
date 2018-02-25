@@ -2,11 +2,13 @@ package rdbms
 
 import (
 	"database/sql"
-	"strings"
+
+	"github.com/lib/pq"
 )
 
 type MergeRequest struct {
 	Entry
+	MergeRequestID     int
 	MergeRequestAuthor string `json:"merge_request_author"`
 }
 type mergeRequestTxUtils struct {
@@ -21,7 +23,7 @@ func (e *mergeRequestTxUtils) InsertMergeRequest(tx *sql.Tx, mergeRequest MergeR
 	var mergeRequestID int
 	stmt, err := tx.Prepare(`
         INSERT INTO MergeRequests (merge_request_author, title, body, author, tags)
-        VALUES ($1, $2, $3, $4, string_to_array($5, ','))
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING merge_request_id;
         `)
 	defer stmt.Close()
@@ -29,7 +31,7 @@ func (e *mergeRequestTxUtils) InsertMergeRequest(tx *sql.Tx, mergeRequest MergeR
 		return 0, err
 	}
 
-	row, err := stmt.Query(mergeRequest.MergeRequestAuthor, mergeRequest.Title, mergeRequest.Body, mergeRequest.Author, strings.Join(mergeRequest.Tags, ","))
+	row, err := stmt.Query(mergeRequest.MergeRequestAuthor, mergeRequest.Title, mergeRequest.Body, mergeRequest.Author, pq.Array(mergeRequest.Tags))
 	defer row.Close()
 	if err != nil {
 		return 0, err
@@ -40,4 +42,34 @@ func (e *mergeRequestTxUtils) InsertMergeRequest(tx *sql.Tx, mergeRequest MergeR
 	}
 
 	return mergeRequestID, err
+}
+
+func (e *mergeRequestTxUtils) GetMergeRequest(tx *sql.Tx, author string) ([]MergeRequest, error) {
+	stmt, err := tx.Prepare(`
+        SELECT * FROM MergeRequests
+        WHERE author=$1
+    `)
+	defer stmt.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query(author)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var mergeRequests []MergeRequest
+	var mergeRequest MergeRequest
+	for rows.Next() {
+		err = rows.Scan(&mergeRequest.MergeRequestID, &mergeRequest.MergeRequestAuthor, &mergeRequest.ID, &mergeRequest.Title,
+			&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, pq.Array(&mergeRequest.Tags))
+		if err != nil {
+			return nil, err
+		}
+		mergeRequests = append(mergeRequests, mergeRequest)
+	}
+
+	return mergeRequests, err
 }

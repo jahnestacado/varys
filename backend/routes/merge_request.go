@@ -34,6 +34,36 @@ func CreateMergeRequestPutRoute(db *sql.DB, jwtSecret string) func(http.Response
 		res.WriteHeader(200)
 	}
 }
+func CreateMergeRequestGetRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		err, claims := validateRequest(jwtSecret, req, db)
+		if err != nil {
+			http.Error(res, err.Error(), 401)
+			return
+		}
+		mergeRequestTxUtils := rdbms.CreateMergeRequestTxUtils(db)
+		tx, err := db.Begin()
+		defer tx.Commit()
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		mergeRequests, err := mergeRequestTxUtils.GetMergeRequest(tx, claims["username"].(string))
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		result, err := json.Marshal(mergeRequests)
+		if err != nil {
+			res.Write([]byte(err.Error()))
+		} else {
+			res.Header().Set("Content-Type", "application/json")
+			res.Write(result)
+		}
+	}
+}
 
 func submitMergeRequest(db *sql.DB, mergeRequest rdbms.MergeRequest) error {
 	mergeRequestTxUtils := rdbms.CreateMergeRequestTxUtils(db)
