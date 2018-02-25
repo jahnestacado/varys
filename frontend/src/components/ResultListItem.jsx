@@ -4,6 +4,7 @@ import EntryForm from "./EntryForm.jsx";
 import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
+import { connect } from "react-redux";
 import { Card, Image, Dropdown, Modal, Header } from "semantic-ui-react";
 
 class ResultListItem extends Component {
@@ -27,23 +28,36 @@ class ResultListItem extends Component {
 
     render() {
         const self = this;
-        const { openModal, closeModal, state } = self;
-        const { entry } = self.props;
+        const { openModal, closeModal, state, props } = self;
+        const { entry, auth } = props;
+        const { username } = auth;
+        const isEntryAuthor = entry.author === username;
         return (
             <Card className="ResultListItem" fluid centered onClick={openModal}>
                 <Card.Content>
-                    <Card.Meta>
-                        <Dropdown
-                            className="ResultListItem-btn-panel"
-                            item
-                            icon="ellipsis vertical"
-                        >
-                            <Dropdown.Menu>
-                                <EntryForm entry={entry} />
-                                <DeleteEntry entry={entry} />
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Card.Meta>
+                    {username && (
+                        <Card.Meta className="ResultListItem-actions">
+                            {isEntryAuthor ? (
+                                <Dropdown
+                                    className="ResultListItem-actions"
+                                    item
+                                    icon="ellipsis vertical"
+                                >
+                                    <Dropdown.Menu>
+                                        <EntryForm entry={entry} type="edit" />
+                                        <DeleteEntry entry={entry} />
+                                    </Dropdown.Menu>
+                                </Dropdown>
+                            ) : (
+                                <EntryForm
+                                    className="ResultListItem-fork-btn"
+                                    entry={entry}
+                                    type="merge-request"
+                                />
+                            )}
+                        </Card.Meta>
+                    )}
+
                     <Card.Header className="ResultListItem-title" title={entry.title}>
                         {entry.title}
                     </Card.Header>
@@ -78,4 +92,10 @@ ResultListItem.propTypes = {
     entry: React.PropTypes.object.isRequired,
 };
 
-export default ResultListItem;
+const mapStateToProps = (state) => {
+    return {
+        auth: state.auth,
+    };
+};
+
+export default connect(mapStateToProps)(ResultListItem);

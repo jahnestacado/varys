@@ -53,6 +53,23 @@ class EntryForm extends Component {
 
     submit() {
         const self = this;
+        const { type } = self.props;
+
+        switch (type) {
+            case "edit":
+            case "add":
+                self.submitEntry();
+                break;
+            case "merge-request":
+                self.submitMergeRequest();
+                break;
+            default:
+                console.log("Unknown type");
+        }
+    }
+
+    submitEntry() {
+        const self = this;
         const { setState, closeModal, state } = self;
         const { type } = self.props;
         const url = "http://localhost:7676/api/v1/entry";
@@ -76,6 +93,29 @@ class EntryForm extends Component {
                         entry: initializeEntry(self.props.auth),
                     });
                 }
+                closeModal();
+            })
+            .catch(console.log);
+    }
+
+    submitMergeRequest() {
+        const self = this;
+        const { closeModal, state, props } = self;
+        const { auth } = self.props;
+        const url = "http://localhost:7676/api/v1/merge_request";
+        const mergeRequest = { ...state.entry, merge_request_author: auth.username };
+        fetch(url, {
+            method: "PUT",
+            body: JSON.stringify(mergeRequest),
+            headers: new Headers({
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                JWT: self.props.auth.token,
+            }),
+        })
+            .then(handleFetchError)
+            .then(() => {
+                self.setState({ entry: props.entry });
                 closeModal();
             })
             .catch(console.log);
@@ -105,13 +145,23 @@ class EntryForm extends Component {
 
     render() {
         const self = this;
-        const { openModal, closeModal, updateTitle, updateBody, submit, updateTags, state } = self;
+        const {
+            openModal,
+            closeModal,
+            updateTitle,
+            updateBody,
+            submit,
+            updateTags,
+            state,
+            props,
+        } = self;
         const { entry, showModal } = state;
         const { title, tags } = entry;
+        const iconName = props.type === "merge-request" ? "fork" : "edit";
         return (
-            <Form className="EntryForm">
+            <div className="EntryForm">
                 <div className="EntryForm-btn-open" onClick={openModal}>
-                    <Icon name="add square" />
+                    <Icon name={iconName} />
                 </div>
                 <Modal
                     open={showModal}
@@ -147,7 +197,7 @@ class EntryForm extends Component {
                         />
                     </Form.Group>
                 </Modal>
-            </Form>
+            </div>
         );
     }
 }

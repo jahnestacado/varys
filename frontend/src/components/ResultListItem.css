@@ -34,7 +34,7 @@
     right: 10px;
 }
 
-.ResultListItem-btn-panel {
+.ResultListItem-actions {
     position: absolute !important;
     float: right;
     top: 5px;
