@@ -48,6 +48,19 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
             tsv tsvector
         )
     `
+	const createMergeRequestsTable = `
+	    CREATE TABLE IF NOT EXISTS MergeRequests (
+	        merge_request_id serial PRIMARY KEY,
+	        merge_request_author varchar(80),
+			id serial,
+	        title varchar(254) NOT NULL,
+	        body text,
+	        author varchar(80) NOT NULL,
+			created_timestamp timestamp DEFAULT current_timestamp,
+			tags text[]
+	    )
+	`
+
 	const createTagsTable = `
         CREATE TABLE IF NOT EXISTS Tags (
             id serial PRIMARY KEY,
@@ -102,13 +115,14 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
     `
 	const createTSVGIN = `CREATE INDEX IF NOT EXISTS tsvGin ON Entries USING gin(tsv);`
 
-	var commands = [18]string{
+	var commands = [19]string{
 		createSchema,
 		setSearchPath,
 		createWordPool,
 		createEntryWord,
 		createUsersTable,
 		createEntriesTable,
+		createMergeRequestsTable,
 		createTagsTable,
 		createEntryTagTable,
 		createTSVGIN,

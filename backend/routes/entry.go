@@ -233,6 +233,7 @@ func updateEntry(db *sql.DB, entry rdbms.Entry) error {
 	return err
 }
 
+// @TODO Move below function to separate file
 func validateRequest(jwtSecret string, req *http.Request, db *sql.DB) (error, map[string]interface{}) {
 	token := req.Header.Get("JWT")
 	claims, err := utils.GetClaimsFromToken(token)
