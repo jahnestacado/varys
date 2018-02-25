@@ -3,8 +3,6 @@ package rdbms
 import (
 	"database/sql"
 	"varys/backend/utils"
-
-	_ "github.com/lib/pq"
 )
 
 func CreateSchema(db *sql.DB, config utils.Postgres) error {

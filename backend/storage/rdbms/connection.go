@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"varys/backend/utils"
-
-	_ "github.com/lib/pq"
 )
 
 func Connect(config utils.Postgres) *sql.DB {
