@@ -22,11 +22,10 @@ class DeleteEntry extends Component {
         console.log("Ask for Confirmation!!!!!", this.props.entry);
         const self = this;
         const { entry, deleteEntry, auth } = self.props;
-        const url = "http://localhost:7676/api/v1/entry";
+        const url = `http://localhost:7676/api/v1/entry/${entry.id}`;
 
         fetch(url, {
             method: "DELETE",
-            body: JSON.stringify({ id: entry.id }),
             headers: new Headers({
                 Accept: "application/json",
                 "Content-Type": "application/json",
@@ -41,7 +40,6 @@ class DeleteEntry extends Component {
     }
 
     openModal() {
-        console.log("SHOWW");
         const self = this;
         self.setState({
             showModal: true,

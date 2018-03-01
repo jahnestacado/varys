@@ -63,7 +63,7 @@ func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 
 func CreateEntryGetRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		entryID, err := getNumericParameter(params.ByName("id"), 0)
+		entryID, err := getNumericParameter(params.ByName("id"), -1)
 		entryTxUtils := rdbms.CreateEntryTxUtils(db)
 		entry, err := entryTxUtils.GetEntry(entryID)
 		if err != nil {
@@ -91,15 +91,8 @@ func CreateEntryGetRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, ht
 }
 
 func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
-	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		bodyDecoder := json.NewDecoder(req.Body)
-		defer req.Body.Close()
-		var entry rdbms.Entry
-		err := bodyDecoder.Decode(&entry)
-		if err != nil {
-			http.Error(res, err.Error(), 500)
-			return
-		}
+	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		entryID, err := getNumericParameter(params.ByName("id"), -1)
 
 		err, claims := validateRequest(jwtSecret, req, db)
 		if err != nil {
@@ -107,16 +100,17 @@ func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWrit
 			return
 		}
 
-		err = deleteEntry(db, entry, claims)
+		err = deleteEntry(db, entryID, claims)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
+			return
 		}
 
 		res.WriteHeader(200)
 	}
 }
 
-func deleteEntry(db *sql.DB, entry rdbms.Entry, claims map[string]interface{}) error {
+func deleteEntry(db *sql.DB, entryID int, claims map[string]interface{}) error {
 	tx, err := db.Begin()
 	defer tx.Commit()
 	if err != nil {
@@ -124,7 +118,7 @@ func deleteEntry(db *sql.DB, entry rdbms.Entry, claims map[string]interface{}) e
 	}
 
 	entryTxUtils := rdbms.CreateEntryTxUtils(db)
-	entryWords, err := entryTxUtils.GetEntryWords(tx, entry.ID)
+	entryWords, err := entryTxUtils.GetEntryWords(tx, entryID)
 	if err != nil {
 		return err
 	}
@@ -143,7 +137,7 @@ func deleteEntry(db *sql.DB, entry rdbms.Entry, claims map[string]interface{}) e
 	}
 	defer stmt.Close()
 
-	row, err := stmt.Query(entry.ID)
+	row, err := stmt.Query(entryID)
 	if err != nil {
 		return err
 	}
@@ -161,15 +155,15 @@ func deleteEntry(db *sql.DB, entry rdbms.Entry, claims map[string]interface{}) e
 	}
 
 	tagIDs := []int{0}
-	err = entryTxUtils.CleanupStaleTags(tx, entry, tagIDs)
+	err = entryTxUtils.CleanupStaleTags(tx, entryID, tagIDs)
 	if err != nil {
 		return err
 	}
 	cache.DeleteCachedEntries(func(cachedEntries []rdbms.Entry, key string, index int) bool {
-		return cachedEntries[index].ID == entry.ID
+		return cachedEntries[index].ID == entryID
 	})
 
-	if err = entryTxUtils.CleanStaleWords(tx, -1, entryWords); err != nil {
+	if err = entryTxUtils.CleanStaleWords(tx, entryID, entryWords); err != nil {
 		tx.Rollback()
 		return err
 	}

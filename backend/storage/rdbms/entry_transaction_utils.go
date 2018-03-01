@@ -163,17 +163,17 @@ func (e *entryTxUtils) UpdateTags(tx *sql.Tx, entry Entry) ([]int, error) {
 	}
 
 	if len(tagIDs) > 0 {
-		err = e.CleanupStaleTags(tx, entry, tagIDs)
+		err = e.CleanupStaleTags(tx, entry.ID, tagIDs)
 	}
 
 	return tagIDs, err
 }
 
-func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entry Entry, tagIDs []int) error {
+func (e *entryTxUtils) CleanupStaleTags(tx *sql.Tx, entryID int, tagIDs []int) error {
 	var placeholders string
 	numOfTags := len(tagIDs)
 	queryArgs := make([]interface{}, numOfTags+1)
-	queryArgs[0] = entry.ID
+	queryArgs[0] = entryID
 	// @TODO Use utils.CreateSQLValuesPlaceholders
 	for i, tagID := range tagIDs {
 		queryArgs[i+1] = tagID
@@ -499,8 +499,19 @@ func (e *entryTxUtils) GetEntryWords(tx *sql.Tx, entryID int) ([]EntryWord, erro
 
 func (e *entryTxUtils) CleanStaleWords(tx *sql.Tx, entryID int, registeredWords []EntryWord) error {
 	staleEntryWords := registeredWords
-	var err error
-	if entryID > 0 {
+	entryExistsStmt, err := tx.Prepare(`SELECT EXISTS(SELECT id FROM ENTRIES WHERE id=$1)`)
+	if err != nil {
+		return err
+	}
+
+	row := entryExistsStmt.QueryRow(strconv.Itoa(entryID))
+	var entryExists bool
+	err = row.Scan(&entryExists)
+	if err != nil {
+		return err
+	}
+
+	if entryExists {
 		newWords, err := e.GetWords(tx, entryID)
 		if err != nil {
 			return err
@@ -511,6 +522,7 @@ func (e *entryTxUtils) CleanStaleWords(tx *sql.Tx, entryID int, registeredWords 
 			}
 		}
 	}
+
 	numOfStaleWords := len(staleEntryWords)
 	if numOfStaleWords > 0 {
 		placeholders := utils.CreateSQLSetPlaceholders(numOfStaleWords, 1)
