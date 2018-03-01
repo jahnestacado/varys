@@ -61,6 +61,35 @@ func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 	}
 }
 
+func CreateEntryGetRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		entryID, err := getNumericParameter(params.ByName("id"), 0)
+		entryTxUtils := rdbms.CreateEntryTxUtils(db)
+		entry, err := entryTxUtils.GetEntry(entryID)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		tags, err := entryTxUtils.GetTags(entryID)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		for _, tag := range tags {
+			entry.Tags = append(entry.Tags, tag.Name)
+		}
+		result, err := json.Marshal(entry)
+		if err != nil {
+			res.Write([]byte(err.Error()))
+		} else {
+			res.Header().Set("Content-Type", "application/json")
+			res.Write(result)
+		}
+	}
+}
+
 func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		bodyDecoder := json.NewDecoder(req.Body)

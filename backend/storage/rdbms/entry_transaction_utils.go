@@ -81,6 +81,32 @@ func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
 	return err
 }
 
+func (e *entryTxUtils) GetEntry(entryID int) (Entry, error) {
+	var entry Entry
+	stmt, err := e.DB.Prepare(`
+        SELECT *
+		FROM Entries
+        WHERE id = $1
+    `)
+	defer stmt.Close()
+	if err != nil {
+		return entry, err
+	}
+
+	row, err := stmt.Query(entryID)
+	if err != nil {
+		return entry, err
+	}
+	row.Next()
+	var dummy string
+	err = row.Scan(&entry.ID, &entry.Title, &entry.Body, &entry.Author, &entry.Created, &entry.Updated, &dummy)
+	if err != nil {
+		return entry, err
+	}
+
+	return entry, err
+}
+
 func (e *entryTxUtils) AddTags(tx *sql.Tx, tags []string) ([]int, error) {
 	numOfTags := len(tags)
 	tagIDs := make([]int, numOfTags)
