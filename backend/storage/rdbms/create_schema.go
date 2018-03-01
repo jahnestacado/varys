@@ -39,7 +39,7 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
         CREATE TABLE IF NOT EXISTS Entries (
             id serial PRIMARY KEY,
             title varchar(254) NOT NULL,
-            body text,
+            body text NOT NULL,
             author varchar(80) NOT NULL,
             created_timestamp timestamp DEFAULT current_timestamp,
             updated_timestamp timestamp DEFAULT current_timestamp,
@@ -49,13 +49,14 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 	const createMergeRequestsTable = `
 	    CREATE TABLE IF NOT EXISTS MergeRequests (
 	        merge_request_id serial PRIMARY KEY,
-	        merge_request_author varchar(80),
-			id serial,
+	        merge_request_author varchar(80) NOT NULL,
+			id integer NOT NULL,
 	        title varchar(254) NOT NULL,
-	        body text,
+	        body text NOT NULL,
 	        author varchar(80) NOT NULL,
 			created_timestamp timestamp DEFAULT current_timestamp,
 			updated_timestamp timestamp DEFAULT current_timestamp,
+			viewed boolean DEFAULT false,
 			tags text[]
 	    )
 	`
