@@ -49,18 +49,22 @@ func CreateMergeRequestGetRoute(db *sql.DB, jwtSecret string) func(http.Response
 			return
 		}
 
-		mergeRequests, err := mergeRequestTxUtils.GetMergeRequest(tx, claims["username"].(string))
+		mergeRequests, err := mergeRequestTxUtils.GetMergeRequests(tx, claims["username"].(string))
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
 		}
 
-		result, err := json.Marshal(mergeRequests)
-		if err != nil {
-			res.Write([]byte(err.Error()))
-		} else {
-			res.Header().Set("Content-Type", "application/json")
+		res.Header().Set("Content-Type", "application/json")
+		if mergeRequests != nil {
+			result, err := json.Marshal(mergeRequests)
+			if err != nil {
+				res.Write([]byte(err.Error()))
+				return
+			}
 			res.Write(result)
+		} else {
+			res.Write([]byte("[]"))
 		}
 	}
 }

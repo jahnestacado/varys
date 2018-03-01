@@ -8,7 +8,7 @@ import (
 
 type MergeRequest struct {
 	Entry
-	MergeRequestID     int
+	MergeRequestID     int    `json:"merge_request_id"`
 	MergeRequestAuthor string `json:"merge_request_author"`
 }
 type mergeRequestTxUtils struct {
@@ -44,7 +44,7 @@ func (e *mergeRequestTxUtils) InsertMergeRequest(tx *sql.Tx, mergeRequest MergeR
 	return mergeRequestID, err
 }
 
-func (e *mergeRequestTxUtils) GetMergeRequest(tx *sql.Tx, author string) ([]MergeRequest, error) {
+func (e *mergeRequestTxUtils) GetMergeRequests(tx *sql.Tx, author string) ([]MergeRequest, error) {
 	stmt, err := tx.Prepare(`
         SELECT * FROM MergeRequests
         WHERE author=$1
@@ -64,7 +64,7 @@ func (e *mergeRequestTxUtils) GetMergeRequest(tx *sql.Tx, author string) ([]Merg
 	var mergeRequest MergeRequest
 	for rows.Next() {
 		err = rows.Scan(&mergeRequest.MergeRequestID, &mergeRequest.MergeRequestAuthor, &mergeRequest.ID, &mergeRequest.Title,
-			&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, pq.Array(&mergeRequest.Tags))
+			&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, pq.Array(&mergeRequest.Tags))
 		if err != nil {
 			return nil, err
 		}
