@@ -63,7 +63,7 @@ class MarkdownEditor extends Component {
                     className="MarkdownEditor-input-area"
                     onChange={self.onMarkdownChanged}
                 />
-                <Container text className="MarkdownEditor-output-area">
+                <Container text className="MarkdownEditor-output-area markdown-body">
                     <div dangerouslySetInnerHTML={{ __html: generatedHtml }} />
                 </Container>
             </div>
