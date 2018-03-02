@@ -157,12 +157,25 @@ class EntryForm extends Component {
         } = self;
         const { entry, showModal } = state;
         const { title, tags } = entry;
-        const iconName = props.type === "merge-request" ? "fork" : "edit";
+        const { color, circular, type, button } = props;
+        const iconName = type === "merge-request" ? "fork" : "add";
         return (
             <div className="EntryForm">
-                <div className="EntryForm-btn-open" onClick={openModal}>
-                    <Icon name={iconName} />
-                </div>
+                {button ? (
+                    <Button
+                        circular={circular}
+                        color={color}
+                        icon={iconName}
+                        className="EntryForm-btn-open"
+                        onClick={openModal}
+                        size="large"
+                    />
+                ) : (
+                    <div className="EntryForm-btn-open" onClick={openModal}>
+                        <Icon name={iconName} />
+                    </div>
+                )}
+
                 <Modal
                     open={showModal}
                     className="EntryForm-modal"

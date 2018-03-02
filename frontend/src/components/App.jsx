@@ -133,7 +133,13 @@ class App extends Component {
                 </div>
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
 
-                <EntryForm onSubmit={refreshSearchResults} type="add" />
+                <EntryForm
+                    onSubmit={refreshSearchResults}
+                    type="add"
+                    button
+                    color="teal"
+                    circular
+                />
 
                 {entries.length ? (
                     <Pagination

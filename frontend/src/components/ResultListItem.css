@@ -7,43 +7,45 @@
 
 .ResultListItem {
     text-transform: capitalize;
-    height: 50px;
-    font-size: 10px;
+    height: 85px;
+    width: 100%;
+    font-size: 12px;
     z-index: 0 !important;
 }
 
-.ResultListItem-title {
-    margin: 0;
+.ResultListItem-avatar {
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+}
+
+.ResultListItem-header {
+    display: inline-block !important;
+}
+
+.ResultListItem-actions,
+.ResultListItem-action {
+    float: right;
+    padding-right: 0 !important;
+    width: 10px;
+    height: 10px;
+}
+
+.ResultListItem-action > * {
+    position: absolute;
+    top: 0;
+}
+
+.ResultListItem-label-panel {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 5px 0;
+}
+
+.ResultListItem-description {
+    width: 100%;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    white-space: nowrap;
-    -webkit-box-orient: vertical;
-
-    width: 80%;
-    top: 50%;
-    left: 42%;
-    transform: translate(-50%, -50%);
-    position: absolute;
-}
-
-.ResultListItem-avatar {
-    margin-left: 15px;
-    width: 30px !important;
-    height: 30px !important;
-    right: 10px;
-}
-
-.ResultListItem-actions {
-    position: absolute !important;
-    float: right;
-    top: 5px;
-    font-size: 14px !important;
-    right: 0px;
-    padding: 0;
-}
-
-.ResultListItem .EntryForm,
-.ResultListItem .DeleteEntry {
-    margin: 5px;
 }

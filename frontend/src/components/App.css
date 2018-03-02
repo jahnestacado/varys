@@ -37,10 +37,7 @@
 }
 
 .App .EntryForm-btn-open {
-    /*position: absolute;
-    top: 50px;
-    right: 0;
-    margin: 10px;
-    font-weight: bold;
-    color: white;*/
+    position: fixed;
+    bottom: 10%;
+    right: 5%;
 }

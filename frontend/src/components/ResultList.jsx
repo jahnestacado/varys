@@ -27,7 +27,7 @@ class ResultList extends Component {
                             mobile={16}
                             widescreen={3}
                             computer={5}
-                            largeScreen={4}
+                            largeScreen={3}
                             tablet={8}
                             key={i}
                         >
