@@ -115,10 +115,13 @@ class MergeRequestListItem extends Component {
                     src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
                 />
                 <List.Content>
-                    <List.Header>Merge Request</List.Header>
-                    <List.Description
-                        content={`#${entry.merge_request_id} by ${entry.merge_request_author}`}
-                    />
+                    <List.Header>
+                        <a>{`Merge Request #${entry.merge_request_id}`}</a>
+                    </List.Header>
+                    <List.Description>
+                        <b>{entry.title}</b>
+                        {`  by ${entry.merge_request_author}`}
+                    </List.Description>
                 </List.Content>
                 {shouldInstantiateModal && (
                     <MergeRequestModal

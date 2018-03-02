@@ -1,0 +1,11 @@
+.MergeRequestListItem {
+    cursor: pointer;
+}
+
+.MergeRequestListItem-description {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+}
