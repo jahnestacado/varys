@@ -185,6 +185,7 @@ func insertEntry(db *sql.DB, entry rdbms.Entry) error {
 		tx.Rollback()
 		return err
 	}
+
 	tagIDs, err := entryTxUtils.AddTags(tx, entry.Tags)
 	if err != nil {
 		tx.Rollback()

@@ -26,23 +26,42 @@ func (e *mergeRequestTxUtils) InsertMergeRequest(tx *sql.Tx, mergeRequest MergeR
         INSERT INTO MergeRequests (merge_request_author, id, title, body, author, tags)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING merge_request_id;
-        `)
+    `)
 	defer stmt.Close()
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 
-	row, err := stmt.Query(mergeRequest.MergeRequestAuthor, mergeRequest.ID, mergeRequest.Title, mergeRequest.Body, mergeRequest.Author, pq.Array(mergeRequest.Tags))
-	defer row.Close()
+	row := stmt.QueryRow(mergeRequest.MergeRequestAuthor, mergeRequest.ID, mergeRequest.Title, mergeRequest.Body, mergeRequest.Author, pq.Array(mergeRequest.Tags))
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
-	row.Next()
 	if err = row.Scan(&mergeRequestID); err != nil {
-		return 0, err
+		return -1, err
 	}
 
 	return mergeRequestID, err
+}
+
+func (e *mergeRequestTxUtils) DeleteMergeRequest(tx *sql.Tx, mergeRequestID int) (MergeRequest, error) {
+	var mergeRequest MergeRequest
+	stmt, err := tx.Prepare(`
+		DELETE FROM MergeRequests
+		WHERE merge_request_id=$1
+		RETURNING *
+	`)
+	defer stmt.Close()
+	if err != nil {
+		return mergeRequest, err
+	}
+
+	row := stmt.QueryRow(mergeRequestID)
+	err = row.Scan(&mergeRequest.MergeRequestID, &mergeRequest.MergeRequestAuthor, &mergeRequest.ID, &mergeRequest.Title,
+		&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, &mergeRequest.Viewed, pq.Array(&mergeRequest.Tags))
+	if err != nil {
+		return mergeRequest, err
+	}
+	return mergeRequest, err
 }
 
 func (e *mergeRequestTxUtils) GetMergeRequests(tx *sql.Tx, author string) ([]MergeRequest, error) {

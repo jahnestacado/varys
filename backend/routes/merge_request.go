@@ -34,6 +34,40 @@ func CreateMergeRequestPutRoute(db *sql.DB, jwtSecret string) func(http.Response
 		res.WriteHeader(200)
 	}
 }
+
+func CreateMergeRequestDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		err, claims := validateRequest(jwtSecret, req, db)
+		if err != nil {
+			http.Error(res, err.Error(), 401)
+			return
+		}
+		mergeRequestID, err := getNumericParameter(params.ByName("id"), -1)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+		mergeRequestTxUtils := rdbms.CreateMergeRequestTxUtils(db)
+		tx, err := db.Begin()
+		defer tx.Commit()
+		mergeRequest, err := mergeRequestTxUtils.DeleteMergeRequest(tx, mergeRequestID)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+		username := claims["username"]
+		isUserInvolvedInMergeRequest := username == mergeRequest.Author || username != mergeRequest.MergeRequestAuthor
+		isUserAdmin := claims["role"] == "admin"
+		if !isUserInvolvedInMergeRequest && !isUserAdmin {
+			tx.Rollback()
+			http.Error(res, err.Error(), 401)
+			return
+		}
+
+		res.WriteHeader(200)
+	}
+}
+
 func CreateMergeRequestGetRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		err, claims := validateRequest(jwtSecret, req, db)
