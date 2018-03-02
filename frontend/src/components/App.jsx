@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import AutoCompleteDropdown from "./AutoCompleteDropdown";
 import ResultList from "./ResultList.jsx";
 import EntryForm from "./EntryForm.jsx";
+import NotificationPanel from "./NotificationPanel.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries } from "./../actions/entryActions.js";
@@ -115,17 +116,13 @@ class App extends Component {
 
         return (
             <div className="App">
-                <Header
-                    className="App-header"
-                    as="h2"
-                    icon
-                    textAlign="center"
-                    size="large"
-                    dividing={true}
-                    inverted={true}
-                >
+                <Header className="App-header" textAlign="center" dividing={true} inverted={true}>
                     <Icon name="computer" circular />
                     <Header.Content>Varys</Header.Content>
+
+                    <Header.Subheader className="App-subheader">
+                        <NotificationPanel />
+                    </Header.Subheader>
                 </Header>
                 <div className="dropdown-container">
                     <AutoCompleteDropdown

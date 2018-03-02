@@ -1,0 +1,24 @@
+.NotificationPanel {
+    width: 40px;
+    float: right;
+}
+
+.NotificationPanel-icon {
+    position: relative;
+}
+
+.NotificationPanel-icon-message {
+    position: absolute !important;
+    margin: 0 !important;
+    right: -8px;
+    top: -6px;
+}
+
+.NotificationPanel-icon-counter {
+    position: absolute !important;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    left: 0;
+    right: 0;
+}

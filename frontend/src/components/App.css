@@ -9,8 +9,12 @@
 }
 
 .App-header {
-    padding: 20px !important;
     background-color: teal;
+}
+
+.App-subheader {
+    width: 100%;
+    height: 20px;
 }
 
 .App .dropdown-container {
@@ -32,11 +36,11 @@
     bottom: 30px;
 }
 
-.App .EntryForm-btn-open .glyphicon-plus-sign {
-    position: absolute;
+.App .EntryForm-btn-open {
+    /*position: absolute;
     top: 50px;
     right: 0;
     margin: 10px;
     font-weight: bold;
-    color: white;
+    color: white;*/
 }
