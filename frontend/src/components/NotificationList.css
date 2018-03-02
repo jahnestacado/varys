@@ -1,8 +1,8 @@
 .NotificationList-segment {
     position: absolute;
-    right: 360px;
-    width: 400px;
+    right: 260px;
+    width: 300px;
     z-index: 10;
-    max-width: 400px;
+    max-width: 300px;
     margin-top: 10px !important;
 }
