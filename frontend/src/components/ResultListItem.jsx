@@ -5,7 +5,7 @@ import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { Card, Image, Dropdown, Modal, Header } from "semantic-ui-react";
+import { Card, Image, Label, Dropdown, Modal, Header } from "semantic-ui-react";
 
 class ResultListItem extends Component {
     constructor(props) {
@@ -32,44 +32,58 @@ class ResultListItem extends Component {
         const { entry, auth } = props;
         const { username } = auth;
         const isEntryAuthor = entry.author === username;
+        const keywordLabels = entry.tags.map((keyword, i) => {
+            return (
+                <Label key={i} color="teal" size="mini" className="ResultListItem-label">
+                    {keyword}
+                </Label>
+            );
+        });
         return (
-            <Card className="ResultListItem" fluid centered onClick={openModal}>
+            <Card className="ResultListItem" onClick={openModal}>
                 <Card.Content>
-                    {username && (
-                        <Card.Meta className="ResultListItem-actions">
-                            {isEntryAuthor ? (
-                                <Dropdown
-                                    className="ResultListItem-actions"
-                                    item
-                                    icon="ellipsis vertical"
-                                >
-                                    <Dropdown.Menu>
-                                        <EntryForm entry={entry} type="edit" />
-                                        <DeleteEntry entry={entry} />
-                                    </Dropdown.Menu>
-                                </Dropdown>
-                            ) : (
-                                <EntryForm
-                                    className="ResultListItem-fork-btn"
-                                    entry={entry}
-                                    type="merge-request"
-                                />
-                            )}
-                        </Card.Meta>
-                    )}
-
-                    <Card.Header className="ResultListItem-title" title={entry.title}>
-                        {entry.title}
+                    <Card.Header className="ResultListItem-id">
+                        {`#${entry.id}`}
+                        {username && (
+                            <Card.Meta className="ResultListItem-actions">
+                                {isEntryAuthor ? (
+                                    <Dropdown
+                                        className="ResultListItem-action"
+                                        item
+                                        icon="ellipsis vertical"
+                                    >
+                                        <Dropdown.Menu>
+                                            <EntryForm entry={entry} type="edit" />
+                                            <DeleteEntry entry={entry} />
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                ) : (
+                                    <EntryForm
+                                        className="ResultListItem-fork-btn"
+                                        entry={entry}
+                                        type="merge-request"
+                                    />
+                                )}
+                            </Card.Meta>
+                        )}
+                        <Image
+                            className="ResultListItem-avatar"
+                            bordered
+                            rounded
+                            title={entry.author}
+                            floated="right"
+                            size="mini"
+                            src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
+                        />
                     </Card.Header>
-                    <Image
-                        className="ResultListItem-avatar"
-                        bordered
-                        rounded
-                        floated="right"
-                        size="mini"
-                        src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
-                    />
+                    <Card.Description title={entry.title} className="ResultListItem-description">
+                        {entry.title}
+                    </Card.Description>
+                    <Card.Content extra className="ResultListItem-label-panel">
+                        {keywordLabels}
+                    </Card.Content>
                 </Card.Content>
+
                 <Modal
                     open={state.showModal}
                     className="EntryForm-modal"
