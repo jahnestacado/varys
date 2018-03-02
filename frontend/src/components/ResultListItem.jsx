@@ -32,6 +32,7 @@ class ResultListItem extends Component {
         const { entry, auth } = props;
         const { username } = auth;
         const isEntryAuthor = entry.author === username;
+        // @TODO Create component that generates labels
         const keywordLabels = entry.tags.map((keyword, i) => {
             return (
                 <Label key={i} color="teal" size="mini" className="ResultListItem-label">
