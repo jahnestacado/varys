@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Modal, Header, Label, Button } from "semantic-ui-react";
+import { Modal, Header, Label, Button, Dimmer, Loader } from "semantic-ui-react";
 import handleFetchError from "./../utils/handleFetchError.js";
 import bindToComponent from "./../utils/bindToComponent.js";
 import "./MergeRequestModal.css";
@@ -16,10 +16,9 @@ class MergeRequestModal extends Component {
         self.state = {
             body: null,
         };
-        const { originalEntry, modifiedEntry } = props;
         bindToComponent(self, ["submitEntry", "deleteMergeRequest"]);
+        const { originalEntry, modifiedEntry } = props;
         self.titleDiff = self.getMarkdownDiff(originalEntry.title, modifiedEntry.title);
-        self.bodyDiff = self.getMarkdownDiff(originalEntry.body, modifiedEntry.body);
         self.tagDiff = self.getTagDiff(originalEntry, modifiedEntry);
     }
 
@@ -91,9 +90,22 @@ class MergeRequestModal extends Component {
             .catch(onError);
     }
 
+    componentDidUpdate() {
+        const self = this;
+        if (self.state.body === null) {
+            const { originalEntry, modifiedEntry } = self.props;
+            setTimeout(() => {
+                const bodyDiff = self.getMarkdownDiff(originalEntry.body, modifiedEntry.body);
+                self.setState({
+                    body: bodyDiff,
+                });
+            }, 0);
+        }
+    }
+
     render() {
         const self = this;
-        const { props, titleDiff, bodyDiff, tagDiff, submitEntry } = self;
+        const { props, state, titleDiff, tagDiff, submitEntry } = self;
         const { showModal, onClose } = props;
 
         return (
@@ -107,11 +119,19 @@ class MergeRequestModal extends Component {
                 {" "}
                 <Header icon="file text outline" content={<RichDiff state={titleDiff} />} />
                 <Modal.Content scrolling>
-                    {bodyDiff && <RichDiff state={bodyDiff} />}
+                    {state.body ? (
+                        <RichDiff state={state.body} />
+                    ) : (
+                        <div className="dimmer">
+                            <Dimmer active>
+                                <Loader size="large">Computing diff...</Loader>
+                            </Dimmer>
+                        </div>
+                    )}
                     <div className="MergeRequestModal-footer">
                         <div className="MergeRequestModal-tags">
                             {tagDiff.map(({ name, className }, i) => (
-                                <Label className={className} key={i} tag>
+                                <Label className={className} size="large" key={i}>
                                     {name}
                                 </Label>
                             ))}
@@ -120,7 +140,6 @@ class MergeRequestModal extends Component {
                             <Button negative onClick={submitEntry}>
                                 Reject
                             </Button>
-                            <Button.Or />
                             <Button color="teal" onClick={submitEntry}>
                                 Merge
                             </Button>
