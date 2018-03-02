@@ -134,6 +134,7 @@ class App extends Component {
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
 
                 <EntryForm
+                    className="EntryForm-btn-open"
                     onSubmit={refreshSearchResults}
                     type="add"
                     button

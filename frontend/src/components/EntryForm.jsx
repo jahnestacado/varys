@@ -157,7 +157,7 @@ class EntryForm extends Component {
         } = self;
         const { entry, showModal } = state;
         const { title, tags } = entry;
-        const { color, circular, type, button } = props;
+        const { color, circular, type, button, className } = props;
         const iconName = type === "merge-request" ? "fork" : "add";
         return (
             <div className="EntryForm">
@@ -166,12 +166,12 @@ class EntryForm extends Component {
                         circular={circular}
                         color={color}
                         icon={iconName}
-                        className="EntryForm-btn-open"
+                        className={className}
                         onClick={openModal}
                         size="large"
                     />
                 ) : (
-                    <div className="EntryForm-btn-open" onClick={openModal}>
+                    <div className={className} onClick={openModal}>
                         <Icon name={iconName} />
                     </div>
                 )}
