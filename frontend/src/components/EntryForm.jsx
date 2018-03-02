@@ -196,8 +196,8 @@ class EntryForm extends Component {
                     </Form>
                     <MarkdownEditor entry={entry} updateBody={updateBody} />
                     <Form.Group className="EntryForm-footer" widths="10">
-                        <Button className="EntryForm-btn-submit" color="green" onClick={submit}>
-                            Save
+                        <Button className="EntryForm-btn-submit" color="teal" onClick={submit}>
+                            Submit
                         </Button>
                         <AutoCompleteDropdown
                             type="tag"
