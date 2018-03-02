@@ -14,9 +14,7 @@ const authReducer = (state = defaultState, action) => {
         case SIGN_IN:
             const token = action.payload;
             const tokenPayload = window.atob(token.split(".")[0]);
-            const { username, email, role, member_since } = JSON.parse(
-                tokenPayload,
-            );
+            const { username, email, role, member_since } = JSON.parse(tokenPayload);
             newState = { username, email, role, member_since, token };
             window.localStorage.setItem("varys-session", token);
             break;
