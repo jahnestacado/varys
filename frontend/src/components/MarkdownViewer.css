@@ -1,5 +1,6 @@
 .MarkdownViewer-footer {
     position: absolute;
-    bottom: 10px;
+    bottom: 0px;
+    padding-bottom: 20px;
     width: 100%;
 }
