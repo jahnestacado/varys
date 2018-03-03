@@ -57,7 +57,7 @@ func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 			})
 		}
 
-		res.WriteHeader(200)
+		res.Write([]byte("null"))
 	}
 }
 
@@ -106,7 +106,7 @@ func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWrit
 			return
 		}
 
-		res.WriteHeader(200)
+		res.Write([]byte("null"))
 	}
 }
 
