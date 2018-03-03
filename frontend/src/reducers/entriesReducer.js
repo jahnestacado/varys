@@ -32,7 +32,9 @@ const entriesReducer = (state = defaultState, action) => {
             };
             break;
         case SET_ENTRIES:
+            console.log("Setting", action);
             newState = { entries: action.payload || [] };
+            console.log(newState);
             break;
         default:
             newState = state;

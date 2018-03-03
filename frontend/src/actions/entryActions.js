@@ -1,4 +1,15 @@
 import { UPDATE_ENTRY, DELETE_ENTRY, SET_ENTRIES } from "../utils/constants.js";
+import Http from "./../utils/http.js";
+
+export const getEntries = (query) => {
+    return (dispatch, getState) => {
+        const url = `http://localhost:7676/api/v1/search?query=${query}`;
+        const JWT = getState().auth.token;
+        return Http.get(url, JWT).then(({ payload }) => {
+            dispatch(setEntries(payload));
+        });
+    };
+};
 
 export const setEntries = (entries) => {
     return {
@@ -8,15 +19,31 @@ export const setEntries = (entries) => {
 };
 
 export const updateEntry = (entry) => {
-    return {
-        type: UPDATE_ENTRY,
-        payload: entry,
+    return (dispatch, getState) => {
+        const url = "http://localhost:7676/api/v1/entry";
+        const JWT = getState().auth.token;
+        const updateAction = (entry) => ({
+            type: UPDATE_ENTRY,
+            payload: entry,
+        });
+        return Http.put(url, JWT, { body: JSON.stringify(entry) }).then(() => {
+            if (entry.id !== -1) {
+                dispatch(updateAction(entry));
+            }
+        });
     };
 };
 
 export const deleteEntry = (entry) => {
-    return {
-        type: DELETE_ENTRY,
-        payload: entry,
+    return (dispatch, getState) => {
+        const url = `http://localhost:7676/api/v1/entry/${entry.id}`;
+        const JWT = getState().auth.token;
+        const deleteAction = (entry) => ({
+            type: DELETE_ENTRY,
+            payload: entry,
+        });
+        return Http.delete(url, JWT).then(() => {
+            dispatch(deleteAction(entry));
+        });
     };
 };
