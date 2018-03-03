@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "markup-it": "^3.3.0",
+        "markup-it": "3.3.0",
         "react": "^15.5.4",
         "react-dom": "^15.5.4",
         "react-redux": "^5.0.5",
@@ -13,7 +13,7 @@
         "semantic-ui-css": "2.2.12",
         "semantic-ui-react": "0.78.2",
         "showdown": "^1.6.4",
-        "slate": "^0.16.9"
+        "slate": "0.16.9"
     },
     "devDependencies": {
         "eslint": "4.18.0",
