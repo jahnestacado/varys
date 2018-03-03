@@ -3,13 +3,11 @@ import "./DeleteEntry.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { deleteEntry } from "./../actions/entryActions.js";
-import handleFetchError from "./../utils/handleFetchError.js";
 import { Icon, Modal, Button, Header } from "semantic-ui-react";
 
 class DeleteEntry extends Component {
     constructor(props) {
         super(props);
-
         const self = this;
         self.state = {
             showModal: false,
@@ -19,24 +17,9 @@ class DeleteEntry extends Component {
 
     deleteEntry(event) {
         event.stopPropagation();
-        console.log("Ask for Confirmation!!!!!", this.props.entry);
         const self = this;
-        const { entry, deleteEntry, auth } = self.props;
-        const url = `http://localhost:7676/api/v1/entry/${entry.id}`;
-
-        fetch(url, {
-            method: "DELETE",
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                JWT: auth.token,
-            }),
-        })
-            .then(handleFetchError)
-            .then(() => {
-                deleteEntry(entry);
-            })
-            .catch(console.log);
+        const { entry, deleteEntry } = self.props;
+        deleteEntry(entry);
     }
 
     openModal() {
@@ -47,7 +30,6 @@ class DeleteEntry extends Component {
     }
 
     closeModal() {
-        console.log("SHOWW");
         const self = this;
         self.setState({
             showModal: false,
@@ -56,13 +38,13 @@ class DeleteEntry extends Component {
 
     render() {
         const self = this;
-        const { state, props } = self;
+        const { state, props, deleteEntry } = self;
         return (
             <div className="DeleteEntry">
                 <Icon className="DeleteEntry-btn-delete" name="trash" onClick={self.openModal} />
                 <Modal
                     open={state.showModal}
-                    onClose={this.closeModal}
+                    onClose={self.closeModal}
                     basic
                     size="small"
                     closeIcon
@@ -72,7 +54,7 @@ class DeleteEntry extends Component {
                         <h3>Do you really want to delete entry #{props.entry.id}?</h3>
                     </Modal.Content>
                     <Modal.Actions>
-                        <Button color="red" onClick={self.deleteEntry} inverted>
+                        <Button color="red" onClick={deleteEntry} inverted>
                             <Icon name="eraser" /> Delete
                         </Button>
                     </Modal.Actions>

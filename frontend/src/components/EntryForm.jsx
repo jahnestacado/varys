@@ -70,32 +70,15 @@ class EntryForm extends Component {
 
     submitEntry() {
         const self = this;
-        const { setState, closeModal, state } = self;
-        const { type } = self.props;
-        const url = "http://localhost:7676/api/v1/entry";
-        fetch(url, {
-            method: "PUT",
-            body: JSON.stringify(state.entry),
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                JWT: self.props.auth.token,
-            }),
-        })
-            .then(handleFetchError)
-            .then(() => {
-                if (state.id !== -1) {
-                    self.props.updateEntry(state.entry);
-                }
-
-                if (type === "add") {
-                    setState({
-                        entry: initializeEntry(self.props.auth),
-                    });
-                }
-                closeModal();
-            })
-            .catch(console.log);
+        const { setState, closeModal, state, props } = self;
+        props.updateEntry(state.entry).then(() => {
+            if (props.type === "add") {
+                setState({
+                    entry: initializeEntry(props.auth),
+                });
+            }
+            closeModal();
+        });
     }
 
     submitMergeRequest() {
@@ -223,9 +206,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        updateEntry: (entry) => {
-            dispatch(updateEntry(entry));
-        },
+        updateEntry: (entry) => dispatch(updateEntry(entry)),
     };
 };
 

@@ -5,7 +5,7 @@ import EntryForm from "./EntryForm.jsx";
 import NotificationPanel from "./NotificationPanel.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { setEntries } from "./../actions/entryActions.js";
+import { setEntries, getEntries } from "./../actions/entryActions.js";
 import { signin } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import { Header, Icon, Pagination } from "semantic-ui-react";
@@ -53,21 +53,19 @@ class App extends Component {
 
     requestSearch(searchQuery) {
         const self = this;
-        const { setEntries } = self.props;
+        const { props } = self;
         const query = self.convertQuery(searchQuery);
         if (query) {
-            const url = `http://localhost:7676/api/v1/search?query=${query}`;
-            self.fetch(url, (json) => {
+            props.getEntries(query).then(() => {
                 self.setState({
                     activePage: 1,
                 });
-                setEntries(json.payload);
             });
         } else {
             self.setState({
                 activePage: 0,
             });
-            setEntries([]);
+            props.setEntries([]);
         }
     }
 
@@ -106,7 +104,7 @@ class App extends Component {
         const self = this;
         const { handlePaginationSelect, refreshSearchResults, state, onQueryChange } = self;
         const { activePage, limit } = state;
-        const { entries } = self.props.results;
+        const { entries } = self.props.entries;
         const totalPages = Math.ceil(entries.length / self.state.limit);
         const displayedEntriesOffset = (activePage - 1) * limit;
         const displayedEntries = entries.slice(
@@ -122,6 +120,7 @@ class App extends Component {
 
                     <Header.Subheader className="App-subheader">
                         <NotificationPanel />
+                        <span>{self.props.auth.username}</span>
                     </Header.Subheader>
                 </Header>
                 <div className="dropdown-container">
@@ -163,16 +162,15 @@ class App extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        results: state.results,
+        entries: state.entries,
         auth: state.auth,
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        setEntries: (entries) => {
-            dispatch(setEntries(entries));
-        },
+        getEntries: (query) => dispatch(getEntries(query)),
+        setEntries: (entries) => dispatch(setEntries(entries)),
         signin: (sessionToken) => {
             dispatch(signin(sessionToken));
         },
