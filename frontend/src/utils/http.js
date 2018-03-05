@@ -1,5 +1,4 @@
 const handleFetchError = (response) => {
-    console.log(response);
     if (!response.ok) {
         throw new Error(response.statusText);
     }
@@ -18,7 +17,6 @@ const request = (url, method, JWT = "", options = {}) => {
         )
     );
     delete options.headers;
-    console.log("RWEWRWE", Object.assign({ method, headers }, options));
     return fetch(url, Object.assign({ method, headers }, options))
         .then(handleFetchError)
         .then((response) => response.json());
