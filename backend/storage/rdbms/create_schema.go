@@ -56,8 +56,19 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 	        author varchar(80) NOT NULL,
 			created_timestamp timestamp DEFAULT current_timestamp,
 			updated_timestamp timestamp DEFAULT current_timestamp,
-			viewed boolean DEFAULT false,
 			tags text[]
+	    )
+	`
+	const createNotificationsTable = `
+	    CREATE TABLE IF NOT EXISTS Notifications (
+			id serial PRIMARY KEY,
+			source_id integer NOT NULL,
+			initiator varchar(80) NOT NULL,
+			recipient varchar(80) NOT NULL,
+	        description text,
+	        type text NOT NULL,
+			created_timestamp timestamp DEFAULT current_timestamp,
+			viewed boolean DEFAULT false
 	    )
 	`
 
@@ -115,7 +126,7 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
     `
 	const createTSVGIN = `CREATE INDEX IF NOT EXISTS tsvGin ON Entries USING gin(tsv);`
 
-	var commands = [19]string{
+	var commands = [20]string{
 		createSchema,
 		setSearchPath,
 		createWordPool,
@@ -123,6 +134,7 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 		createUsersTable,
 		createEntriesTable,
 		createMergeRequestsTable,
+		createNotificationsTable,
 		createTagsTable,
 		createEntryTagTable,
 		createTSVGIN,
