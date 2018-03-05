@@ -88,7 +88,7 @@ class EntryForm extends Component {
         const url = "http://localhost:7676/api/v1/merge_request";
         const mergeRequest = { ...state.entry, merge_request_author: auth.username };
         fetch(url, {
-            method: "PUT",
+            method: "POST",
             body: JSON.stringify(mergeRequest),
             headers: new Headers({
                 Accept: "application/json",
