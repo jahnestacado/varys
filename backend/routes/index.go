@@ -16,8 +16,12 @@ func Attach(router *httprouter.Router, db *sql.DB, config utils.Config) {
 	router.PUT("/api/v1/entry", CreateEntryPutRoute(db, config.JWTSecret))
 	router.DELETE("/api/v1/entry/:id", CreateEntryDeleteRoute(db, config.JWTSecret))
 
-	router.PUT("/api/v1/merge_request", CreateMergeRequestPutRoute(db, config.JWTSecret))
-	router.GET("/api/v1/merge_request", CreateMergeRequestGetRoute(db, config.JWTSecret))
+	router.GET("/api/v1/notification", CreateNotificationGetRoute(db, config.JWTSecret))
+	router.PUT("/api/v1/notification/:id", CreateNotificationPutRoute(db, config.JWTSecret))
+
+	router.POST("/api/v1/merge_request", CreateMergeRequestPostRoute(db, config.JWTSecret))
+	router.POST("/api/v1/merge_request/:action", CreateMergeRequestPostActionRoute(db, config.JWTSecret))
+	router.GET("/api/v1/merge_request/:id", CreateMergeRequestGetRoute(db, config.JWTSecret))
 	router.DELETE("/api/v1/merge_request/:id", CreateMergeRequestDeleteRoute(db, config.JWTSecret))
 
 	router.POST("/api/v1/signup", CreateSignUpPostRoute(db, &config))

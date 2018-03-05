@@ -10,7 +10,6 @@ type MergeRequest struct {
 	Entry
 	MergeRequestID     int    `json:"merge_request_id"`
 	MergeRequestAuthor string `json:"merge_request_author"`
-	Viewed             bool   `json:"viewed"`
 }
 type mergeRequestTxUtils struct {
 	DB *sql.DB
@@ -57,10 +56,32 @@ func (e *mergeRequestTxUtils) DeleteMergeRequest(tx *sql.Tx, mergeRequestID int)
 
 	row := stmt.QueryRow(mergeRequestID)
 	err = row.Scan(&mergeRequest.MergeRequestID, &mergeRequest.MergeRequestAuthor, &mergeRequest.ID, &mergeRequest.Title,
-		&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, &mergeRequest.Viewed, pq.Array(&mergeRequest.Tags))
+		&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, pq.Array(&mergeRequest.Tags))
 	if err != nil {
 		return mergeRequest, err
 	}
+	return mergeRequest, err
+}
+
+func (e *mergeRequestTxUtils) GetMergeRequest(tx *sql.Tx, mergeRequestID int) (MergeRequest, error) {
+	var mergeRequest MergeRequest
+	stmt, err := tx.Prepare(`
+        SELECT *
+		FROM MergeRequests
+        WHERE merge_request_id=$1
+    `)
+	defer stmt.Close()
+	if err != nil {
+		return mergeRequest, err
+	}
+
+	row := stmt.QueryRow(mergeRequestID)
+	err = row.Scan(&mergeRequest.MergeRequestID, &mergeRequest.MergeRequestAuthor, &mergeRequest.ID, &mergeRequest.Title,
+		&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, pq.Array(&mergeRequest.Tags))
+	if err != nil {
+		return mergeRequest, err
+	}
+
 	return mergeRequest, err
 }
 
@@ -84,7 +105,7 @@ func (e *mergeRequestTxUtils) GetMergeRequests(tx *sql.Tx, author string) ([]Mer
 	var mergeRequest MergeRequest
 	for rows.Next() {
 		err = rows.Scan(&mergeRequest.MergeRequestID, &mergeRequest.MergeRequestAuthor, &mergeRequest.ID, &mergeRequest.Title,
-			&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, &mergeRequest.Viewed, pq.Array(&mergeRequest.Tags))
+			&mergeRequest.Body, &mergeRequest.Author, &mergeRequest.Created, &mergeRequest.Updated, pq.Array(&mergeRequest.Tags))
 		if err != nil {
 			return nil, err
 		}
