@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { Modal, Header, Label, Button, Dimmer, Loader } from "semantic-ui-react";
-import handleFetchError from "./../utils/handleFetchError.js";
 import bindToComponent from "./../utils/bindToComponent.js";
+import { connect } from "react-redux";
+import { rejectMergeRequest, acceptMergeRequest } from "./../actions/mergeRequestActions.js";
 import "./MergeRequestModal.css";
 
 const RichDiff = require("react-rich-diff");
@@ -16,8 +17,9 @@ class MergeRequestModal extends Component {
         self.state = {
             body: null,
         };
-        bindToComponent(self, ["submitEntry", "deleteMergeRequest"]);
-        const { originalEntry, modifiedEntry } = props;
+        bindToComponent(self, ["acceptMergeRequest", "rejectMergeRequest"]);
+        const { selectedItem } = props;
+        const { originalEntry, modifiedEntry } = selectedItem.data;
         self.titleDiff = self.getMarkdownDiff(originalEntry.title, modifiedEntry.title);
         self.tagDiff = self.getTagDiff(originalEntry, modifiedEntry);
     }
@@ -49,51 +51,27 @@ class MergeRequestModal extends Component {
         return tagDiff;
     }
 
-    submitEntry() {
+    acceptMergeRequest() {
         const self = this;
         const { props } = self;
-        const { modifiedEntry, onSubmit } = props;
-        const url = "http://localhost:7676/api/v1/entry";
-        fetch(url, {
-            method: "PUT",
-            body: JSON.stringify(modifiedEntry),
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                JWT: self.props.token,
-            }),
-        })
-            .then(handleFetchError)
-            .then(() => {
-                self.deleteMergeRequest(() => {
-                    onSubmit();
-                });
-            })
-            .catch(console.log);
+        const { selectedItem } = props;
+        const { id, source_id } = selectedItem;
+        return props.acceptMergeRequest({ notification_id: id, merge_request_id: source_id });
     }
 
-    deleteMergeRequest(onDone, onError) {
+    rejectMergeRequest() {
         const self = this;
         const { props } = self;
-        const { modifiedEntry } = props;
-        const url = `http://localhost:7676/api/v1/merge_request/${modifiedEntry.merge_request_id}`;
-        fetch(url, {
-            method: "DELETE",
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                JWT: self.props.token,
-            }),
-        })
-            .then(handleFetchError)
-            .then(onDone)
-            .catch(onError);
+        const { selectedItem } = props;
+        const { id, source_id } = selectedItem;
+        return props.rejectMergeRequest({ notification_id: id, merge_request_id: source_id });
     }
 
-    componentDidUpdate() {
+    componentDidMount() {
         const self = this;
         if (self.state.body === null) {
-            const { originalEntry, modifiedEntry } = self.props;
+            const { selectedItem } = self.props;
+            const { originalEntry, modifiedEntry } = selectedItem.data;
             setTimeout(() => {
                 const bodyDiff = self.getMarkdownDiff(originalEntry.body, modifiedEntry.body);
                 self.setState({
@@ -105,7 +83,7 @@ class MergeRequestModal extends Component {
 
     render() {
         const self = this;
-        const { props, state, titleDiff, tagDiff, submitEntry } = self;
+        const { props, state, titleDiff, tagDiff, acceptMergeRequest, rejectMergeRequest } = self;
         const { showModal, onClose } = props;
 
         return (
@@ -137,10 +115,10 @@ class MergeRequestModal extends Component {
                             ))}
                         </div>
                         <Button.Group className="MergeRequestModal-btn-group">
-                            <Button negative onClick={submitEntry}>
+                            <Button negative onClick={rejectMergeRequest}>
                                 Reject
                             </Button>
-                            <Button color="teal" onClick={submitEntry}>
+                            <Button color="teal" onClick={acceptMergeRequest}>
                                 Merge
                             </Button>
                         </Button.Group>
@@ -151,4 +129,11 @@ class MergeRequestModal extends Component {
     }
 }
 
-export default MergeRequestModal;
+const mapDispatchToProps = (dispatch) => {
+    return {
+        rejectMergeRequest: (id) => dispatch(rejectMergeRequest(id)),
+        acceptMergeRequest: (modifiedEntry) => dispatch(acceptMergeRequest(modifiedEntry)),
+    };
+};
+
+export default connect(null, mapDispatchToProps)(MergeRequestModal);

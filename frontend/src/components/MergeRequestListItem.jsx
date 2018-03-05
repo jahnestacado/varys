@@ -1,114 +1,45 @@
 import React, { Component } from "react";
 import { Image, List } from "semantic-ui-react";
-import handleFetchError from "./../utils/handleFetchError.js";
 import bindToComponent from "./../utils/bindToComponent.js";
 import MergeRequestModal from "./MergeRequestModal";
 import { connect } from "react-redux";
 import { selectNotificationItem } from "./../actions/notificationsActions.js";
-import { setNotificationItems } from "./../actions/notificationsActions.js";
+import { getMergeRequest } from "./../actions/mergeRequestActions.js";
 import "./MergeRequestListItem.css";
 
 class MergeRequestListItem extends Component {
     constructor(props) {
         super(props);
         const self = this;
-        self.state = {
-            originalEntry: null,
-            showModal: false,
-        };
-        bindToComponent(self, [
-            "getOriginalEntry",
-            "openModal",
-            "closeModal",
-            "resolveMergeRequest",
-            "onNotificationItemSelection",
-        ]);
+        bindToComponent(self, ["clearSelection", "getData"]);
     }
 
-    getOriginalEntry(id, onDone) {
-        const url = `http://localhost:7676/api/v1/entry/${id}`;
-        fetch(url, {
-            method: "GET",
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            }),
-        })
-            .then(handleFetchError)
-            .then((response) => response.json())
-            .then((json) => {
-                onDone(json);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    }
-
-    openModal() {
-        const self = this;
-        self.setState({ showModal: true });
-    }
-
-    closeModal() {
-        const self = this;
-        self.setState({ showModal: false });
-    }
-
-    onNotificationItemSelection(event, data) {
+    getData() {
         const self = this;
         const { props } = self;
-        const selectedNotificationItem = props.notificationItems.find(
-            (e) => e.merge_request_id === data.id
-        );
-        self.getOriginalEntry(selectedNotificationItem.id, (originalEntry) => {
-            self.setState({ originalEntry });
-            self.openModal();
-        });
-        props.selectNotificationItem(selectedNotificationItem);
+        props.getMergeRequest(props.notification);
     }
 
-    resolveMergeRequest() {
+    clearSelection() {
         const self = this;
         const { props } = self;
-        const { notificationItems, selectedNotificationItem } = props;
-        props.setNotificationItems(
-            notificationItems.filter(
-                ({ merge_request_id }) =>
-                    merge_request_id !== selectedNotificationItem.merge_request_id
-            )
-        );
         props.selectNotificationItem(null);
-    }
-
-    componentWillMount() {
-        const self = this;
-        const { state, props } = self;
-        const { selectedNotificationItem } = props;
-        const { originalEntry } = state;
-        if (
-            selectedNotificationItem &&
-            originalEntry &&
-            selectedNotificationItem.id === originalEntry.id
-        ) {
-            self.showModal();
-        }
     }
 
     render() {
         const self = this;
-        const { props, state, closeModal, onNotificationItemSelection, resolveMergeRequest } = self;
-        const { originalEntry, showModal } = state;
-        const { entry, selectedNotificationItem } = props;
-        const shouldInstantiateModal =
+        const { props, getData, clearSelection } = self;
+        const { notification, selectedNotificationItem } = props;
+        const shouldOpenModal =
             selectedNotificationItem &&
-            originalEntry &&
-            selectedNotificationItem.merge_request_id === entry.merge_request_id;
+            selectedNotificationItem.id === notification.id &&
+            selectedNotificationItem.data;
 
         return (
             <List.Item
                 className="MergeRequestListItem"
-                onClick={onNotificationItemSelection}
-                id={entry.merge_request_id}
+                onClick={getData}
+                id={notification.source_id}
             >
                 <Image
                     avatar
@@ -116,21 +47,20 @@ class MergeRequestListItem extends Component {
                 />
                 <List.Content>
                     <List.Header>
-                        <a>{`Merge Request #${entry.merge_request_id}`}</a>
+                        <a>{`Merge Request #${notification.source_id}`}</a>
                     </List.Header>
                     <List.Description>
-                        <b>{entry.title}</b>
-                        {`  by ${entry.merge_request_author}`}
+                        <b>{notification.description}</b>
+                        {`  by ${notification.initiator}`}
                     </List.Description>
                 </List.Content>
-                {shouldInstantiateModal && (
+                {shouldOpenModal && (
                     <MergeRequestModal
-                        modifiedEntry={selectedNotificationItem}
-                        originalEntry={originalEntry}
-                        showModal={showModal}
-                        onClose={closeModal}
-                        onSubmit={resolveMergeRequest}
-                        token={self.props.auth.token}
+                        selectedItem={selectedNotificationItem}
+                        showModal
+                        onClose={clearSelection}
+                        onSubmit={clearSelection}
+                        token={props.auth.token}
                     />
                 )}
             </List.Item>
@@ -151,9 +81,7 @@ const mapDispatchToProps = (dispatch) => {
         selectNotificationItem: (notificationItem) => {
             dispatch(selectNotificationItem(notificationItem));
         },
-        setNotificationItems: (notificationItems) => {
-            dispatch(setNotificationItems(notificationItems));
-        },
+        getMergeRequest: (notificationItem) => dispatch(getMergeRequest(notificationItem)),
     };
 };
 

@@ -2,17 +2,24 @@ import React, { Component } from "react";
 import "./NotificationList.css";
 import { List, Segment } from "semantic-ui-react";
 import MergeRequestListItem from "./MergeRequestListItem";
+import { connect } from "react-redux";
 
 class NotificationList extends Component {
     render() {
         const self = this;
         const { props } = self;
-        const { notificationItems, onSelection } = props;
+        const { notifications } = props;
         return (
             <Segment className="NotificationList-segment" textAlign="left">
                 <List divided verticalAlign="middle">
-                    {notificationItems.map((item, i) => {
-                        return <MergeRequestListItem entry={item} key={i} onClick={onSelection} />;
+                    {notifications.map((notification, i) => {
+                        let item;
+                        switch (notification.type) {
+                            case "merge_request":
+                                item = <MergeRequestListItem notification={notification} key={i} />;
+                                break;
+                        }
+                        return item;
                     })}
                 </List>
             </Segment>
@@ -20,4 +27,10 @@ class NotificationList extends Component {
     }
 }
 
-export default NotificationList;
+const mapStateToProps = (state) => {
+    return {
+        selectedNotificationItem: state.notifications.selectedNotificationItem,
+    };
+};
+
+export default connect(mapStateToProps)(NotificationList);

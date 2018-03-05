@@ -1,12 +1,10 @@
 import React, { Component } from "react";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { Icon, List, Image, Segment } from "semantic-ui-react";
+import { Icon } from "semantic-ui-react";
 import "./NotificationPanel.css";
-import handleFetchError from "./../utils/handleFetchError.js";
-// import MergeRequestModal from "./MergeRequestModal";
 import NotificationList from "./NotificationList";
-import { setNotificationItems } from "./../actions/notificationsActions.js";
+import { getNotifications } from "./../actions/notificationsActions.js";
 
 import "./ResultListItem.css";
 
@@ -17,7 +15,7 @@ class NotificationPanel extends Component {
         self.state = {
             showList: false,
         };
-        bindToComponent(self, ["getMergeRequests", "toggleNotificationListState"]);
+        bindToComponent(self, ["toggleNotificationListState"]);
     }
 
     toggleNotificationListState(event, value = null) {
@@ -28,40 +26,29 @@ class NotificationPanel extends Component {
         });
     }
 
-    componentWillMount() {
+    componentDidMount() {
         const self = this;
-        self
-            .getMergeRequests()
-            .then((json) => {
-                self.props.setNotificationItems(json);
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+        const { props } = self;
+        props.getNotifications();
     }
 
-    getMergeRequests() {
+    shouldComponentUpdate(nextProps) {
         const self = this;
-        const url = "http://localhost:7676/api/v1/merge_request";
-        return fetch(url, {
-            method: "GET",
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                JWT: self.props.auth.token,
-            }),
-        })
-            .then(handleFetchError)
-            .then((response) => response.json());
+        const { props } = self;
+        let shouldUpdate = true;
+        if (nextProps.selectedNotificationItem === null && props.selectedNotificationItem) {
+            shouldUpdate = false;
+            props.getNotifications();
+        }
+        return shouldUpdate;
     }
 
     render() {
         const self = this;
-        const { state, props, onNotificationItemSelection, toggleNotificationListState } = self;
+        const { state, props, toggleNotificationListState } = self;
         const { showList } = state;
-        const { notificationItems } = props;
-        const showNotifications = !!notificationItems.length && showList;
-
+        const { notifications } = props;
+        const showNotifications = !!notifications.length && showList;
         return (
             <div className="NotificationPanel">
                 <Icon
@@ -69,20 +56,15 @@ class NotificationPanel extends Component {
                     className="NotificationPanel-icon"
                     onClick={toggleNotificationListState}
                 >
-                    {notificationItems.length > 0 && (
+                    {notifications.length > 0 && (
                         <Icon name="comment" color="red" className="NotificationPanel-icon-message">
                             <span className="NotificationPanel-icon-counter">
-                                {notificationItems.length}
+                                {notifications.length}
                             </span>
                         </Icon>
                     )}
                 </Icon>
-                {showNotifications && (
-                    <NotificationList
-                        notificationItems={notificationItems}
-                        onSelection={onNotificationItemSelection}
-                    />
-                )}
+                {showNotifications && <NotificationList notifications={notifications} />}
             </div>
         );
     }
@@ -92,15 +74,13 @@ const mapStateToProps = (state) => {
     return {
         auth: state.auth,
         selectedNotificationItem: state.notifications.selectedNotificationItem,
-        notificationItems: state.notifications.notificationItems,
+        notifications: state.notifications.notifications,
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        setNotificationItems: (notificationItems) => {
-            dispatch(setNotificationItems(notificationItems));
-        },
+        getNotifications: (notifications) => dispatch(getNotifications(notifications)),
     };
 };
 
