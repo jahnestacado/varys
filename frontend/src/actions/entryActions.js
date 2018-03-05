@@ -5,9 +5,14 @@ export const getEntries = (query) => {
     return (dispatch, getState) => {
         const url = `http://localhost:7676/api/v1/search?query=${query}`;
         const JWT = getState().auth.token;
-        return Http.get(url, JWT).then(({ payload }) => {
-            dispatch(setEntries(payload));
-        });
+        return Http.get(url, JWT)
+            .then(({ payload }) => {
+                dispatch(setEntries(payload));
+            })
+            .catch((error) => {
+                // @TODO Handle error through an action
+                console.error(error);
+            });
     };
 };
 
@@ -26,11 +31,16 @@ export const updateEntry = (entry) => {
             type: UPDATE_ENTRY,
             payload: entry,
         });
-        return Http.put(url, JWT, { body: JSON.stringify(entry) }).then(() => {
-            if (entry.id !== -1) {
-                dispatch(updateAction(entry));
-            }
-        });
+        return Http.put(url, JWT, { body: JSON.stringify(entry) })
+            .then(() => {
+                if (entry.id !== -1) {
+                    dispatch(updateAction(entry));
+                }
+            })
+            .catch((error) => {
+                // @TODO Handle error through an action
+                console.error(error);
+            });
     };
 };
 
@@ -42,8 +52,13 @@ export const deleteEntry = (entry) => {
             type: DELETE_ENTRY,
             payload: entry,
         });
-        return Http.delete(url, JWT).then(() => {
-            dispatch(deleteAction(entry));
-        });
+        return Http.delete(url, JWT)
+            .then(() => {
+                dispatch(deleteAction(entry));
+            })
+            .catch((error) => {
+                // @TODO Handle error through an action
+                console.error(error);
+            });
     };
 };
