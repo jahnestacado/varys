@@ -7,7 +7,7 @@ import {
 
 const defaultState = {
     selectedNotificationItem: null,
-    notifications: [],
+    entries: [],
 };
 
 const notificationsReducer = (state = defaultState, action) => {
@@ -24,7 +24,7 @@ const notificationsReducer = (state = defaultState, action) => {
         case SET_NOTIFICATION_ITEMS:
             newState = {
                 ...state,
-                notifications: action.payload,
+                entries: action.payload,
             };
             break;
         default:

@@ -71,7 +71,7 @@ class MergeRequestListItem extends Component {
 const mapStateToProps = (state) => {
     return {
         auth: state.auth,
-        notificationItems: state.notifications.notificationItems,
+        notificationEntries: state.notifications.entries,
         selectedNotificationItem: state.notifications.selectedNotificationItem,
     };
 };
