@@ -93,6 +93,7 @@ func CreateMergeRequestPostActionRoute(db *sql.DB, jwtSecret string) func(http.R
 		}
 
 		actionName := params.ByName("action")
+		newNotificationSourceID := actionInfo.MergeRequestID
 		if actionName == "accept" {
 			deletedMergeRequest, err := mergeRequestTxUtils.DeleteMergeRequest(tx, actionInfo.MergeRequestID)
 			if err != nil {
@@ -114,6 +115,8 @@ func CreateMergeRequestPostActionRoute(db *sql.DB, jwtSecret string) func(http.R
 				http.Error(res, err.Error(), 500)
 				return
 			}
+
+			newNotificationSourceID = deletedMergeRequest.ID
 		}
 
 		if actionName == "reject" || actionName == "accept" {
@@ -125,7 +128,7 @@ func CreateMergeRequestPostActionRoute(db *sql.DB, jwtSecret string) func(http.R
 			}
 
 			newNotification := rdbms.Notification{
-				SourceID:    deletedNotification.SourceID,
+				SourceID:    newNotificationSourceID,
 				Initiator:   claims["username"].(string),
 				Recipient:   deletedNotification.Initiator,
 				Type:        "merge_request_" + actionName,
