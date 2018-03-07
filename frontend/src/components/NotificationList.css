@@ -5,4 +5,7 @@
     z-index: 10;
     max-width: 300px;
     margin-top: 10px !important;
+    max-height: 300px;
+    overflow-x: auto;
+    font-size: 12px !important;
 }
