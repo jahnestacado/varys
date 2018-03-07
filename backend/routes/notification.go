@@ -36,14 +36,14 @@ func CreateNotificationPutRoute(db *sql.DB, jwtSecret string) func(http.Response
 			tx, err := db.Begin()
 			defer tx.Commit()
 			if err != nil {
-				http.Error(res, err.Error(), 401)
+				http.Error(res, err.Error(), 500)
 				return
 			}
 
 			_, err = notificationTxUtils.InsertNotification(tx, notification)
 			if err != nil {
 				tx.Rollback()
-				http.Error(res, err.Error(), 401)
+				http.Error(res, err.Error(), 500)
 				return
 			}
 
@@ -54,39 +54,37 @@ func CreateNotificationPutRoute(db *sql.DB, jwtSecret string) func(http.Response
 	}
 }
 
-//
-// func CreateMergeRequestDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
-// 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-// 		err, claims := validateRequest(jwtSecret, req, db)
-// 		if err != nil {
-// 			http.Error(res, err.Error(), 401)
-// 			return
-// 		}
-// 		mergeRequestID, err := getNumericParameter(params.ByName("id"), -1)
-// 		if err != nil {
-// 			http.Error(res, err.Error(), 500)
-// 			return
-// 		}
-// 		notificationTxUtils := rdbms.CreateMergeRequestTxUtils(db)
-// 		tx, err := db.Begin()
-// 		defer tx.Commit()
-// 		mergeRequest, err := notificationTxUtils.DeleteMergeRequest(tx, mergeRequestID)
-// 		if err != nil {
-// 			http.Error(res, err.Error(), 500)
-// 			return
-// 		}
-// 		username := claims["username"]
-// 		isUserInvolvedInMergeRequest := username == mergeRequest.Author || username != mergeRequest.MergeRequestAuthor
-// 		isUserAdmin := claims["role"] == "admin"
-// 		if !isUserInvolvedInMergeRequest && !isUserAdmin {
-// 			tx.Rollback()
-// 			http.Error(res, err.Error(), 401)
-// 			return
-// 		}
-//
-// 		res.WriteHeader(200)
-// 	}
-// }
+func CreateNotificationDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		notificationID, err := getNumericParameter(params.ByName("id"), -1)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		err, _ = validateRequest(jwtSecret, req, db)
+		if err != nil {
+			http.Error(res, err.Error(), 401)
+			return
+		}
+
+		notificationTxUtils := rdbms.CreateNotificationTxUtils(db)
+		tx, err := db.Begin()
+		defer tx.Commit()
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		_, err = notificationTxUtils.DeleteNotification(tx, notificationID)
+		if err != nil {
+			http.Error(res, err.Error(), 500)
+			return
+		}
+
+		res.Write([]byte("[]"))
+	}
+}
 
 func CreateNotificationGetRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
