@@ -47,8 +47,8 @@ class NotificationPanel extends Component {
         const self = this;
         const { state, props, toggleNotificationListState } = self;
         const { showList } = state;
-        const { notifications } = props;
-        const showNotifications = !!notifications.length && showList;
+        const { notificationEntries } = props;
+        const showNotifications = !!notificationEntries.length && showList;
         return (
             <div className="NotificationPanel">
                 <Icon
@@ -56,15 +56,15 @@ class NotificationPanel extends Component {
                     className="NotificationPanel-icon"
                     onClick={toggleNotificationListState}
                 >
-                    {notifications.length > 0 && (
+                    {notificationEntries.length > 0 && (
                         <Icon name="comment" color="red" className="NotificationPanel-icon-message">
                             <span className="NotificationPanel-icon-counter">
-                                {notifications.length}
+                                {notificationEntries.length}
                             </span>
                         </Icon>
                     )}
                 </Icon>
-                {showNotifications && <NotificationList notifications={notifications} />}
+                {showNotifications && <NotificationList notifications={notificationEntries} />}
             </div>
         );
     }
@@ -74,7 +74,7 @@ const mapStateToProps = (state) => {
     return {
         auth: state.auth,
         selectedNotificationItem: state.notifications.selectedNotificationItem,
-        notifications: state.notifications.notifications,
+        notificationEntries: state.notifications.entries,
     };
 };
 

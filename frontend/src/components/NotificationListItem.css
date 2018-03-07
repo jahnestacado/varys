@@ -1,0 +1,8 @@
+.NotificationListItem {
+    cursor: pointer;
+}
+
+.NotificationListItem-close-btn {
+    font-size: 7px !important;
+    float: right;
+}

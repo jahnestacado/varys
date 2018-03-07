@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import "./NotificationList.css";
 import { List, Segment } from "semantic-ui-react";
-import MergeRequestListItem from "./MergeRequestListItem";
+import MergeRequestListItem from "./MergeRequestListItem.jsx";
+import NotificationListItem from "./NotificationListItem.jsx";
 import { connect } from "react-redux";
 
 class NotificationList extends Component {
@@ -17,6 +18,10 @@ class NotificationList extends Component {
                         switch (notification.type) {
                             case "merge_request":
                                 item = <MergeRequestListItem notification={notification} key={i} />;
+                                break;
+                            case "merge_request_accept":
+                            case "merge_request_reject":
+                                item = <NotificationListItem notification={notification} key={i} />;
                                 break;
                         }
                         return item;

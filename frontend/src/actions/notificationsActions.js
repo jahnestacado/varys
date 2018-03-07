@@ -23,6 +23,26 @@ export const getNotifications = () => {
     };
 };
 
+export const deleteNotification = (notification) => {
+    return (dispatch, getState) => {
+        const url = `http://localhost:7676/api/v1/notification/${notification.id}`;
+        const state = getState();
+        const JWT = state.auth.token;
+        const notificationEntries = state.notifications.entries;
+        return Http.delete(url, JWT)
+            .then(() => {
+                const newNotificationEntries = notificationEntries.filter((n) => {
+                    return n.id !== notification.id;
+                });
+                dispatch(setNotificationItems(newNotificationEntries));
+            })
+            .catch((error) => {
+                // @TODO Handle error through an action
+                console.error(error);
+            });
+    };
+};
+
 export const setNotificationItems = (notificationItems) => {
     return {
         type: SET_NOTIFICATION_ITEMS,
