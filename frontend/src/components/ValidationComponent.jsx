@@ -9,6 +9,22 @@ class ValidationComponent extends Component {
         bindToComponent(self, ["onChange"]);
     }
 
+    componentWillMount() {
+        const self = this;
+        const { props } = self;
+        props.resumeUserSession();
+    }
+
+    componentWillUpdate(nextProps) {
+        const self = this;
+        let shouldUpdate = true;
+        if (nextProps.auth.username) {
+            self.props.history.push("/");
+            shouldUpdate = false;
+        }
+        return shouldUpdate;
+    }
+
     onChange(event, { name, value }) {
         const self = this;
         self.setState({
@@ -29,9 +45,7 @@ class ValidationComponent extends Component {
                 }
                 return flatten;
             }, [])
-            .map((msg, i) => (
-                <Message key={i} size="small" color="red" content={msg} />
-            ));
+            .map((msg, i) => <Message key={i} size="small" color="red" content={msg} />);
     }
 }
 

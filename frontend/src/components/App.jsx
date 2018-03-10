@@ -6,7 +6,7 @@ import NotificationPanel from "./NotificationPanel.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries, getEntries } from "./../actions/entryActions.js";
-import { signin } from "./../actions/authActions.js";
+import { resumeUserSession } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import { Header, Icon, Pagination } from "semantic-ui-react";
 import "./App.css";
@@ -30,14 +30,7 @@ class App extends Component {
 
     componentWillMount() {
         const self = this;
-        const sessionToken = window.localStorage.getItem("varys-session");
-        if (sessionToken) {
-            try {
-                self.props.signin(sessionToken);
-            } catch (error) {
-                console.log(error);
-            }
-        }
+        self.props.resumeUserSession();
     }
 
     convertQuery(q) {
@@ -171,9 +164,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getEntries: (query) => dispatch(getEntries(query)),
         setEntries: (entries) => dispatch(setEntries(entries)),
-        signin: (sessionToken) => {
-            dispatch(signin(sessionToken));
-        },
+        resumeUserSession: () => dispatch(resumeUserSession()),
     };
 };
 

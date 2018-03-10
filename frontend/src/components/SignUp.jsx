@@ -4,6 +4,8 @@ import ValidationComponent from "./ValidationComponent.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import validator from "./../utils/inputValidation.js";
+import { connect } from "react-redux";
+import { signup, resumeUserSession } from "./../actions/authActions.js";
 import "./SignUp.css";
 
 class SignUp extends ValidationComponent {
@@ -24,7 +26,8 @@ class SignUp extends ValidationComponent {
     onSubmit(event) {
         event.preventDefault();
         const self = this;
-        const { username, email, password } = self.state;
+        const { state, props } = self;
+        const { username, email, password } = state;
         const body = {
             username,
             email,
@@ -35,23 +38,7 @@ class SignUp extends ValidationComponent {
         if (Object.keys(errors).length) {
             self.setState({ errors });
         } else {
-            const url = "http://localhost:7676/api/v1/signup";
-            fetch(url, {
-                method: "POST",
-                body: JSON.stringify(body),
-                headers: new Headers({
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                }),
-            })
-                .then(handleFetchError)
-                .then(() => {
-                    console.log("User created successfully");
-                    self.props.history.push("/signin");
-                })
-                .catch((error) => {
-                    self.setState({ errors: { request: error.message } });
-                });
+            props.signup(body).then(() => props.history.push("/signin"));
         }
     }
 
@@ -68,10 +55,7 @@ class SignUp extends ValidationComponent {
         const usernameErrors = validateUsername(username);
         const emailErrors = validateEmail(email);
         const passwordErrors = validatePassword(password);
-        const confirmedPasswordErrors = validateConfirmedPassword(
-            password,
-            confirmedPassword,
-        );
+        const confirmedPasswordErrors = validateConfirmedPassword(password, confirmedPassword);
         if (usernameErrors.length) {
             errors.username = usernameErrors;
         }
@@ -92,24 +76,13 @@ class SignUp extends ValidationComponent {
         const self = this;
         const { onSubmit, onChange, generateErrorMessages } = self;
 
-        const {
-            username,
-            email,
-            password,
-            confirmedPassword,
-            errors,
-        } = self.state;
+        const { username, email, password, confirmedPassword, errors } = self.state;
         const containErrors = !!Object.keys(errors).length;
 
         return (
             <Grid className="SignUp-form" centered>
                 <Grid.Column mobile={16} tablet={8} computer={6}>
-                    <Segment
-                        attached
-                        color={"teal"}
-                        textAlign={"center"}
-                        padded
-                    >
+                    <Segment attached color={"teal"} textAlign={"center"} padded>
                         <Header dividing size="large">
                             Sign Up
                         </Header>
@@ -148,12 +121,7 @@ class SignUp extends ValidationComponent {
                                 error={!!errors.confirmedPassword}
                                 onChange={onChange}
                             />
-                            <Form.Button
-                                content="SignUp"
-                                color="teal"
-                                size="big"
-                                fluid
-                            />
+                            <Form.Button content="SignUp" color="teal" size="big" fluid />
                             {containErrors && generateErrorMessages(errors)}
                         </Form>
                     </Segment>
@@ -162,5 +130,17 @@ class SignUp extends ValidationComponent {
         );
     }
 }
+const mapStateToProps = (state) => {
+    return {
+        auth: state.auth,
+    };
+};
 
-export default SignUp;
+const mapDispatchToProps = (dispatch) => {
+    return {
+        signup: (body) => dispatch(signup(body)),
+        resumeUserSession: () => dispatch(resumeUserSession()),
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignUp);

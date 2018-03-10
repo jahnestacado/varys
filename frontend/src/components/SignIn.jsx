@@ -2,9 +2,8 @@ import React from "react";
 import { Form, Grid, Segment, Header } from "semantic-ui-react";
 import ValidationComponent from "./ValidationComponent.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
-import handleFetchError from "./../utils/handleFetchError.js";
 import { connect } from "react-redux";
-import { signin } from "./../actions/authActions.js";
+import { signin, resumeUserSession } from "./../actions/authActions.js";
 import "./SignIn.css";
 
 class SignIn extends ValidationComponent {
@@ -16,16 +15,7 @@ class SignIn extends ValidationComponent {
             password: "",
             errors: {},
         };
-
         bindToComponent(self, ["onSubmit", "validateInput"]);
-    }
-
-    componentWillMount() {
-        const self = this;
-        const sessionInfo = window.localStorage.getItem("varys-session");
-        if (sessionInfo) {
-            self.props.history.push("/");
-        }
     }
 
     onSubmit(event) {
@@ -40,24 +30,7 @@ class SignIn extends ValidationComponent {
         if (Object.keys(errors).length) {
             self.setState({ errors });
         } else {
-            const url = "http://localhost:7676/api/v1/SignIn";
-            fetch(url, {
-                method: "POST",
-                body: JSON.stringify(body),
-                headers: new Headers({
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                }),
-            })
-                .then(handleFetchError)
-                .then((response) => response.json())
-                .then((json) => {
-                    self.props.signin(json.token);
-                    self.props.history.push("/");
-                })
-                .catch((error) => {
-                    self.setState({ errors: { request: error.message } });
-                });
+            self.props.signin(body);
         }
     }
 
@@ -85,12 +58,7 @@ class SignIn extends ValidationComponent {
         return (
             <Grid className="SignIn-form" centered>
                 <Grid.Column mobile={16} tablet={8} computer={6}>
-                    <Segment
-                        attached
-                        color={"teal"}
-                        textAlign={"center"}
-                        padded
-                    >
+                    <Segment attached color={"teal"} textAlign={"center"} padded>
                         <Header dividing size="large">
                             Sign In
                         </Header>
@@ -112,12 +80,7 @@ class SignIn extends ValidationComponent {
                                 error={!!errors.password}
                                 onChange={onChange}
                             />
-                            <Form.Button
-                                content="SignIn"
-                                color="teal"
-                                size="big"
-                                fluid
-                            />
+                            <Form.Button content="SignIn" color="teal" size="big" fluid />
                             {containErrors && generateErrorMessages(errors)}
                         </Form>
                     </Segment>
@@ -127,12 +90,17 @@ class SignIn extends ValidationComponent {
     }
 }
 
-const mapDispatchToProps = (dispatch) => {
+const mapStateToProps = (state) => {
     return {
-        signin: (sessionInfo) => {
-            dispatch(signin(sessionInfo));
-        },
+        auth: state.auth,
     };
 };
 
-export default connect(null, mapDispatchToProps)(SignIn);
+const mapDispatchToProps = (dispatch) => {
+    return {
+        signin: (sessionInfo) => dispatch(signin(sessionInfo)),
+        resumeUserSession: () => dispatch(resumeUserSession()),
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
