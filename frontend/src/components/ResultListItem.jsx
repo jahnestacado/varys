@@ -1,34 +1,31 @@
 import React, { Component } from "react";
-import MarkdownViewer from "./MarkdownViewer.jsx";
 import EntryForm from "./EntryForm.jsx";
 import DeleteEntry from "./DeleteEntry.jsx";
 import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { Card, Image, Label, Dropdown, Modal, Header } from "semantic-ui-react";
+import { Card, Image, Label, Dropdown } from "semantic-ui-react";
+import { setActiveEntry } from "./../actions/entryActions.js";
 
 class ResultListItem extends Component {
     constructor(props) {
         super(props);
         const self = this;
         self.state = {
-            showModal: false,
             entry: props.entry,
         };
-        bindToComponent(self, ["openModal", "closeModal"]);
+        bindToComponent(self, ["displayEntry"]);
     }
 
-    openModal() {
-        this.setState({ showModal: true });
-    }
-
-    closeModal() {
-        this.setState({ showModal: false });
+    displayEntry() {
+        const self = this;
+        const { props } = self;
+        self.props.setActiveEntry(props.entry);
     }
 
     render() {
         const self = this;
-        const { openModal, closeModal, state, props } = self;
+        const { displayEntry, props } = self;
         const { entry, auth } = props;
         const { username } = auth;
         const isEntryAuthor = entry.author === username;
@@ -41,7 +38,7 @@ class ResultListItem extends Component {
             );
         });
         return (
-            <Card className="ResultListItem" onClick={openModal}>
+            <Card className="ResultListItem" onClick={displayEntry}>
                 <Card.Content>
                     <Card.Header className="ResultListItem-id">
                         {`#${entry.id}`}
@@ -84,20 +81,6 @@ class ResultListItem extends Component {
                         {keywordLabels}
                     </Card.Content>
                 </Card.Content>
-
-                <Modal
-                    open={state.showModal}
-                    className="EntryForm-modal"
-                    closeIcon
-                    size="large"
-                    onClose={closeModal}
-                >
-                    {" "}
-                    <Header icon="file text outline" content={entry.title} />
-                    <Modal.Content scrolling>
-                        <MarkdownViewer entry={entry} noTitle />
-                    </Modal.Content>
-                </Modal>
             </Card>
         );
     }
@@ -113,4 +96,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps)(ResultListItem);
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setActiveEntry: (entry) => dispatch(setActiveEntry(entry)),
+    };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(ResultListItem);

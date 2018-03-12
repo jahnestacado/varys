@@ -1,4 +1,4 @@
-import { UPDATE_ENTRY, DELETE_ENTRY, SET_ENTRIES } from "../utils/constants.js";
+import { UPDATE_ENTRY, DELETE_ENTRY, SET_ENTRIES, SET_ACTIVE_ENTRY } from "../utils/constants.js";
 import Http from "./../utils/http.js";
 
 export const getEntries = (query) => {
@@ -20,6 +20,13 @@ export const setEntries = (entries) => {
     return {
         type: SET_ENTRIES,
         payload: entries,
+    };
+};
+
+export const setActiveEntry = (entry) => {
+    return {
+        type: SET_ACTIVE_ENTRY,
+        payload: entry,
     };
 };
 

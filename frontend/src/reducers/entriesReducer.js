@@ -1,7 +1,8 @@
-import { UPDATE_ENTRY, DELETE_ENTRY, SET_ENTRIES } from "../utils/constants.js";
+import { UPDATE_ENTRY, DELETE_ENTRY, SET_ENTRIES, SET_ACTIVE_ENTRY } from "../utils/constants.js";
 
 const defaultState = {
     entries: [],
+    activeEntry: null,
 };
 
 const entriesReducer = (state = defaultState, action) => {
@@ -32,9 +33,11 @@ const entriesReducer = (state = defaultState, action) => {
             };
             break;
         case SET_ENTRIES:
-            console.log("Setting", action);
-            newState = { entries: action.payload || [] };
+            newState = { ...state, entries: action.payload || [] };
             console.log(newState);
+            break;
+        case SET_ACTIVE_ENTRY:
+            newState = { ...state, activeEntry: action.payload };
             break;
         default:
             newState = state;

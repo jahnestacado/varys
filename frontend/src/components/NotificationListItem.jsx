@@ -2,20 +2,27 @@ import React, { Component } from "react";
 import { Image, List, Button } from "semantic-ui-react";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { deleteNotification } from "./../actions/notificationsActions.js";
+import { deleteNotification, openNotification } from "./../actions/notificationsActions.js";
+
 import "./NotificationListItem.css";
 
 class MergeRequestListItem extends Component {
     constructor(props) {
         super(props);
         const self = this;
-        bindToComponent(self, ["deleteNotification", "getHeader"]);
+        bindToComponent(self, ["deleteNotification", "getHeader", "openNotification"]);
     }
 
     deleteNotification() {
         const self = this;
         const { props } = self;
         props.deleteNotification(props.notification);
+    }
+
+    openNotification() {
+        const self = this;
+        const { props } = self;
+        props.openNotification(props.notification);
     }
 
     getHeader() {
@@ -40,11 +47,15 @@ class MergeRequestListItem extends Component {
 
     render() {
         const self = this;
-        const { props, deleteNotification, getHeader } = self;
+        const { props, deleteNotification, getHeader, openNotification } = self;
         const { notification } = props;
 
         return (
-            <List.Item className="NotificationListItem" id={notification.source_id}>
+            <List.Item
+                className="NotificationListItem"
+                id={notification.source_id}
+                onClick={openNotification}
+            >
                 <Image
                     avatar
                     src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
@@ -75,9 +86,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        deleteNotification: (notificationEntry) => {
-            dispatch(deleteNotification(notificationEntry));
-        },
+        deleteNotification: (notificationEntry) => dispatch(deleteNotification(notificationEntry)),
+        openNotification: (entry) => dispatch(openNotification(entry)),
     };
 };
 

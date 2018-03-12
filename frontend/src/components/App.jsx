@@ -9,6 +9,8 @@ import { setEntries, getEntries } from "./../actions/entryActions.js";
 import { resumeUserSession } from "./../actions/authActions.js";
 import handleFetchError from "./../utils/handleFetchError.js";
 import { Header, Icon, Pagination } from "semantic-ui-react";
+import EntryModal from "./EntryModal.jsx";
+
 import "./App.css";
 
 class App extends Component {
@@ -148,6 +150,7 @@ class App extends Component {
                 ) : (
                     ""
                 )}
+                <EntryModal />
             </div>
         );
     }

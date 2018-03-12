@@ -1,4 +1,5 @@
 import { SELECT_NOTIFICATION_ITEM, SET_NOTIFICATION_ITEMS } from "../utils/constants.js";
+import { setActiveEntry } from "./entryActions";
 import Http from "./../utils/http.js";
 
 export const selectNotificationItem = (notificationItem) => {
@@ -15,6 +16,21 @@ export const getNotifications = () => {
         return Http.get(url, JWT)
             .then((notifications) => {
                 dispatch(setNotificationItems(notifications));
+            })
+            .catch((error) => {
+                // @TODO Handle error through an action
+                console.error(error);
+            });
+    };
+};
+
+export const openNotification = (notification) => {
+    return (dispatch, getState) => {
+        const url = `http://localhost:7676/api/v1/entry/${notification.source_id}`;
+        const JWT = getState().auth.token;
+        return Http.get(url, JWT)
+            .then((entry) => {
+                dispatch(setActiveEntry(entry));
             })
             .catch((error) => {
                 // @TODO Handle error through an action
