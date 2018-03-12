@@ -14,8 +14,9 @@ func CreateMatchGetRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, ht
 		queryParams := req.URL.Query()
 		substring := queryParams.Get("substring")
 		matcherType := queryParams.Get("type")
-		entryTxUtils := rdbms.CreateEntryTxUtils(DB)
-		words, err := entryTxUtils.GetMatchedWords(matcherType, substring)
+		wordTxUtils := rdbms.CreateWordTxUtils(DB)
+
+		words, err := wordTxUtils.GetMatchedWords(matcherType, substring)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return

@@ -65,13 +65,15 @@ func CreateEntryGetRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, ht
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		entryID, err := getNumericParameter(params.ByName("id"), -1)
 		entryTxUtils := rdbms.CreateEntryTxUtils(db)
+		tagsTxUtils := rdbms.CreateTagsTxUtils(db)
+
 		entry, err := entryTxUtils.GetEntry(entryID)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
 		}
 
-		tags, err := entryTxUtils.GetTags(entryID)
+		tags, err := tagsTxUtils.GetTags(entryID)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			return
@@ -117,8 +119,10 @@ func deleteEntry(db *sql.DB, entryID int, claims map[string]interface{}) error {
 		return err
 	}
 
-	entryTxUtils := rdbms.CreateEntryTxUtils(db)
-	entryWords, err := entryTxUtils.GetEntryWords(tx, entryID)
+	tagsTxUtils := rdbms.CreateTagsTxUtils(db)
+	wordTxUtils := rdbms.CreateWordTxUtils(db)
+
+	entryWords, err := wordTxUtils.GetEntryWords(tx, entryID)
 	if err != nil {
 		return err
 	}
@@ -155,7 +159,7 @@ func deleteEntry(db *sql.DB, entryID int, claims map[string]interface{}) error {
 	}
 
 	tagIDs := []int{0}
-	err = entryTxUtils.CleanupStaleTags(tx, entryID, tagIDs)
+	err = tagsTxUtils.CleanupStaleTags(tx, entryID, tagIDs)
 	if err != nil {
 		return err
 	}
@@ -163,7 +167,7 @@ func deleteEntry(db *sql.DB, entryID int, claims map[string]interface{}) error {
 		return cachedEntries[index].ID == entryID
 	})
 
-	if err = entryTxUtils.CleanStaleWords(tx, entryID, entryWords); err != nil {
+	if err = wordTxUtils.CleanStaleWords(tx, entryID, entryWords); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -173,6 +177,8 @@ func deleteEntry(db *sql.DB, entryID int, claims map[string]interface{}) error {
 
 func insertEntry(db *sql.DB, entry rdbms.Entry) error {
 	entryTxUtils := rdbms.CreateEntryTxUtils(db)
+	tagsTxUtils := rdbms.CreateTagsTxUtils(db)
+	wordTxUtils := rdbms.CreateWordTxUtils(db)
 
 	tx, err := db.Begin()
 	defer tx.Commit()
@@ -186,13 +192,13 @@ func insertEntry(db *sql.DB, entry rdbms.Entry) error {
 		return err
 	}
 
-	tagIDs, err := entryTxUtils.AddTags(tx, entry.Tags)
+	tagIDs, err := tagsTxUtils.InsertTags(tx, entry.Tags)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
+	if err = tagsTxUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -202,7 +208,7 @@ func insertEntry(db *sql.DB, entry rdbms.Entry) error {
 		return err
 	}
 
-	if err = entryTxUtils.UpdateWordPool(tx, entryID); err != nil {
+	if err = wordTxUtils.UpdateWordPool(tx, entryID); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -210,8 +216,11 @@ func insertEntry(db *sql.DB, entry rdbms.Entry) error {
 	return err
 }
 
+// @TODO Move all these CRUD function sis separate file, potentially inside entryTxUtils
 func updateEntry(db *sql.DB, entry rdbms.Entry) error {
 	entryTxUtils := rdbms.CreateEntryTxUtils(db)
+	tagsTxUtils := rdbms.CreateTagsTxUtils(db)
+	wordTxUtils := rdbms.CreateWordTxUtils(db)
 
 	tx, err := db.Begin()
 	defer tx.Commit()
@@ -219,7 +228,7 @@ func updateEntry(db *sql.DB, entry rdbms.Entry) error {
 		return err
 	}
 
-	registeredEntryWords, err := entryTxUtils.GetEntryWords(tx, entry.ID)
+	registeredEntryWords, err := wordTxUtils.GetEntryWords(tx, entry.ID)
 	if err != nil {
 		return err
 	}
@@ -228,13 +237,13 @@ func updateEntry(db *sql.DB, entry rdbms.Entry) error {
 		tx.Rollback()
 		return err
 	}
-	tagIDs, err := entryTxUtils.UpdateTags(tx, entry)
+	tagIDs, err := tagsTxUtils.UpdateTags(tx, entry)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.MapEntryToTags(tx, entry.ID, tagIDs); err != nil {
+	if err = tagsTxUtils.MapEntryToTags(tx, entry.ID, tagIDs); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -244,12 +253,12 @@ func updateEntry(db *sql.DB, entry rdbms.Entry) error {
 		return err
 	}
 
-	if err = entryTxUtils.UpdateWordPool(tx, entry.ID); err != nil {
+	if err = wordTxUtils.UpdateWordPool(tx, entry.ID); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err = entryTxUtils.CleanStaleWords(tx, entry.ID, registeredEntryWords); err != nil {
+	if err = wordTxUtils.CleanStaleWords(tx, entry.ID, registeredEntryWords); err != nil {
 		tx.Rollback()
 		return err
 	}
