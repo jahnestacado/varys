@@ -108,6 +108,7 @@ func CreateMergeRequestPostActionRoute(db *sql.DB, jwtSecret string) func(http.R
 				Title:  deletedMergeRequest.Title,
 				Body:   deletedMergeRequest.Body,
 				Author: deletedMergeRequest.Author,
+				Tags:   deletedMergeRequest.Tags,
 			}
 			err = entryTxUtils.UpdateEntry(tx, updatedEntry)
 			if err != nil {

@@ -2,6 +2,7 @@ package rdbms
 
 import (
 	"database/sql"
+	"errors"
 
 	_ "github.com/lib/pq"
 )
@@ -24,45 +25,130 @@ func CreateEntryTxUtils(db *sql.DB) entryTxUtils {
 	return entryTxUtils{db}
 }
 
-func (e *entryTxUtils) AddEntry(tx *sql.Tx, newEntry Entry) (int, error) {
-	var entryID int
-	stmt, err := tx.Prepare(`
-        INSERT INTO Entries (title, body, author)
-        VALUES ($1, $2, $3)
-        RETURNING id;
-        `)
-	defer stmt.Close()
-	if err != nil {
-		return 0, err
+func (e *entryTxUtils) InsertEntry(tx *sql.Tx, entry Entry) error {
+	tagsTxUtils := CreateTagsTxUtils(e.DB)
+	wordTxUtils := CreateWordTxUtils(e.DB)
+
+	entryID, err := e.insertEntry(tx, entry)
+	if err != nil || entryID == 0 {
+		tx.Rollback()
+		return err
 	}
 
-	row, err := stmt.Query(newEntry.Title, newEntry.Body, newEntry.Author)
-	defer row.Close()
+	tagIDs, err := tagsTxUtils.InsertTags(tx, entry.Tags)
 	if err != nil {
-		return 0, err
-	}
-	row.Next()
-	if err = row.Scan(&entryID); err != nil {
-		return 0, err
+		tx.Rollback()
+		return err
 	}
 
-	return entryID, err
+	if err = tagsTxUtils.MapEntryToTags(tx, entryID, tagIDs); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = e.UpdateEntryTSV(tx, entryID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = wordTxUtils.UpdateWordPool(tx, entryID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return err
 }
 
-func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, newEntry Entry) error {
-	// @TODO Why update the author???
-	stmt, err := tx.Prepare(`
-        UPDATE Entries
-        SET title = $2, body = $3, author = $4, updated_timestamp = now() 
-        WHERE id = $1
-    `)
-	defer stmt.Close()
+func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, entry Entry) error {
+	tagsTxUtils := CreateTagsTxUtils(e.DB)
+	wordTxUtils := CreateWordTxUtils(e.DB)
+
+	registeredEntryWords, err := wordTxUtils.GetEntryWords(tx, entry.ID)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(newEntry.ID, newEntry.Title, newEntry.Body, newEntry.Author)
+	if err = e.updateEntry(tx, entry); err != nil {
+		tx.Rollback()
+		return err
+	}
+	tagIDs, err := tagsTxUtils.UpdateTags(tx, entry)
 	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = tagsTxUtils.MapEntryToTags(tx, entry.ID, tagIDs); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = e.UpdateEntryTSV(tx, entry.ID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = wordTxUtils.UpdateWordPool(tx, entry.ID); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err = wordTxUtils.CleanStaleWords(tx, entry.ID, registeredEntryWords); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return err
+}
+
+func (e *entryTxUtils) DeleteEntry(tx *sql.Tx, entryID int, claims map[string]interface{}) error {
+	tagsTxUtils := CreateTagsTxUtils(e.DB)
+	wordTxUtils := CreateWordTxUtils(e.DB)
+
+	entryWords, err := wordTxUtils.GetEntryWords(tx, entryID)
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare(`
+		WITH deletedRow AS (
+			DELETE FROM Entries
+			WHERE id = $1
+			RETURNING *
+		)
+		SELECT author
+		FROM deletedRow;
+	`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	row, err := stmt.Query(entryID)
+	if err != nil {
+		return err
+	}
+
+	row.Next()
+	var entryAuthor string
+	if err = row.Scan(&entryAuthor); err != nil {
+		return err
+	}
+	row.Close()
+
+	if claims["username"] != entryAuthor && claims["role"] != "admin" {
+		tx.Rollback()
+		return errors.New("Unauthorized action for user: " + claims["username"].(string) + " with role: " + claims["role"].(string))
+	}
+
+	tagIDs := []int{0}
+	err = tagsTxUtils.CleanupStaleTags(tx, entryID, tagIDs)
+	if err != nil {
+		return err
+	}
+
+	if err = wordTxUtils.CleanStaleWords(tx, entryID, entryWords); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -159,6 +245,51 @@ func (e *entryTxUtils) UpdateEntryTSV(tx *sql.Tx, entryID int) error {
 		return err
 	}
 	_, err = stmt.Exec(entryID)
+
+	return err
+}
+
+func (e *entryTxUtils) insertEntry(tx *sql.Tx, newEntry Entry) (int, error) {
+	var entryID int
+	stmt, err := tx.Prepare(`
+        INSERT INTO Entries (title, body, author)
+        VALUES ($1, $2, $3)
+        RETURNING id;
+        `)
+	defer stmt.Close()
+	if err != nil {
+		return 0, err
+	}
+
+	row, err := stmt.Query(newEntry.Title, newEntry.Body, newEntry.Author)
+	defer row.Close()
+	if err != nil {
+		return 0, err
+	}
+	row.Next()
+	if err = row.Scan(&entryID); err != nil {
+		return 0, err
+	}
+
+	return entryID, err
+}
+
+func (e *entryTxUtils) updateEntry(tx *sql.Tx, newEntry Entry) error {
+	// @TODO Why update the author???
+	stmt, err := tx.Prepare(`
+        UPDATE Entries
+        SET title = $2, body = $3, author = $4, updated_timestamp = now()
+        WHERE id = $1
+    `)
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(newEntry.ID, newEntry.Title, newEntry.Body, newEntry.Author)
+	if err != nil {
+		return err
+	}
 
 	return err
 }
