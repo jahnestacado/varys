@@ -7,7 +7,6 @@ import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { setEntries, getEntries } from "./../actions/entryActions.js";
 import { resumeUserSession } from "./../actions/authActions.js";
-import handleFetchError from "./../utils/handleFetchError.js";
 import { Header, Icon, Pagination } from "semantic-ui-react";
 import EntryModal from "./EntryModal.jsx";
 
@@ -62,20 +61,6 @@ class App extends Component {
             });
             props.setEntries([]);
         }
-    }
-
-    fetch(url, onDone, onError = console.log) {
-        fetch(url, {
-            method: "GET",
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            }),
-        })
-            .then(handleFetchError)
-            .then((response) => response.json())
-            .then(onDone)
-            .catch(onError);
     }
 
     refreshSearchResults() {
