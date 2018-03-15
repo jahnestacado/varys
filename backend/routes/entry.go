@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"varys/backend/storage/cache"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
 
@@ -42,26 +41,11 @@ func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter,
 				http.Error(res, err.Error(), 500)
 				return
 			}
-			cache.DeleteCachedEntries(func(cachedEntries []rdbms.Entry, key string, index int) bool {
-				return cachedEntries[index].ID == entry.ID
-			})
 		} else {
 			if err = entryTxUtils.InsertEntry(tx, entry); err != nil {
 				http.Error(res, err.Error(), 500)
 				return
 			}
-			cache.DeleteCachedEntries(func(cachedEntries []rdbms.Entry, key string, index int) bool {
-				entryTxUtils := rdbms.CreateEntryTxUtils(db)
-				matchedEntries, err := entryTxUtils.GetMatchedEntries(key)
-				if err != nil {
-					http.Error(res, err.Error(), 500)
-					return false
-				}
-				numOfEntries := len(matchedEntries)
-				numOfCachedEntries := len(cachedEntries)
-
-				return numOfEntries != numOfCachedEntries
-			})
 		}
 
 		res.Write([]byte("null"))
