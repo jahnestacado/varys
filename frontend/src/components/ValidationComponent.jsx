@@ -1,28 +1,15 @@
 import React, { Component } from "react";
 import { Message } from "semantic-ui-react";
 import bindToComponent from "./../utils/bindToComponent.js";
+import validator from "./../utils/inputValidation.js";
 
 class ValidationComponent extends Component {
     constructor(props) {
         super(props);
         const self = this;
+        // Mixin
+        Object.assign(self, validator);
         bindToComponent(self, ["onChange"]);
-    }
-
-    componentWillMount() {
-        const self = this;
-        const { props } = self;
-        props.resumeUserSession();
-    }
-
-    componentWillUpdate(nextProps) {
-        const self = this;
-        let shouldUpdate = true;
-        if (nextProps.auth.username) {
-            self.props.history.push("/");
-            shouldUpdate = false;
-        }
-        return shouldUpdate;
     }
 
     onChange(event, { name, value }) {
