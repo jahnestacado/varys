@@ -2,7 +2,6 @@ import React from "react";
 import { Form, Grid, Segment, Header } from "semantic-ui-react";
 import ValidationComponent from "./ValidationComponent.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
-import handleFetchError from "./../utils/handleFetchError.js";
 import validator from "./../utils/inputValidation.js";
 import { connect } from "react-redux";
 import { signup, resumeUserSession } from "./../actions/authActions.js";
@@ -12,7 +11,7 @@ class SignUp extends ValidationComponent {
     constructor(props) {
         super(props);
         const self = this;
-        this.state = {
+        self.state = {
             username: "",
             email: "",
             password: "",
@@ -21,6 +20,18 @@ class SignUp extends ValidationComponent {
         };
 
         bindToComponent(self, ["onSubmit", "validateInput"]);
+    }
+
+    componentWillMount() {
+        const self = this;
+        self.props.resumeUserSession();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const self = this;
+        if (nextProps.auth.username) {
+            self.props.history.push("/");
+        }
     }
 
     onSubmit(event) {
@@ -35,7 +46,9 @@ class SignUp extends ValidationComponent {
         };
 
         const errors = self.validateInput();
-        if (Object.keys(errors).length) {
+        const containsErrors = !!Object.values(errors).reduce((res, curr) => res.concat(curr), [])
+            .length;
+        if (containsErrors) {
             self.setState({ errors });
         } else {
             props.signup(body).then(() => props.history.push("/signin"));
@@ -56,18 +69,10 @@ class SignUp extends ValidationComponent {
         const emailErrors = validateEmail(email);
         const passwordErrors = validatePassword(password);
         const confirmedPasswordErrors = validateConfirmedPassword(password, confirmedPassword);
-        if (usernameErrors.length) {
-            errors.username = usernameErrors;
-        }
-        if (emailErrors.length) {
-            errors.email = emailErrors;
-        }
-        if (passwordErrors.length) {
-            errors.password = passwordErrors;
-        }
-        if (confirmedPasswordErrors.length) {
-            errors.confirmedPassword = confirmedPasswordErrors;
-        }
+        errors.username = usernameErrors;
+        errors.email = emailErrors;
+        errors.password = passwordErrors;
+        errors.confirmedPassword = confirmedPasswordErrors;
 
         return errors;
     }
