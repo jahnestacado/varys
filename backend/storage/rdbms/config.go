@@ -74,13 +74,13 @@ func InitAppServerConfig(db *sql.DB) (sql.Result, error) {
 	return result, err
 }
 
-// @TODO Below function is incomplete. We need to extend it to also allow to set host and port
-func SetAppServerConfig(db *sql.DB, smtp utils.SMTP) (sql.Result, error) {
+func SetAppServerConfig(db *sql.DB, config AppServerConfig) (sql.Result, error) {
+	smtp := config.SMTP
 	result, err := db.Exec(`
-		INSERT INTO AppServerConfig (id, email_address, email_password, smtp_host, smtp_port)
-		VALUES (1, $1, $2, $3, $4)
+		INSERT INTO AppServerConfig (id, email_address, email_password, smtp_host, smtp_port, host, port)
+		VALUES (1, $1, $2, $3, $4, $5, $6)
 		ON CONFLICT (id) DO UPDATE
-		SET email_address = $1, email_password = $2, smtp_host= $3, smtp_port = $4
-	`, smtp.Adress, smtp.Password, smtp.Host, smtp.Port)
+		SET email_address = $1, email_password = $2, smtp_host= $3, smtp_port = $4, host = $5, port = $6
+	`, smtp.Adress, smtp.Password, smtp.Host, smtp.Port, config.Host, config.Port)
 	return result, err
 }

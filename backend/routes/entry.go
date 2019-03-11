@@ -3,7 +3,6 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
@@ -136,7 +135,6 @@ func validateRequest(jwtSecret string, req *http.Request, db *sql.DB) (error, ma
 		Suffix: userInfo.Role,
 	}
 	err = utils.ValidateToken(jwtSecret, token, salt)
-	fmt.Println("userInfo", jwtSecret, err, userInfo, claims)
 
 	return err, claims
 }

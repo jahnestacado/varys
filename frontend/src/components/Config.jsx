@@ -15,6 +15,8 @@ class Config extends ValidationComponent {
             smtpPort: "",
             emailAddress: "",
             emailPassword: "",
+            host: "",
+            port: "",
             errors: {},
         };
 
@@ -29,13 +31,14 @@ class Config extends ValidationComponent {
             nextProps.history.push("/");
         } else {
             self.props.getConfig().then((config = {}) => {
-                console.log("WTFF", config);
-                const { smtp = {} } = config;
+                const { smtp = {}, host, port } = config;
                 self.setState({
                     smtpHost: smtp.host,
                     smtpPort: smtp.port,
                     emailAddress: smtp.address,
                     emailPassword: smtp.password,
+                    host,
+                    port,
                 });
             });
         }
@@ -57,6 +60,8 @@ class Config extends ValidationComponent {
             self.setState({ errors });
         } else {
             const body = {
+                host: state.host,
+                port: state.port,
                 smtp: {
                     address: state.emailAddress,
                     password: state.emailPassword,
@@ -71,14 +76,18 @@ class Config extends ValidationComponent {
 
     validateInput() {
         const self = this;
-        const { smtpHost, smtpPort, emailAddress, emailPassword } = self.state;
+        const { smtpHost, smtpPort, emailAddress, emailPassword, host, port } = self.state;
         const { validateEmail, validatePort, validateNotEmpty } = self;
         const errors = {};
+        const hostErrors = validateNotEmpty(host);
+        const portErrors = validatePort(port);
         const smtpPortErrors = validatePort(smtpPort);
         const smtpHostErrors = validateNotEmpty(smtpHost);
         const emailAddressErrors = validateEmail(emailAddress);
         const emailPasswordErrors = validateNotEmpty(emailPassword);
 
+        errors.host = hostErrors;
+        errors.port = portErrors;
         errors.smtpPort = smtpPortErrors;
         errors.smtpHost = smtpHostErrors;
         errors.emailAddress = emailAddressErrors;
@@ -90,7 +99,7 @@ class Config extends ValidationComponent {
     render() {
         const self = this;
         const { onSubmit, onChange, generateErrorMessages, state } = self;
-        const { smtpHost, smtpPort, emailAddress, emailPassword, errors } = state;
+        const { smtpHost, smtpPort, emailAddress, emailPassword, errors, host, port } = state;
         const containErrors = !!Object.keys(errors).length;
         return (
             <Grid className="Config-form" centered>
@@ -100,6 +109,22 @@ class Config extends ValidationComponent {
                             Varys Config
                         </Header>
                         <Form onSubmit={onSubmit} error={containErrors}>
+                            <Form.Input
+                                label="Host"
+                                placeholder="Host"
+                                name="host"
+                                value={host}
+                                error={!!errors.host}
+                                onChange={onChange}
+                            />
+                            <Form.Input
+                                label="Port"
+                                placeholder="Port"
+                                name="port"
+                                value={port}
+                                error={!!errors.port}
+                                onChange={onChange}
+                            />
                             <Form.Input
                                 label="SMTP Host"
                                 placeholder="SMTP Host"

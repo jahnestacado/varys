@@ -45,7 +45,7 @@ func CreateConfigPostRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, 
 			return
 		}
 
-		_, err = rdbms.SetAppServerConfig(db, config.SMTP)
+		_, err = rdbms.SetAppServerConfig(db, config)
 		if err != nil {
 			res.Write([]byte(err.Error()))
 		} else {
