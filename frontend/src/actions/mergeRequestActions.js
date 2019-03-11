@@ -5,14 +5,12 @@ import { selectNotificationItem } from "./notificationsActions";
 export const getMergeRequest = (selectedItem) => {
     return (dispatch, getState) => {
         const JWT = getState().auth.token;
-        const mergeRequestUrl = `http://localhost:7676/api/v1/merge_request/${
-            selectedItem.source_id
-        }`;
+        const mergeRequestUrl = `/api/v1/merge_request/${selectedItem.source_id}`;
         const mergeRequest = {};
         return Http.get(mergeRequestUrl, JWT)
             .then((modifiedEntry) => {
                 mergeRequest.modifiedEntry = modifiedEntry;
-                const entryUrl = `http://localhost:7676/api/v1/entry/${modifiedEntry.id}`;
+                const entryUrl = `/api/v1/entry/${modifiedEntry.id}`;
                 return Http.get(entryUrl, JWT);
             })
             .then((originalEntry) => {
@@ -36,7 +34,7 @@ export const acceptMergeRequest = (actionInfo) => {
             type: ACCEPT_MERGE_REQUEST,
             payload: null,
         };
-        const mergeRequestActionUrl = "http://localhost:7676/api/v1/merge_request/accept";
+        const mergeRequestActionUrl = "/api/v1/merge_request/accept";
         return Http.post(mergeRequestActionUrl, JWT, {
             body: JSON.stringify(actionInfo),
         })
@@ -57,7 +55,7 @@ export const rejectMergeRequest = (actionInfo) => {
             type: REJECT_MERGE_REQUEST,
             payload: null,
         };
-        const mergeRequestActionUrl = "http://localhost:7676/api/v1/merge_request/reject";
+        const mergeRequestActionUrl = "/api/v1/merge_request/reject";
         return Http.post(mergeRequestActionUrl, JWT, {
             body: JSON.stringify(actionInfo),
         })

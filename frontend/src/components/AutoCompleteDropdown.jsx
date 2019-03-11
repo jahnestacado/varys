@@ -46,18 +46,13 @@ class AutoCompleteDropdown extends Component {
         const self = this;
         if (searchQuery.length > 1) {
             self.setState({ isFetchingData: true });
-            fetch(
-                `http://localhost:7676/api/v1/match?substring=${searchQuery}&type=${
-                    self.props.type
-                }`,
-                {
-                    method: "GET",
-                    headers: new Headers({
-                        Accept: "application/json",
-                        "Content-Type": "application/json",
-                    }),
-                }
-            )
+            fetch(`/api/v1/match?substring=${searchQuery}&type=${self.props.type}`, {
+                method: "GET",
+                headers: new Headers({
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                }),
+            })
                 .then(handleFetchError)
                 .then((response) => response.json())
                 .then((result) => {

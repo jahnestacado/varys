@@ -11,7 +11,7 @@ export const resumeUserSession = () => {
 
 export const signin = (body) => {
     return (dispatch) => {
-        const signinUrl = "http://localhost:7676/api/v1/SignIn";
+        const signinUrl = "/api/v1/SignIn";
         const signinAction = (sessionToken) => {
             return {
                 type: SIGN_IN,
@@ -20,7 +20,6 @@ export const signin = (body) => {
         };
         return Http.post(signinUrl, "", { body: JSON.stringify(body) })
             .then(({ token }) => {
-                console.log(token);
                 dispatch(signinAction(token));
             })
             .catch((error) => {
@@ -32,7 +31,7 @@ export const signin = (body) => {
 
 export const signup = (body) => {
     return () => {
-        const signupUrl = "http://localhost:7676/api/v1/signup";
+        const signupUrl = "/api/v1/signup";
         return Http.post(signupUrl, "", { body: JSON.stringify(body) }).catch((error) => {
             // @TODO Handle error through an action
             console.error(error);

@@ -85,7 +85,7 @@ class EntryForm extends Component {
         const self = this;
         const { closeModal, state, props } = self;
         const { auth } = self.props;
-        const url = "http://localhost:7676/api/v1/merge_request";
+        const url = "/api/v1/merge_request";
         const mergeRequest = { ...state.entry, merge_request_author: auth.username };
         fetch(url, {
             method: "POST",

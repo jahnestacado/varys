@@ -11,7 +11,7 @@ export const selectNotificationItem = (notificationItem) => {
 
 export const getNotifications = () => {
     return (dispatch, getState) => {
-        const url = "http://localhost:7676/api/v1/notification";
+        const url = "/api/v1/notification";
         const JWT = getState().auth.token;
         return Http.get(url, JWT)
             .then((notifications) => {
@@ -26,7 +26,7 @@ export const getNotifications = () => {
 
 export const openNotification = (notification) => {
     return (dispatch, getState) => {
-        const url = `http://localhost:7676/api/v1/entry/${notification.source_id}`;
+        const url = `/api/v1/entry/${notification.source_id}`;
         const JWT = getState().auth.token;
         return Http.get(url, JWT)
             .then((entry) => {
@@ -41,7 +41,7 @@ export const openNotification = (notification) => {
 
 export const deleteNotification = (notification) => {
     return (dispatch, getState) => {
-        const url = `http://localhost:7676/api/v1/notification/${notification.id}`;
+        const url = `/api/v1/notification/${notification.id}`;
         const state = getState();
         const JWT = state.auth.token;
         const notificationEntries = state.notifications.entries;

@@ -3,7 +3,7 @@ import Http from "./../utils/http.js";
 
 export const getEntries = (query) => {
     return (dispatch, getState) => {
-        const url = `http://localhost:7676/api/v1/search?query=${query}`;
+        const url = `/api/v1/search?query=${query}`;
         const JWT = getState().auth.token;
         return Http.get(url, JWT)
             .then(({ payload }) => {
@@ -32,7 +32,7 @@ export const setActiveEntry = (entry) => {
 
 export const updateEntry = (entry) => {
     return (dispatch, getState) => {
-        const url = "http://localhost:7676/api/v1/entry";
+        const url = "/api/v1/entry";
         const JWT = getState().auth.token;
         const updateAction = (entry) => ({
             type: UPDATE_ENTRY,
@@ -53,7 +53,7 @@ export const updateEntry = (entry) => {
 
 export const deleteEntry = (entry) => {
     return (dispatch, getState) => {
-        const url = `http://localhost:7676/api/v1/entry/${entry.id}`;
+        const url = `/api/v1/entry/${entry.id}`;
         const JWT = getState().auth.token;
         const deleteAction = (entry) => ({
             type: DELETE_ENTRY,
