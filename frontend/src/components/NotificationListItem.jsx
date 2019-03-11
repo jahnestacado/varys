@@ -6,7 +6,7 @@ import { deleteNotification, openNotification } from "./../actions/notifications
 
 import "./NotificationListItem.css";
 
-class MergeRequestListItem extends Component {
+class NotificationListItem extends Component {
     constructor(props) {
         super(props);
         const self = this;
@@ -91,4 +91,4 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(MergeRequestListItem);
+export default connect(mapStateToProps, mapDispatchToProps)(NotificationListItem);
