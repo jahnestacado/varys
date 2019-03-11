@@ -18,6 +18,18 @@ class SignIn extends ValidationComponent {
         bindToComponent(self, ["onSubmit", "validateInput"]);
     }
 
+    componentWillMount() {
+        const self = this;
+        self.props.resumeUserSession();
+    }
+
+    componentWillReceiveProps(nextProps) {
+        const self = this;
+        if (nextProps.auth.username) {
+            self.props.history.push("/");
+        }
+    }
+
     onSubmit(event) {
         event.preventDefault();
         const self = this;
@@ -27,7 +39,9 @@ class SignIn extends ValidationComponent {
             password,
         };
         const errors = self.validateInput();
-        if (Object.keys(errors).length) {
+        const containsErrors = !!Object.values(errors).reduce((res, curr) => res.concat(curr), [])
+            .length;
+        if (containsErrors) {
             self.setState({ errors });
         } else {
             self.props.signin(body);
@@ -37,13 +51,11 @@ class SignIn extends ValidationComponent {
     validateInput() {
         const self = this;
         const { username, password } = self.state;
+        const { validateNotEmpty } = self;
         const errors = {};
-        if (username.length === 0) {
-            errors.username = "is required";
-        }
-        if (password.length === 0) {
-            errors.password = "is required";
-        }
+
+        errors.username = validateNotEmpty(username);
+        errors.password = validateNotEmpty(password);
 
         return errors;
     }
