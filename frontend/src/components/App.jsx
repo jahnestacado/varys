@@ -34,8 +34,15 @@ class App extends Component {
         self.props.resumeUserSession();
     }
 
-    convertQuery(q) {
-        return q.length ? q.join(window.encodeURIComponent("&")) : "";
+    componentWillReceiveProps(nextProps) {
+        const self = this;
+        if (!nextProps.auth.username) {
+            self.props.history.push("/signin");
+        }
+    }
+
+    convertQuery(query) {
+        return query.length ? query.join(window.encodeURIComponent("&")) : "";
     }
 
     handlePaginationSelect(event, { activePage }) {
