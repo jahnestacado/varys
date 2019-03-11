@@ -42,16 +42,14 @@ func (u *userTxUtils) Register(username string, password string, email string) e
 }
 
 func (u *userTxUtils) VerifyCredentials(username string, password string) (UserInfo, error) {
-	rows, err := u.DB.Query(`
+	row := u.DB.QueryRow(`
         SELECT user_id, password, email, role, member_since, verified FROM Users
         WHERE username=$1;
     `, username)
-	defer rows.Close()
 
-	rows.Next()
 	var info UserInfo
 	info.Username = username
-	err = rows.Scan(&info.ID, &info.Password, &info.Email, &info.Role, &info.MemberSince, &info.Verified)
+	err := row.Scan(&info.ID, &info.Password, &info.Email, &info.Role, &info.MemberSince, &info.Verified)
 	if err != nil {
 		return info, err
 	}

@@ -4,15 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"varys/backend/utils"
 )
 
-func Connect(config utils.Postgres) *sql.DB {
-	db, err := sql.Open("postgres", "user='"+config.User+"' password='"+config.Password+"' dbname='"+config.DBName+"'")
+func Connect(config PostgresConfig) *sql.DB {
+	db, err := sql.Open("postgres", "user='"+config.User+"' password='"+config.Password+"' dbname='"+config.DBName+"' sslmode='disable'")
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		fmt.Println("connected to database")
+		fmt.Println("connected to database", config.DBName)
 	}
 	return db
 }

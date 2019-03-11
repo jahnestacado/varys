@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
 
 	"database/sql"
@@ -9,21 +10,16 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func CreateVerifyGetRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateVerifyGetRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
+		jwtSecret := rdbms.GetAppServerConfig(db).JWTSecret
 		username := params.ByName("username")
 		token := params.ByName("token")
-		rows, err := db.Query("SELECT email FROM Users WHERE username=$1", username)
-		defer rows.Close()
+		row := db.QueryRow("SELECT email FROM Users WHERE username=$1", username)
+		var email string
+		err := row.Scan(&email)
 		if err != nil {
 			http.Error(res, err.Error(), 404)
-			return
-		}
-		rows.Next()
-		var email string
-		err = rows.Scan(&email)
-		if err != nil {
-			http.Error(res, err.Error(), 500)
 			return
 		}
 

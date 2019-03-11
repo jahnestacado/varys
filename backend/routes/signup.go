@@ -13,8 +13,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func CreateSignUpPostRoute(DB *sql.DB, config *utils.Config) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateSignUpPostRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		config := rdbms.GetAppServerConfig(DB)
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
 		var body rdbms.UserInfo
@@ -37,7 +38,7 @@ func CreateSignUpPostRoute(DB *sql.DB, config *utils.Config) func(http.ResponseW
 			// @TODO Revert registration
 			return
 		}
-		err = utils.SendMail(emailMessage, body.Email, &config.Email)
+		err = utils.SendMail(emailMessage, body.Email, config.SMTP)
 		if err != nil {
 			http.Error(res, err.Error(), 500)
 			// @TODO Revert registration

@@ -1,16 +1,21 @@
 package rdbms
 
-import (
-	"database/sql"
-	"varys/backend/utils"
-)
+import "database/sql"
 
-func CreateSchema(db *sql.DB, config utils.Postgres) error {
-	// Should create also admin user
+func CreateSchema(db *sql.DB, config PostgresConfig) error {
 
-	const createSchema = `CREATE SCHEMA IF NOT EXISTS Varys;`
-	var setSearchPath = `ALTER DATABASE ` + config.DBName + ` SET search_path TO Varys;`
-
+	const createAppServerConfigTable = `
+		CREATE TABLE IF NOT EXISTS AppServerConfig (
+			id serial PRIMARY KEY,
+			jwt_secret text default md5(random()::text),
+			email_address text NOT NULL,
+			email_password text NOT NULL,
+			smtp_host text NOT NULL,
+			smtp_port text NOT NULL,
+			host text NOT NULL,
+			port text NOT NULL
+		)
+	`
 	const createWordPool = `
         CREATE TABLE IF NOT EXISTS WordPool (
             id serial PRIMARY KEY,
@@ -35,6 +40,11 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
             member_since timestamp DEFAULT current_timestamp
         )
     `
+	const createSuperAdminUser = `
+		INSERT INTO Users (username, password, email, verified, role)
+		VALUES ('varys', '$2a$10$aO.UlzGEoZReci/e5jM7P.eUaDcPoMfSkW/UFuR.sKpm5qOQXK0qG', 'varys@westeros.com', true, 'superadmin')
+		ON CONFLICT DO NOTHING
+	`
 	const createEntriesTable = `
         CREATE TABLE IF NOT EXISTS Entries (
             id serial PRIMARY KEY,
@@ -127,11 +137,10 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 	const createTSVGIN = `CREATE INDEX IF NOT EXISTS tsvGin ON Entries USING gin(tsv);`
 
 	var commands = [20]string{
-		createSchema,
-		setSearchPath,
 		createWordPool,
 		createEntryWord,
 		createUsersTable,
+		createSuperAdminUser,
 		createEntriesTable,
 		createMergeRequestsTable,
 		createNotificationsTable,
@@ -147,6 +156,7 @@ func CreateSchema(db *sql.DB, config utils.Postgres) error {
 		createEnglishSimpleFTSConfig,
 		alterFTSMapping,
 		alterEnglishSimpleFTSMapping,
+		createAppServerConfigTable,
 	}
 
 	for _, command := range commands {

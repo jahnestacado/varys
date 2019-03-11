@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"crypto/rand"
 	b64 "encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -37,22 +40,36 @@ func ValidateToken(secret string, headerlessTokenString string, salt Salt) error
 }
 
 func GetClaimsFromToken(token string) (map[string]interface{}, error) {
-	isHeaderless := strings.Count(token, ".") == 1
-	splitIndex := 1
-	if isHeaderless {
-		splitIndex = 0
-	}
-	claimsB64 := strings.Split(token, ".")[splitIndex]
-	claimsInBytes, err := b64.RawStdEncoding.DecodeString(claimsB64)
-	if err != nil {
-		return nil, err
-	}
+	var err error
+	var claims map[string]interface{}
+	if len(token) > 0 {
+		isHeaderless := strings.Count(token, ".") == 1
+		splitIndex := 1
+		if isHeaderless {
+			splitIndex = 0
+		}
+		claimsB64 := strings.Split(token, ".")[splitIndex]
+		claimsInBytes, err := b64.RawStdEncoding.DecodeString(claimsB64)
+		if err != nil {
+			return nil, err
+		}
 
-	var claimsMapTemplate interface{}
-	err = json.Unmarshal(claimsInBytes, &claimsMapTemplate)
-	claims := claimsMapTemplate.(map[string]interface{})
+		var claimsMapTemplate interface{}
+		err = json.Unmarshal(claimsInBytes, &claimsMapTemplate)
+		claims = claimsMapTemplate.(map[string]interface{})
+
+	} else {
+		err = errors.New("Empty JWT token")
+	}
 
 	return claims, err
+}
+
+func GenerateSecret() (string, error) {
+	secret := make([]byte, 16)
+	_, err := rand.Read(secret)
+
+	return hex.EncodeToString(secret), err
 }
 
 func getB64TokenHeader(alg string) string {

@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"varys/backend/storage/rdbms"
 	"varys/backend/utils"
@@ -10,8 +11,9 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func CreateEntryPutRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateEntryPutRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		jwtSecret := rdbms.GetAppServerConfig(db).JWTSecret
 		bodyDecoder := json.NewDecoder(req.Body)
 		defer req.Body.Close()
 		var entry rdbms.Entry
@@ -83,9 +85,10 @@ func CreateEntryGetRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, ht
 	}
 }
 
-func CreateEntryDeleteRoute(db *sql.DB, jwtSecret string) func(http.ResponseWriter, *http.Request, httprouter.Params) {
+func CreateEntryDeleteRoute(db *sql.DB) func(http.ResponseWriter, *http.Request, httprouter.Params) {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		entryID, err := getNumericParameter(params.ByName("id"), -1)
+		jwtSecret := rdbms.GetAppServerConfig(db).JWTSecret
 
 		err, claims := validateRequest(jwtSecret, req, db)
 		if err != nil {
@@ -119,12 +122,11 @@ func validateRequest(jwtSecret string, req *http.Request, db *sql.DB) (error, ma
 		return err, claims
 	}
 
-	rows, err := db.Query("SELECT password, role FROM Users WHERE username = $1", claims["username"])
-	defer rows.Close()
-	rows.Next()
+	row := db.QueryRow("SELECT password, role FROM Users WHERE username=$1", claims["username"])
 
 	var userInfo rdbms.UserInfo
-	err = rows.Scan(&userInfo.Password, &userInfo.Role)
+	err = row.Scan(&userInfo.Password, &userInfo.Role)
+
 	if err != nil {
 		return err, claims
 	}
@@ -134,6 +136,7 @@ func validateRequest(jwtSecret string, req *http.Request, db *sql.DB) (error, ma
 		Suffix: userInfo.Role,
 	}
 	err = utils.ValidateToken(jwtSecret, token, salt)
+	fmt.Println("userInfo", jwtSecret, err, userInfo, claims)
 
 	return err, claims
 }

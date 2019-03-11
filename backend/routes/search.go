@@ -49,6 +49,7 @@ func CreateSearchGetRoute(DB *sql.DB) func(http.ResponseWriter, *http.Request, h
 	}
 }
 
+// @TODO Move to utils package
 func getNumericParameter(param string, defaultValue int) (int, error) {
 	limit := defaultValue
 	var err error

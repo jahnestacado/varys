@@ -173,7 +173,7 @@ func CreateMergeRequestDeleteRoute(db *sql.DB, jwtSecret string) func(http.Respo
 			return
 		}
 		username := claims["username"]
-		isUserAdmin := claims["role"] == "admin"
+		isUserAdmin := claims["role"] == "admin" || claims["role"] == "superadmin"
 		if username != mergeRequest.MergeRequestAuthor && !isUserAdmin {
 			tx.Rollback()
 			http.Error(res, err.Error(), 401)

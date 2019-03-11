@@ -136,7 +136,7 @@ func (e *entryTxUtils) DeleteEntry(tx *sql.Tx, entryID int, claims map[string]in
 	}
 	row.Close()
 
-	if claims["username"] != entryAuthor && claims["role"] != "admin" {
+	if claims["username"] != entryAuthor && claims["role"] != "admin" && claims["role"] != "superadmin" {
 		tx.Rollback()
 		return errors.New("Unauthorized action for user: " + claims["username"].(string) + " with role: " + claims["role"].(string))
 	}
