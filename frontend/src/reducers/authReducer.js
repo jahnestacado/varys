@@ -20,7 +20,7 @@ const authReducer = (state = defaultState, action) => {
                 newState = { username, email, role, member_since, token };
                 window.localStorage.setItem("varys-session", token);
             } else {
-                newState = defaultState;
+                newState = Object.assign({}, defaultState);
             }
             break;
         default:
