@@ -59,10 +59,11 @@ class EntryForm extends Component {
             case "add":
                 props.updateOrCreateEntry(state.entry);
                 break;
-            case "merge-request":
+            case "merge-request": {
                 const mergeRequest = { ...state.entry, merge_request_author: props.auth.username };
                 props.submitMergeRequest(mergeRequest);
                 break;
+            }
             default:
                 console.log(`Unknown type: ${type}`);
         }
