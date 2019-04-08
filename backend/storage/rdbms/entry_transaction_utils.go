@@ -68,7 +68,7 @@ func (e *entryTxUtils) UpdateEntry(tx *sql.Tx, entry Entry) error {
 		return err
 	}
 
-	if err = e.updateEntry(tx, entry); err != nil {
+	if err = e.updateOrCreateEntry(tx, entry); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -274,7 +274,7 @@ func (e *entryTxUtils) insertEntry(tx *sql.Tx, newEntry Entry) (int, error) {
 	return entryID, err
 }
 
-func (e *entryTxUtils) updateEntry(tx *sql.Tx, newEntry Entry) error {
+func (e *entryTxUtils) updateOrCreateEntry(tx *sql.Tx, newEntry Entry) error {
 	// @TODO Why update the author???
 	stmt, err := tx.Prepare(`
         UPDATE Entries
