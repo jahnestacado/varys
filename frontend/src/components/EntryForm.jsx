@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import MarkdownEditor from "./MarkdownEditor.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { updateOrCreateEntry, showEntryEditor } from "./../actions/entryActions.js";
+import { updateOrCreateEntry, closeEntryEditor } from "./../actions/entryActions.js";
 import { submitMergeRequest } from "./../actions/mergeRequestActions.js";
 import { Modal, Form, Input, Button } from "semantic-ui-react";
 import AutoCompleteDropdown from "./AutoCompleteDropdown";
@@ -104,7 +104,7 @@ class EntryForm extends Component {
                     className="EntryForm-modal"
                     closeIcon
                     size="fullscreen"
-                    onClose={() => props.showEntryEditor(null)}
+                    onClose={() => props.closeEntryEditor()}
                 >
                     <Form>
                         <Form.Group className="EntryForm-header">
@@ -148,7 +148,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
     return {
         updateOrCreateEntry: (entry) => dispatch(updateOrCreateEntry(entry)),
-        showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
+        closeEntryEditor: () => dispatch(closeEntryEditor()),
         submitMergeRequest: (mergeRequest) => dispatch(submitMergeRequest(mergeRequest)),
     };
 };

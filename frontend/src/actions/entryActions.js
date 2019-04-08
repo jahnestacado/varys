@@ -3,7 +3,9 @@ import {
     DELETE_ENTRY,
     SET_ENTRIES,
     SHOW_ENTRY,
+    CLOSE_ENTRY,
     SHOW_ENTRY_EDITOR,
+    CLOSE_ENTRY_EDITOR,
     SHOW_DELETE_ENTRY_MODAL,
     CLOSE_DELETE_ENTRY_MODAL,
 } from "../utils/constants.js";
@@ -34,6 +36,11 @@ export const showEntry = (entry) => ({
     payload: entry,
 });
 
+export const closeEntry = () => ({
+    type: CLOSE_ENTRY,
+    payload: null,
+});
+
 export const showDeleteEntryModal = (entry) => ({
     type: SHOW_DELETE_ENTRY_MODAL,
     payload: entry,
@@ -47,6 +54,11 @@ export const closeDeleteEntryModal = () => ({
 export const showEntryEditor = (entry) => ({
     type: SHOW_ENTRY_EDITOR,
     payload: entry,
+});
+
+export const closeEntryEditor = () => ({
+    type: CLOSE_ENTRY_EDITOR,
+    payload: null,
 });
 
 export const updateOrCreateEntry = (entry) => {

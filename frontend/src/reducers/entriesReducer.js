@@ -3,7 +3,9 @@ import {
     DELETE_ENTRY,
     SET_ENTRIES,
     SHOW_ENTRY,
+    CLOSE_ENTRY,
     SHOW_ENTRY_EDITOR,
+    CLOSE_ENTRY_EDITOR,
     SHOW_DELETE_ENTRY_MODAL,
     CLOSE_DELETE_ENTRY_MODAL,
 } from "../utils/constants.js";
@@ -47,14 +49,14 @@ const entriesReducer = (state = defaultState, action) => {
             newState = { ...state, entries: action.payload || [] };
             break;
         case SHOW_ENTRY:
+        case CLOSE_ENTRY:
             newState = { ...state, activeEntry: action.payload, activeEntryEditor: null };
             break;
         case SHOW_ENTRY_EDITOR:
+        case CLOSE_ENTRY_EDITOR:
             newState = { ...state, activeEntryEditor: action.payload, activeEntry: null };
             break;
         case SHOW_DELETE_ENTRY_MODAL:
-            newState = { ...state, entryToDelete: action.payload };
-            break;
         case CLOSE_DELETE_ENTRY_MODAL:
             newState = { ...state, entryToDelete: action.payload };
             break;

@@ -29,12 +29,13 @@ class ResultListItem extends Component {
             <Icon
                 name={iconName}
                 className={`ResultListItem-btn-${actionType}-entry`}
-                onClick={() =>
+                onClick={(event) => {
+                    event.stopPropagation();
                     props.showEntryEditor({
                         type: actionType,
                         entry,
-                    })
-                }
+                    });
+                }}
             />
         );
     }
@@ -47,7 +48,10 @@ class ResultListItem extends Component {
             <Icon
                 className="ResultListItem-btn-delete-entry"
                 name="trash"
-                onClick={() => props.showDeleteEntryModal(entry)}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    props.showDeleteEntryModal(entry);
+                }}
             />
         );
     }

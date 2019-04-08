@@ -1,35 +1,24 @@
 import React, { Component } from "react";
 import MarkdownViewer from "./MarkdownViewer.jsx";
-import "./ResultListItem.css";
-import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { Modal, Header } from "semantic-ui-react";
-import { showEntry } from "./../actions/entryActions.js";
+import { closeEntry } from "./../actions/entryActions.js";
+
+import "./ResultListItem.css";
 
 class EntryModal extends Component {
-    constructor(props) {
-        super(props);
-        const self = this;
-        bindToComponent(self, ["closeModal"]);
-    }
-
-    closeModal() {
-        const self = this;
-        self.props.showEntry(null);
-    }
-
     render() {
         const self = this;
-        const { closeModal, props } = self;
-        const { activeEntry } = props;
-        const entry = activeEntry || {};
+        const { props } = self;
+        const isOpen = !!props.activeEntry;
+        const entry = props.activeEntry || {};
         return (
             <Modal
-                open={!!activeEntry}
+                open={isOpen}
                 className="EntryForm-modal"
                 closeIcon
                 size="large"
-                onClose={closeModal}
+                onClose={props.closeEntry}
             >
                 {" "}
                 <Header icon="file text outline" content={entry.title} />
@@ -41,16 +30,12 @@ class EntryModal extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        activeEntry: state.entries.activeEntry,
-    };
-};
+const mapStateToProps = (state) => ({
+    activeEntry: state.entries.activeEntry,
+});
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        showEntry: (entry) => dispatch(showEntry(entry)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({
+    closeEntry: (entry) => dispatch(closeEntry(entry)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(EntryModal);
