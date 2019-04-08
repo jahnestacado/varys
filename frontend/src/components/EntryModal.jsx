@@ -4,7 +4,7 @@ import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { Modal, Header } from "semantic-ui-react";
-import { setActiveEntry } from "./../actions/entryActions.js";
+import { showEntry } from "./../actions/entryActions.js";
 
 class EntryModal extends Component {
     constructor(props) {
@@ -15,7 +15,7 @@ class EntryModal extends Component {
 
     closeModal() {
         const self = this;
-        self.props.setActiveEntry(null);
+        self.props.showEntry(null);
     }
 
     render() {
@@ -49,7 +49,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        setActiveEntry: (entry) => dispatch(setActiveEntry(entry)),
+        showEntry: (entry) => dispatch(showEntry(entry)),
     };
 };
 

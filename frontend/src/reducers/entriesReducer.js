@@ -1,8 +1,15 @@
-import { UPDATE_ENTRY, DELETE_ENTRY, SET_ENTRIES, SET_ACTIVE_ENTRY } from "../utils/constants.js";
+import {
+    UPDATE_ENTRY,
+    DELETE_ENTRY,
+    SET_ENTRIES,
+    SHOW_ENTRY,
+    SHOW_ENTRY_EDITOR,
+} from "../utils/constants.js";
 
 const defaultState = {
     entries: [],
     activeEntry: null,
+    activeEntryEditor: null, // {type: null, entry: null}
 };
 
 const entriesReducer = (state = defaultState, action) => {
@@ -18,6 +25,7 @@ const entriesReducer = (state = defaultState, action) => {
                     }
                     return res;
                 }),
+                activeEntryEditor: null,
             };
             break;
         case DELETE_ENTRY:
@@ -36,8 +44,12 @@ const entriesReducer = (state = defaultState, action) => {
             newState = { ...state, entries: action.payload || [] };
             console.log(newState);
             break;
-        case SET_ACTIVE_ENTRY:
-            newState = { ...state, activeEntry: action.payload };
+        case SHOW_ENTRY:
+            console.log("show entry");
+            newState = { ...state, activeEntry: action.payload, activeEntryEditor: null };
+            break;
+        case SHOW_ENTRY_EDITOR:
+            newState = { ...state, activeEntryEditor: action.payload, activeEntry: null };
             break;
         default:
             newState = state;

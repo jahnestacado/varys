@@ -1,9 +1,10 @@
 import React, { Component } from "react";
-import "./DeleteEntry.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { deleteEntry } from "./../actions/entryActions.js";
 import { Icon, Modal, Button, Header } from "semantic-ui-react";
+
+import "./DeleteEntry.css";
 
 class DeleteEntry extends Component {
     constructor(props) {
@@ -76,10 +77,6 @@ const mapDispatchToProps = (dispatch) => {
             dispatch(deleteEntry(entry));
         },
     };
-};
-
-DeleteEntry.propTypes = {
-    entry: React.PropTypes.object.isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(DeleteEntry);

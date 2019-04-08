@@ -1,5 +1,5 @@
 import { SELECT_NOTIFICATION_ITEM, SET_NOTIFICATION_ITEMS } from "../utils/constants.js";
-import { setActiveEntry } from "./entryActions";
+import { showEntry } from "./entryActions";
 import Http from "./../utils/http.js";
 
 export const selectNotificationItem = (notificationItem) => {
@@ -30,7 +30,7 @@ export const openNotification = (notification) => {
         const JWT = getState().auth.token;
         return Http.get(url, JWT)
             .then((entry) => {
-                dispatch(setActiveEntry(entry));
+                dispatch(showEntry(entry));
             })
             .catch((error) => {
                 // @TODO Handle error through an action

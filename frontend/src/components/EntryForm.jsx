@@ -1,107 +1,71 @@
 import React, { Component } from "react";
 import MarkdownEditor from "./MarkdownEditor.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
-import "./EntryForm.css";
 import { connect } from "react-redux";
-import { updateEntry } from "./../actions/entryActions.js";
-import handleFetchError from "./../utils/handleFetchError.js";
-import { Modal, Icon, Form, Input, Button } from "semantic-ui-react";
+import { updateOrCreateEntry, showEntryEditor } from "./../actions/entryActions.js";
+import { submitMergeRequest } from "./../actions/mergeRequestActions.js";
+import { Modal, Form, Input, Button } from "semantic-ui-react";
 import AutoCompleteDropdown from "./AutoCompleteDropdown";
 
-const initializeEntry = ({ username }) => {
-    return {
-        title: "",
-        body: "",
-        tags: [],
-        author: username,
-        id: -1,
-    };
-};
+import "./EntryForm.css";
 
 class EntryForm extends Component {
     constructor(props) {
         super(props);
         const self = this;
-        const entry = props.entry || initializeEntry(self.props.auth);
-        this.state = {
-            showModal: false,
-            entry,
-        };
 
         bindToComponent(self, [
-            "openModal",
-            "closeModal",
             "submit",
             "updateBody",
             "updateTitle",
             "setState",
             "updateTags",
+            "createDefaultEntry",
         ]);
+
+        self.state = {
+            entry: self.createDefaultEntry(),
+        };
     }
 
-    openModal(event) {
+    componentWillReceiveProps(nextProps) {
         const self = this;
-        event && event.stopPropagation();
-        self.setState({ showModal: true });
+        if (nextProps.activeEntryEditor && nextProps.activeEntryEditor.entry) {
+            self.setState({ entry: nextProps.activeEntryEditor.entry });
+        } else {
+            self.setState({ entry: self.createDefaultEntry() });
+        }
     }
 
-    closeModal() {
+    createDefaultEntry() {
         const self = this;
-        self.setState({ showModal: false });
-        self.tags = [];
+        const defaultEntry = {
+            title: "",
+            body: "",
+            tags: [],
+            author: self.props.auth.username,
+            id: -1,
+        };
+        return defaultEntry;
     }
 
     submit() {
         const self = this;
-        const { type } = self.props;
+        const { state, props } = self;
+        const { type } = self.props.activeEntryEditor;
 
         switch (type) {
             case "edit":
             case "add":
-                self.submitEntry();
+                props.updateOrCreateEntry(state.entry);
                 break;
             case "merge-request":
-                self.submitMergeRequest();
+                const mergeRequest = { ...state.entry, merge_request_author: props.auth.username };
+                props.submitMergeRequest(mergeRequest);
                 break;
             default:
-                console.log("Unknown type");
+                console.log(`Unknown type: ${type}`);
         }
-    }
-
-    submitEntry() {
-        const self = this;
-        const { setState, closeModal, state, props } = self;
-        props.updateEntry(state.entry).then(() => {
-            if (props.type === "add") {
-                setState({
-                    entry: initializeEntry(props.auth),
-                });
-            }
-            closeModal();
-        });
-    }
-
-    submitMergeRequest() {
-        const self = this;
-        const { closeModal, state, props } = self;
-        const { auth } = self.props;
-        const url = "/api/v1/merge_request";
-        const mergeRequest = { ...state.entry, merge_request_author: auth.username };
-        fetch(url, {
-            method: "POST",
-            body: JSON.stringify(mergeRequest),
-            headers: new Headers({
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                JWT: self.props.auth.token,
-            }),
-        })
-            .then(handleFetchError)
-            .then(() => {
-                self.setState({ entry: props.entry });
-                closeModal();
-            })
-            .catch(console.log);
     }
 
     updateBody(body) {
@@ -128,43 +92,18 @@ class EntryForm extends Component {
 
     render() {
         const self = this;
-        const {
-            openModal,
-            closeModal,
-            updateTitle,
-            updateBody,
-            submit,
-            updateTags,
-            state,
-            props,
-        } = self;
-        const { entry, showModal } = state;
+        const { updateTitle, updateBody, submit, updateTags, state, props } = self;
+        const { entry } = state;
         const { title, tags } = entry;
-        const { color, circular, type, button, className } = props;
-        const iconName = type === "merge-request" ? "fork" : "add";
+        const showModal = !!props.activeEntryEditor;
         return (
             <div className="EntryForm">
-                {button ? (
-                    <Button
-                        circular={circular}
-                        color={color}
-                        icon={iconName}
-                        className={className}
-                        onClick={openModal}
-                        size="large"
-                    />
-                ) : (
-                    <div className={className} onClick={openModal}>
-                        <Icon name={iconName} />
-                    </div>
-                )}
-
                 <Modal
                     open={showModal}
                     className="EntryForm-modal"
                     closeIcon
                     size="fullscreen"
-                    onClose={closeModal}
+                    onClose={() => props.showEntryEditor(null)}
                 >
                     <Form>
                         <Form.Group className="EntryForm-header">
@@ -201,17 +140,16 @@ class EntryForm extends Component {
 const mapStateToProps = (state) => {
     return {
         auth: state.auth,
+        activeEntryEditor: state.entries.activeEntryEditor,
     };
 };
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        updateEntry: (entry) => dispatch(updateEntry(entry)),
+        updateOrCreateEntry: (entry) => dispatch(updateOrCreateEntry(entry)),
+        showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
+        submitMergeRequest: (mergeRequest) => dispatch(submitMergeRequest(mergeRequest)),
     };
-};
-
-EntryForm.propTypes = {
-    entry: React.PropTypes.object,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EntryForm);

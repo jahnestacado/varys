@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import showdown from "showdown";
-import "./MarkdownEditor.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { TextArea, Container } from "semantic-ui-react";
+
+import "./MarkdownEditor.css";
 
 class MarkdownEditor extends Component {
     constructor(props) {
@@ -12,7 +13,7 @@ class MarkdownEditor extends Component {
         self.converter = new showdown.Converter();
         self.state = {
             generatedHtml: self.converter.makeHtml(`${self.getMarkdownTitleField()}${body}`),
-            markdownInput: id ? body : "",
+            markdownInput: id === -1 ? "" : body,
             markdownWithTitle: "",
         };
 
@@ -28,7 +29,8 @@ class MarkdownEditor extends Component {
     }
 
     getMarkdownTitleField() {
-        const { title } = this.props.entry;
+        const self = this;
+        const { title } = self.props.entry;
         return `# ${title} \n`;
     }
 
@@ -70,10 +72,5 @@ class MarkdownEditor extends Component {
         );
     }
 }
-
-MarkdownEditor.propTypes = {
-    updateBody: React.PropTypes.func.isRequired,
-    entry: React.PropTypes.object.isRequired,
-};
 
 export default MarkdownEditor;

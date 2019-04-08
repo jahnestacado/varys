@@ -1,6 +1,7 @@
 import { ACCEPT_MERGE_REQUEST, REJECT_MERGE_REQUEST } from "../utils/constants.js";
 import Http from "./../utils/http.js";
 import { selectNotificationItem } from "./notificationsActions";
+import { showEntryEditor } from "./entryActions";
 
 export const getMergeRequest = (selectedItem) => {
     return (dispatch, getState) => {
@@ -19,6 +20,23 @@ export const getMergeRequest = (selectedItem) => {
                     data: mergeRequest,
                 });
                 dispatch(selectNotificationItem(selectedItemWithData));
+            })
+            .catch((error) => {
+                // @TODO Handle error through an action
+                console.error(error);
+            });
+    };
+};
+
+export const submitMergeRequest = (mergeRequest) => {
+    return (dispatch, getState) => {
+        const JWT = getState().auth.token;
+        const mergeRequestUrl = "/api/v1/merge_request";
+        return Http.post(mergeRequestUrl, JWT, {
+            body: JSON.stringify(mergeRequest),
+        })
+            .then(() => {
+                dispatch(showEntryEditor(null));
             })
             .catch((error) => {
                 // @TODO Handle error through an action

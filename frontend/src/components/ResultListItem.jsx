@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import EntryForm from "./EntryForm.jsx";
 import DeleteEntry from "./DeleteEntry.jsx";
-import "./ResultListItem.css";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { Card, Image, Label, Dropdown } from "semantic-ui-react";
-import { setActiveEntry } from "./../actions/entryActions.js";
+import { Card, Image, Label, Dropdown, Icon } from "semantic-ui-react";
+import { showEntry, showEntryEditor } from "./../actions/entryActions.js";
+
+import "./ResultListItem.css";
 
 class ResultListItem extends Component {
     constructor(props) {
@@ -20,7 +20,23 @@ class ResultListItem extends Component {
     displayEntry() {
         const self = this;
         const { props } = self;
-        self.props.setActiveEntry(props.entry);
+        self.props.showEntry(props.entry, "readonly");
+    }
+
+    createEditorActionIcon(actionType, iconName, entry) {
+        const self = this;
+        const { props } = self;
+        return (
+            <Icon
+                name={iconName}
+                onClick={() =>
+                    props.showEntryEditor({
+                        type: actionType,
+                        entry,
+                    })
+                }
+            />
+        );
     }
 
     render() {
@@ -29,6 +45,7 @@ class ResultListItem extends Component {
         const { entry, auth } = props;
         const { username } = auth;
         const isEntryAuthor = entry.author === username;
+        const iconName = isEntryAuthor ? "edit" : "fork";
         // @TODO Create component that generates labels
         const keywordLabels = entry.tags.map((keyword, i) => {
             return (
@@ -51,16 +68,19 @@ class ResultListItem extends Component {
                                         icon="ellipsis vertical"
                                     >
                                         <Dropdown.Menu>
-                                            <EntryForm entry={entry} type="edit" />
+                                            {self.createEditorActionIcon("edit", iconName, entry)}
                                             <DeleteEntry entry={entry} />
                                         </Dropdown.Menu>
                                     </Dropdown>
                                 ) : (
-                                    <EntryForm
-                                        className="ResultListItem-fork-btn"
-                                        entry={entry}
-                                        type="merge-request"
-                                    />
+                                    /* @TODO replace with Fragment after upgrading to React > 16*/
+                                    <div>
+                                        {self.createEditorActionIcon(
+                                            "merge-request",
+                                            iconName,
+                                            entry
+                                        )}
+                                    </div>
                                 )}
                             </Card.Meta>
                         )}
@@ -86,10 +106,6 @@ class ResultListItem extends Component {
     }
 }
 
-ResultListItem.propTypes = {
-    entry: React.PropTypes.object.isRequired,
-};
-
 const mapStateToProps = (state) => {
     return {
         auth: state.auth,
@@ -98,7 +114,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        setActiveEntry: (entry) => dispatch(setActiveEntry(entry)),
+        showEntry: (entry) => dispatch(showEntry(entry)),
+        showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
     };
 };
 export default connect(mapStateToProps, mapDispatchToProps)(ResultListItem);

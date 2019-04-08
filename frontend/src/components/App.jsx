@@ -5,9 +5,9 @@ import EntryForm from "./EntryForm.jsx";
 import NotificationPanel from "./NotificationPanel.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
-import { setEntries, getEntries } from "./../actions/entryActions.js";
+import { setEntries, getEntries, showEntryEditor } from "./../actions/entryActions.js";
 import { resumeUserSession } from "./../actions/authActions.js";
-import { Header, Icon, Pagination } from "semantic-ui-react";
+import { Header, Icon, Pagination, Button } from "semantic-ui-react";
 import EntryModal from "./EntryModal.jsx";
 
 import "./App.css";
@@ -89,7 +89,7 @@ class App extends Component {
 
     render() {
         const self = this;
-        const { handlePaginationSelect, refreshSearchResults, state, onQueryChange } = self;
+        const { handlePaginationSelect, refreshSearchResults, state, onQueryChange, props } = self;
         const { activePage, limit } = state;
         const { entries } = self.props.entries;
         const totalPages = Math.ceil(entries.length / self.state.limit);
@@ -119,13 +119,17 @@ class App extends Component {
                 </div>
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />
 
-                <EntryForm
-                    className="EntryForm-btn-open"
-                    onSubmit={refreshSearchResults}
-                    type="add"
-                    button
+                <Button
+                    className="EntryForm-btn-add"
                     color="teal"
                     circular
+                    icon="add"
+                    onClick={() =>
+                        props.showEntryEditor({
+                            type: "add",
+                            entry: null,
+                        })
+                    }
                 />
 
                 {entries.length ? (
@@ -142,6 +146,8 @@ class App extends Component {
                 ) : (
                     ""
                 )}
+
+                <EntryForm />
                 <EntryModal />
             </div>
         );
@@ -160,6 +166,7 @@ const mapDispatchToProps = (dispatch) => {
         getEntries: (query) => dispatch(getEntries(query)),
         setEntries: (entries) => dispatch(setEntries(entries)),
         resumeUserSession: () => dispatch(resumeUserSession()),
+        showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
     };
 };
 

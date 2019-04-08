@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import ResultListItem from "./ResultListItem.jsx";
 import { Grid } from "semantic-ui-react";
+
 import "./ResultList.css";
+
 const numOfColsPerRow = 5;
 
 class ResultList extends Component {
@@ -39,9 +41,5 @@ class ResultList extends Component {
         );
     }
 }
-
-ResultList.propTypes = {
-    entries: React.PropTypes.array.isRequired,
-};
 
 export default ResultList;
