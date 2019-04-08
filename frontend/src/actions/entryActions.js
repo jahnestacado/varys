@@ -4,6 +4,8 @@ import {
     SET_ENTRIES,
     SHOW_ENTRY,
     SHOW_ENTRY_EDITOR,
+    SHOW_DELETE_ENTRY_MODAL,
+    CLOSE_DELETE_ENTRY_MODAL,
 } from "../utils/constants.js";
 import Http from "./../utils/http.js";
 
@@ -22,26 +24,30 @@ export const getEntries = (query) => {
     };
 };
 
-export const setEntries = (entries) => {
-    return {
-        type: SET_ENTRIES,
-        payload: entries,
-    };
-};
+export const setEntries = (entries) => ({
+    type: SET_ENTRIES,
+    payload: entries,
+});
 
-export const showEntry = (entry) => {
-    return {
-        type: SHOW_ENTRY,
-        payload: entry,
-    };
-};
+export const showEntry = (entry) => ({
+    type: SHOW_ENTRY,
+    payload: entry,
+});
 
-export const showEntryEditor = (entry) => {
-    return {
-        type: SHOW_ENTRY_EDITOR,
-        payload: entry,
-    };
-};
+export const showDeleteEntryModal = (entry) => ({
+    type: SHOW_DELETE_ENTRY_MODAL,
+    payload: entry,
+});
+
+export const closeDeleteEntryModal = () => ({
+    type: CLOSE_DELETE_ENTRY_MODAL,
+    payload: null,
+});
+
+export const showEntryEditor = (entry) => ({
+    type: SHOW_ENTRY_EDITOR,
+    payload: entry,
+});
 
 export const updateOrCreateEntry = (entry) => {
     return (dispatch, getState) => {
@@ -71,6 +77,7 @@ export const deleteEntry = (entry) => {
         return Http.delete(url, JWT)
             .then(() => {
                 dispatch(deleteAction(entry));
+                dispatch(closeDeleteEntryModal());
             })
             .catch((error) => {
                 // @TODO Handle error through an action

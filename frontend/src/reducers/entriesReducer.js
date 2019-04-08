@@ -4,12 +4,15 @@ import {
     SET_ENTRIES,
     SHOW_ENTRY,
     SHOW_ENTRY_EDITOR,
+    SHOW_DELETE_ENTRY_MODAL,
+    CLOSE_DELETE_ENTRY_MODAL,
 } from "../utils/constants.js";
 
 const defaultState = {
     entries: [],
     activeEntry: null,
-    activeEntryEditor: null, // {type: null, entry: null}
+    activeEntryEditor: null, // {type: null, entry: null},
+    entryToDelete: null,
 };
 
 const entriesReducer = (state = defaultState, action) => {
@@ -42,14 +45,18 @@ const entriesReducer = (state = defaultState, action) => {
             break;
         case SET_ENTRIES:
             newState = { ...state, entries: action.payload || [] };
-            console.log(newState);
             break;
         case SHOW_ENTRY:
-            console.log("show entry");
             newState = { ...state, activeEntry: action.payload, activeEntryEditor: null };
             break;
         case SHOW_ENTRY_EDITOR:
             newState = { ...state, activeEntryEditor: action.payload, activeEntry: null };
+            break;
+        case SHOW_DELETE_ENTRY_MODAL:
+            newState = { ...state, entryToDelete: action.payload };
+            break;
+        case CLOSE_DELETE_ENTRY_MODAL:
+            newState = { ...state, entryToDelete: action.payload };
             break;
         default:
             newState = state;

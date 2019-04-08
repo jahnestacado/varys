@@ -1,0 +1,9 @@
+.DeleteEntryModal-btn-delete {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.DeleteEntryModal-btn-delete:hover {
+    font-size: 14px;
+    opacity: 1;
+}

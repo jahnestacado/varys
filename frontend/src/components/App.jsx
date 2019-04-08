@@ -9,6 +9,7 @@ import { setEntries, getEntries, showEntryEditor } from "./../actions/entryActio
 import { resumeUserSession } from "./../actions/authActions.js";
 import { Header, Icon, Pagination, Button } from "semantic-ui-react";
 import EntryModal from "./EntryModal.jsx";
+import DeleteEntryModal from "./DeleteEntryModal.jsx";
 
 import "./App.css";
 
@@ -132,7 +133,7 @@ class App extends Component {
                     }
                 />
 
-                {entries.length ? (
+                {!!entries.length && (
                     <Pagination
                         className="App-pagination-bar"
                         totalPages={totalPages}
@@ -143,31 +144,26 @@ class App extends Component {
                         prevItem={null}
                         nextItem={null}
                     />
-                ) : (
-                    ""
                 )}
 
                 <EntryForm />
                 <EntryModal />
+                <DeleteEntryModal />
             </div>
         );
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        entries: state.entries,
-        auth: state.auth,
-    };
-};
+const mapStateToProps = (state) => ({
+    entries: state.entries,
+    auth: state.auth,
+});
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        getEntries: (query) => dispatch(getEntries(query)),
-        setEntries: (entries) => dispatch(setEntries(entries)),
-        resumeUserSession: () => dispatch(resumeUserSession()),
-        showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({
+    getEntries: (query) => dispatch(getEntries(query)),
+    setEntries: (entries) => dispatch(setEntries(entries)),
+    resumeUserSession: () => dispatch(resumeUserSession()),
+    showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

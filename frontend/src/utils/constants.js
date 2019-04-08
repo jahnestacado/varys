@@ -3,6 +3,8 @@ export const UPDATE_ENTRY = "UPDATE_ENTRY";
 export const DELETE_ENTRY = "DELETE_ENTRY";
 export const SHOW_ENTRY = "SHOW_ENTRY";
 export const SHOW_ENTRY_EDITOR = "SHOW_ENTRY_EDITOR";
+export const SHOW_DELETE_ENTRY_MODAL = "SHOW_DELETE_ENTRY_MODAL";
+export const CLOSE_DELETE_ENTRY_MODAL = "CLOSE_DELETE_ENTRY_MODAL";
 
 export const SIGN_UP = "SIGN_UP";
 export const SIGN_IN = "SIGN_IN";

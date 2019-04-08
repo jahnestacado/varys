@@ -1,9 +1,8 @@
 import React, { Component } from "react";
-import DeleteEntry from "./DeleteEntry.jsx";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { Card, Image, Label, Dropdown, Icon } from "semantic-ui-react";
-import { showEntry, showEntryEditor } from "./../actions/entryActions.js";
+import { showEntry, showEntryEditor, showDeleteEntryModal } from "./../actions/entryActions.js";
 
 import "./ResultListItem.css";
 
@@ -29,6 +28,7 @@ class ResultListItem extends Component {
         return (
             <Icon
                 name={iconName}
+                className={`ResultListItem-btn-${actionType}-entry`}
                 onClick={() =>
                     props.showEntryEditor({
                         type: actionType,
@@ -39,13 +39,25 @@ class ResultListItem extends Component {
         );
     }
 
+    createDeleteEntryIcon(entry) {
+        const self = this;
+        const { props } = self;
+
+        return (
+            <Icon
+                className="ResultListItem-btn-delete-entry"
+                name="trash"
+                onClick={() => props.showDeleteEntryModal(entry)}
+            />
+        );
+    }
+
     render() {
         const self = this;
         const { displayEntry, props } = self;
         const { entry, auth } = props;
         const { username } = auth;
         const isEntryAuthor = entry.author === username;
-        const iconName = isEntryAuthor ? "edit" : "fork";
         // @TODO Create component that generates labels
         const keywordLabels = entry.tags.map((keyword, i) => {
             return (
@@ -63,13 +75,13 @@ class ResultListItem extends Component {
                             <Card.Meta className="ResultListItem-actions">
                                 {isEntryAuthor ? (
                                     <Dropdown
-                                        className="ResultListItem-action"
+                                        className="ResultListItem-dropdown"
                                         item
                                         icon="ellipsis vertical"
                                     >
                                         <Dropdown.Menu>
-                                            {self.createEditorActionIcon("edit", iconName, entry)}
-                                            <DeleteEntry entry={entry} />
+                                            {self.createEditorActionIcon("edit", "edit", entry)}
+                                            {self.createDeleteEntryIcon(entry)}
                                         </Dropdown.Menu>
                                     </Dropdown>
                                 ) : (
@@ -77,7 +89,7 @@ class ResultListItem extends Component {
                                     <div>
                                         {self.createEditorActionIcon(
                                             "merge-request",
-                                            iconName,
+                                            "fork",
                                             entry
                                         )}
                                     </div>
@@ -86,12 +98,13 @@ class ResultListItem extends Component {
                         )}
                         <Image
                             className="ResultListItem-avatar"
+                            avatar
                             bordered
                             rounded
                             title={entry.author}
                             floated="right"
                             size="mini"
-                            src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
+                            src="https://react.semantic-ui.com/images/avatar/large/steve.jpg"
                         />
                     </Card.Header>
                     <Card.Description title={entry.title} className="ResultListItem-description">
@@ -106,16 +119,14 @@ class ResultListItem extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        auth: state.auth,
-    };
-};
+const mapStateToProps = (state) => ({
+    auth: state.auth,
+});
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        showEntry: (entry) => dispatch(showEntry(entry)),
-        showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({
+    showEntry: (entry) => dispatch(showEntry(entry)),
+    showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
+    showDeleteEntryModal: (entry) => dispatch(showDeleteEntryModal(entry)),
+});
+
 export default connect(mapStateToProps, mapDispatchToProps)(ResultListItem);
