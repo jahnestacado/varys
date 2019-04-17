@@ -2,12 +2,10 @@ import { SELECT_NOTIFICATION_ITEM, SET_NOTIFICATION_ITEMS } from "../utils/const
 import { showEntry } from "./entryActions";
 import Http from "./../utils/http.js";
 
-export const selectNotificationItem = (notificationItem) => {
-    return {
-        type: SELECT_NOTIFICATION_ITEM,
-        payload: notificationItem,
-    };
-};
+export const selectNotificationItem = (notificationItem) => ({
+    type: SELECT_NOTIFICATION_ITEM,
+    payload: notificationItem,
+});
 
 export const getNotifications = () => {
     return (dispatch, getState) => {
@@ -59,9 +57,7 @@ export const deleteNotification = (notification) => {
     };
 };
 
-export const setNotificationItems = (notificationItems) => {
-    return {
-        type: SET_NOTIFICATION_ITEMS,
-        payload: notificationItems,
-    };
-};
+export const setNotificationItems = (notificationItems) => ({
+    type: SET_NOTIFICATION_ITEMS,
+    payload: notificationItems,
+});
