@@ -30,7 +30,7 @@ class Config extends ValidationComponent {
         } else if (nextProps.auth.role !== "superadmin") {
             nextProps.history.push("/");
         } else {
-            self.props.getConfig().then((config = {}) => {
+            self.props.dispatch(getConfig()).then((config = {}) => {
                 const { smtp = {}, host, port } = config;
                 self.setState({
                     smtpHost: smtp.host,
@@ -46,7 +46,7 @@ class Config extends ValidationComponent {
 
     componentWillMount() {
         const self = this;
-        self.props.resumeUserSession();
+        self.props.dispatch(resumeUserSession());
     }
 
     onSubmit(event) {
@@ -70,7 +70,7 @@ class Config extends ValidationComponent {
                 },
             };
 
-            props.setConfig(body);
+            props.dispatch(setConfig(body));
         }
     }
 
@@ -174,12 +174,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        resumeUserSession: () => dispatch(resumeUserSession()),
-        getConfig: () => dispatch(getConfig()),
-        setConfig: (config) => dispatch(setConfig(config)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Config);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Config);

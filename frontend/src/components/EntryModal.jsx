@@ -18,7 +18,7 @@ class EntryModal extends Component {
                 className="EntryForm-modal"
                 closeIcon
                 size="large"
-                onClose={props.closeEntry}
+                onClose={() => props.dispatch(closeEntry())}
             >
                 {" "}
                 <Header icon="file text outline" content={entry.title} />
@@ -34,8 +34,9 @@ const mapStateToProps = (state) => ({
     activeEntry: state.entries.activeEntry,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-    closeEntry: (entry) => dispatch(closeEntry(entry)),
-});
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(EntryModal);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(EntryModal);

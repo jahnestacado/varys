@@ -19,7 +19,7 @@ class ResultListItem extends Component {
     displayEntry() {
         const self = this;
         const { props } = self;
-        self.props.showEntry(props.entry, "readonly");
+        props.dispatch(showEntry(props.entry, "readonly"));
     }
 
     createEditorActionIcon(actionType, iconName, entry) {
@@ -31,10 +31,12 @@ class ResultListItem extends Component {
                 className={`ResultListItem-btn-${actionType}-entry`}
                 onClick={(event) => {
                     event.stopPropagation();
-                    props.showEntryEditor({
-                        type: actionType,
-                        entry,
-                    });
+                    props.dispatch(
+                        showEntryEditor({
+                            type: actionType,
+                            entry,
+                        })
+                    );
                 }}
             />
         );
@@ -50,7 +52,7 @@ class ResultListItem extends Component {
                 name="trash"
                 onClick={(event) => {
                     event.stopPropagation();
-                    props.showDeleteEntryModal(entry);
+                    props.dispatch(showDeleteEntryModal(entry));
                 }}
             />
         );
@@ -132,11 +134,7 @@ const mapStateToProps = (state) => ({
     auth: state.auth,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-    showEntry: (entry) => dispatch(showEntry(entry)),
-    showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
-    showDeleteEntryModal: (entry) => dispatch(showDeleteEntryModal(entry)),
-});
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
 export default connect(
     mapStateToProps,

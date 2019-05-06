@@ -61,7 +61,9 @@ class MergeRequestModal extends Component {
         const { props } = self;
         const { selectedItem } = props;
         const { id, source_id } = selectedItem;
-        return props.acceptMergeRequest({ notification_id: id, merge_request_id: source_id });
+        return props.dispatch(
+            acceptMergeRequest({ notification_id: id, merge_request_id: source_id })
+        );
     }
 
     rejectMergeRequest() {
@@ -69,7 +71,9 @@ class MergeRequestModal extends Component {
         const { props } = self;
         const { selectedItem } = props;
         const { id, source_id } = selectedItem;
-        return props.rejectMergeRequest({ notification_id: id, merge_request_id: source_id });
+        return props.dispatch(
+            rejectMergeRequest({ notification_id: id, merge_request_id: source_id })
+        );
     }
 
     componentDidMount() {
@@ -137,12 +141,7 @@ class MergeRequestModal extends Component {
     }
 }
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        rejectMergeRequest: (id) => dispatch(rejectMergeRequest(id)),
-        acceptMergeRequest: (modifiedEntry) => dispatch(acceptMergeRequest(modifiedEntry)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
 export default connect(
     null,

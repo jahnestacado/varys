@@ -24,7 +24,7 @@ class SignUp extends ValidationComponent {
 
     componentWillMount() {
         const self = this;
-        self.props.resumeUserSession();
+        self.props.dispatch(resumeUserSession());
     }
 
     componentWillReceiveProps(nextProps) {
@@ -51,7 +51,7 @@ class SignUp extends ValidationComponent {
         if (containsErrors) {
             self.setState({ errors });
         } else {
-            props.signup(body).then(() => props.history.push("/signin"));
+            props.dispatch(signup(body)).then(() => props.history.push("/signin"));
         }
     }
 
@@ -141,11 +141,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        signup: (body) => dispatch(signup(body)),
-        resumeUserSession: () => dispatch(resumeUserSession()),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(SignUp);

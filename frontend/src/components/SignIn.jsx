@@ -20,7 +20,7 @@ class SignIn extends ValidationComponent {
 
     componentWillMount() {
         const self = this;
-        self.props.resumeUserSession();
+        self.props.dispatch(resumeUserSession());
     }
 
     componentWillReceiveProps(nextProps) {
@@ -44,7 +44,7 @@ class SignIn extends ValidationComponent {
         if (containsErrors) {
             self.setState({ errors });
         } else {
-            self.props.signin(body);
+            self.props.dispatch(signin(body));
         }
     }
 
@@ -108,11 +108,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        signin: (sessionInfo) => dispatch(signin(sessionInfo)),
-        resumeUserSession: () => dispatch(resumeUserSession()),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(SignIn);

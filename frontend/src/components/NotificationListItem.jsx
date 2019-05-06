@@ -16,13 +16,13 @@ class NotificationListItem extends Component {
     deleteNotification() {
         const self = this;
         const { props } = self;
-        props.deleteNotification(props.notification);
+        props.dispatch(deleteNotification(props.notification));
     }
 
     openNotification() {
         const self = this;
         const { props } = self;
-        props.openNotification(props.notification);
+        props.dispatch(openNotification(props.notification));
     }
 
     getHeader() {
@@ -84,11 +84,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        deleteNotification: (notificationEntry) => dispatch(deleteNotification(notificationEntry)),
-        openNotification: (entry) => dispatch(openNotification(entry)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(NotificationListItem);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(NotificationListItem);

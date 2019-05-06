@@ -17,13 +17,14 @@ class MergeRequestListItem extends Component {
     getData() {
         const self = this;
         const { props } = self;
-        props.getMergeRequest(props.notification);
+        props.dispatch(getMergeRequest(props.notification));
     }
 
     clearSelection() {
         const self = this;
         const { props } = self;
-        props.selectNotificationItem(null);
+        // @TODO create explicit action to clear notification item
+        props.dispatch(selectNotificationItem(null));
     }
 
     render() {
@@ -76,13 +77,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        selectNotificationItem: (notificationItem) => {
-            dispatch(selectNotificationItem(notificationItem));
-        },
-        getMergeRequest: (notificationItem) => dispatch(getMergeRequest(notificationItem)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(MergeRequestListItem);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(MergeRequestListItem);

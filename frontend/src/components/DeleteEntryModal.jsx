@@ -16,8 +16,8 @@ class DeleteEntryModal extends Component {
     deleteEntry(event) {
         event.stopPropagation();
         const self = this;
-        const { entryToDelete, deleteEntry } = self.props;
-        deleteEntry(entryToDelete);
+        const { dispatch, entryToDelete } = self.props;
+        dispatch(deleteEntry(entryToDelete));
     }
 
     render() {
@@ -28,7 +28,7 @@ class DeleteEntryModal extends Component {
             <div className="DeleteEntryModal">
                 <Modal
                     open={!!props.entryToDelete}
-                    onClose={props.closeDeleteEntryModal}
+                    onClose={() => props.dispatch(closeDeleteEntryModal())}
                     basic
                     size="small"
                     closeIcon
@@ -52,9 +52,9 @@ const mapStateToProps = (state) => ({
     entryToDelete: state.entries.entryToDelete,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-    deleteEntry: (entry) => dispatch(deleteEntry(entry)),
-    closeDeleteEntryModal: (entry) => dispatch(closeDeleteEntryModal(entry)),
-});
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(DeleteEntryModal);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(DeleteEntryModal);

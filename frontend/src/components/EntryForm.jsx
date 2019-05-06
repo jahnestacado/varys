@@ -57,11 +57,11 @@ class EntryForm extends Component {
         switch (type) {
             case "edit":
             case "add":
-                props.updateOrCreateEntry(state.entry);
+                props.dispatch(updateOrCreateEntry(state.entry));
                 break;
             case "merge-request": {
                 const mergeRequest = { ...state.entry, merge_request_author: props.auth.username };
-                props.submitMergeRequest(mergeRequest);
+                props.dispatch(submitMergeRequest(mergeRequest));
                 break;
             }
             default:
@@ -104,7 +104,7 @@ class EntryForm extends Component {
                     className="EntryForm-modal"
                     closeIcon
                     size="fullscreen"
-                    onClose={() => props.closeEntryEditor()}
+                    onClose={() => props.dispatch(closeEntryEditor())}
                 >
                     <Form>
                         <Form.Group className="EntryForm-header">
@@ -145,12 +145,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        updateOrCreateEntry: (entry) => dispatch(updateOrCreateEntry(entry)),
-        closeEntryEditor: () => dispatch(closeEntryEditor()),
-        submitMergeRequest: (mergeRequest) => dispatch(submitMergeRequest(mergeRequest)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(EntryForm);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(EntryForm);

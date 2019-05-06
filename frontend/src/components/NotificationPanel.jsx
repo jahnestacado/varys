@@ -29,7 +29,7 @@ class NotificationPanel extends Component {
     componentDidMount() {
         const self = this;
         const { props } = self;
-        props.getNotifications();
+        props.dispatch(getNotifications());
     }
 
     shouldComponentUpdate(nextProps) {
@@ -38,7 +38,7 @@ class NotificationPanel extends Component {
         let shouldUpdate = true;
         if (nextProps.selectedNotificationItem === null && props.selectedNotificationItem) {
             shouldUpdate = false;
-            props.getNotifications();
+            props.dispatch(getNotifications());
         }
         return shouldUpdate;
     }
@@ -78,10 +78,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        getNotifications: (notifications) => dispatch(getNotifications(notifications)),
-    };
-};
+const mapDispatchToProps = (dispatch) => ({ dispatch });
 
-export default connect(mapStateToProps, mapDispatchToProps)(NotificationPanel);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(NotificationPanel);

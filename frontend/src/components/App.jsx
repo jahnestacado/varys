@@ -32,7 +32,7 @@ class App extends Component {
 
     componentWillMount() {
         const self = this;
-        self.props.resumeUserSession();
+        self.props.dispatch(resumeUserSession());
     }
 
     componentWillReceiveProps(nextProps) {
@@ -58,7 +58,7 @@ class App extends Component {
         const { props } = self;
         const query = self.convertQuery(searchQuery);
         if (query) {
-            props.getEntries(query).then(() => {
+            props.dispatch(getEntries(query)).then(() => {
                 self.setState({
                     activePage: 1,
                 });
@@ -67,7 +67,7 @@ class App extends Component {
             self.setState({
                 activePage: 0,
             });
-            props.setEntries([]);
+            props.dispatch(setEntries([]));
         }
     }
 
@@ -126,10 +126,12 @@ class App extends Component {
                     circular
                     icon="add"
                     onClick={() =>
-                        props.showEntryEditor({
-                            type: "add",
-                            entry: null,
-                        })
+                        props.dispatch(
+                            showEntryEditor({
+                                type: "add",
+                                entry: null,
+                            })
+                        )
                     }
                 />
 
@@ -160,10 +162,10 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    getEntries: (query) => dispatch(getEntries(query)),
-    setEntries: (entries) => dispatch(setEntries(entries)),
-    resumeUserSession: () => dispatch(resumeUserSession()),
-    showEntryEditor: (specs) => dispatch(showEntryEditor(specs)),
+    dispatch,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(App);
