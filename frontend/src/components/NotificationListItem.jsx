@@ -13,9 +13,10 @@ class NotificationListItem extends Component {
         bindToComponent(self, ["deleteNotification", "getHeader", "openNotification"]);
     }
 
-    deleteNotification() {
+    deleteNotification(event) {
         const self = this;
         const { props } = self;
+        event.stopPropagation();
         props.dispatch(deleteNotification(props.notification));
     }
 
@@ -49,6 +50,7 @@ class NotificationListItem extends Component {
         const self = this;
         const { props, deleteNotification, getHeader, openNotification } = self;
         const { notification } = props;
+        const header = getHeader();
 
         return (
             <List.Item
@@ -61,7 +63,7 @@ class NotificationListItem extends Component {
                     src="https://react.semantic-ui.com/assets/images/avatar/large/steve.jpg"
                 />
                 <List.Content>
-                    <List.Header>{getHeader()}</List.Header>
+                    <List.Header>{header}</List.Header>
                     <List.Description>
                         <b>{notification.description}</b>
                         {`  by ${notification.initiator}`}
