@@ -116,6 +116,7 @@ class App extends Component {
                         onSelectionChange={onQueryChange}
                         placeholder={"Search..."}
                         fluid
+                        autoFocus
                     />
                 </div>
                 <ResultList refresh={refreshSearchResults} entries={displayedEntries} />

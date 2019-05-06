@@ -7,45 +7,24 @@ class AutoCompleteDropdown extends Component {
     constructor(props) {
         super(props);
         const self = this;
-        bindToComponent(self, [
-            "onQueryChange",
-            "onSearchChange",
-            "filterSearch",
-            "onItemAddition",
-        ]);
-        const value = self.props.value;
+        bindToComponent(self, ["onQueryChange", "onSearchChange", "onQueryListItemAddition"]);
+        const queryList = self.props.value || [];
         self.state = {
-            options: value ? value.map((c, i) => self.createDropdownItem(c, i)) : [],
-            isDropdownOpen: false,
+            options: queryList.map(AutoCompleteDropdown.createDropdownOption),
             isFetchingData: false,
-            value: value || [],
+            queryList,
         };
     }
 
-    filterSearch(options) {
-        /* Due to limitations in Semantic-UI-Dropdown which clears the
-        * dropdown query if new options are set we mark the 'old'
-        * as disabled and then we filter this items out when we display the dropdown list
-        */
-        return options.filter((o) => !o.disabled);
-    }
-
-    disableOptions(oldOptions) {
-        /* Due to limitations in Semantic-UI-Dropdown which clears the
-        * dropdown query if new options are set we mark the 'old'
-        * as disabled and then we filter this items out when we display the dropdown list
-        */
-        const disabledOptions = oldOptions.map((o) => {
-            o.disabled = true;
-            return o;
-        });
-        return disabledOptions;
-    }
+    static createDropdownOption = (value) => ({
+        key: value,
+        text: value,
+        value,
+    });
 
     onSearchChange(event, { searchQuery }) {
         const self = this;
         if (searchQuery.length > 1) {
-            self.setState({ isFetchingData: true });
             fetch(`/api/v1/match?substring=${searchQuery}&type=${self.props.type}`, {
                 method: "GET",
                 headers: new Headers({
@@ -56,98 +35,83 @@ class AutoCompleteDropdown extends Component {
                 .then(handleFetchError)
                 .then((response) => response.json())
                 .then((result) => {
+                    let newState = {
+                        isFetchingData: false,
+                    };
                     if (result && result.length) {
-                        const disabledOptions = self.disableOptions(self.state.options);
-                        self.setState({
+                        const { options, queryList } = self.state;
+                        const activeOptions = options.filter(({ value }) =>
+                            queryList.includes(value)
+                        );
+
+                        newState = {
+                            ...newState,
                             options: result
-                                .map((value, i) => self.createDropdownItem(value, i))
-                                .concat(disabledOptions),
-                            isDropdownOpen: true,
-                            isFetchingData: false,
-                        });
-                    } else {
-                        self.setState({
-                            isFetchingData: false,
-                            isDropdownOpen: true,
-                        });
+                                .map(AutoCompleteDropdown.createDropdownOption)
+                                .concat(activeOptions),
+                        };
                     }
+
+                    self.setState(newState);
                 })
                 .catch((error) => {
                     // @TODO Show error message
                     console.error(error);
                     self.setState({ isFetchingData: false });
                 });
+
+            self.setState({ isFetchingData: true });
         }
     }
 
     onQueryChange(event, data) {
         const self = this;
-        const newQuery = [].concat(data.value);
-        const res = self.state.options.filter((d) => newQuery.some((v) => v === d.text));
 
         self.setState({
-            options: res,
-            isDropdownOpen: false,
-            value: newQuery,
+            queryList: data.value,
         });
 
-        self.props.onSelectionChange && self.props.onSelectionChange(newQuery);
+        self.props.onSelectionChange && self.props.onSelectionChange(data.value);
     }
 
-    onItemAddition(event, data) {
+    onQueryListItemAddition(event, data) {
         const self = this;
-        const { options } = self.state;
-        const newItem = data.value;
-        const newOptions = options.concat(
-            self.state.value.concat(newItem).map((c, i) => self.createDropdownItem(newItem, i))
+        const options = self.state.options.concat(
+            AutoCompleteDropdown.createDropdownOption(data.value)
         );
-
-        self.setState({
-            options: newOptions,
-            isDropdownOpen: false,
-            value: self.state.value.concat(newItem),
-        });
-    }
-
-    createDropdownItem(itemName) {
-        const dropdownItem = {
-            key: `${Date.now()}${itemName}`,
-            text: itemName,
-            value: itemName,
-            /* Hack in order to force cleanup of
-        *  input field  after item selection
-        */
-            "data-additional": true,
-        };
-
-        return dropdownItem;
+        self.setState({ options });
     }
 
     render() {
         const self = this;
-        const { onSearchChange, onQueryChange, onItemAddition, filterSearch, props, state } = self;
-        const { options, isDropdownOpen, isFetchingData, value } = state;
-        const { upward, placeholder, allowAdditions, fluid } = props;
+        const { onSearchChange, onQueryChange, props, state, onQueryListItemAddition } = self;
+        const { options, isFetchingData, queryList } = state;
+        const { upward, placeholder, allowAdditions, fluid, autoFocus = false } = props;
 
         return (
             <Dropdown
+                searchInput={{
+                    autoFocus,
+                }}
                 fluid={fluid}
                 selection
                 multiple
                 onSearchChange={onSearchChange}
                 onChange={onQueryChange}
                 options={options}
-                value={value}
+                value={queryList}
                 minCharacters={2}
-                open={isDropdownOpen}
-                search={filterSearch}
-                closeOnChange={true}
+                search
+                clearable
+                closeOnChange
                 placeholder={placeholder}
                 loading={isFetchingData}
                 disabled={isFetchingData}
                 upward={upward}
                 allowAdditions={allowAdditions}
-                onAddItem={onItemAddition}
+                wrapSelection
+                autoFocus
+                onAddItem={onQueryListItemAddition}
             />
         );
     }
