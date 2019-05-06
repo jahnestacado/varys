@@ -11,25 +11,26 @@ class MergeRequestListItem extends Component {
     constructor(props) {
         super(props);
         const self = this;
-        bindToComponent(self, ["clearSelection", "getData"]);
+        bindToComponent(self, ["clearSelection", "loadMergeRequestData"]);
     }
 
-    getData() {
+    loadMergeRequestData() {
         const self = this;
         const { props } = self;
         props.dispatch(getMergeRequest(props.notification));
     }
 
-    clearSelection() {
+    clearSelection(event) {
         const self = this;
         const { props } = self;
+        event.stopPropagation();
         // @TODO create explicit action to clear notification item
         props.dispatch(selectNotificationItem(null));
     }
 
     render() {
         const self = this;
-        const { props, getData, clearSelection } = self;
+        const { props, loadMergeRequestData, clearSelection } = self;
         const { notification, selectedNotificationItem } = props;
         const shouldOpenModal =
             selectedNotificationItem &&
@@ -39,7 +40,7 @@ class MergeRequestListItem extends Component {
         return (
             <List.Item
                 className="MergeRequestListItem"
-                onClick={getData}
+                onClick={loadMergeRequestData}
                 id={notification.source_id}
             >
                 <Image

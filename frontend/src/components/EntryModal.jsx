@@ -18,7 +18,10 @@ class EntryModal extends Component {
                 className="EntryForm-modal"
                 closeIcon
                 size="large"
-                onClose={() => props.dispatch(closeEntry())}
+                onClose={(event) => {
+                    event.stopPropagation();
+                    props.dispatch(closeEntry());
+                }}
             >
                 {" "}
                 <Header icon="file text outline" content={entry.title} />

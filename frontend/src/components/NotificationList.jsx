@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import "./NotificationList.css";
 import { List, Segment } from "semantic-ui-react";
 import MergeRequestListItem from "./MergeRequestListItem.jsx";
 import NotificationListItem from "./NotificationListItem.jsx";
-import { connect } from "react-redux";
+
+import "./NotificationList.css";
 
 const notificationListItemMap = {
     merge_request(notification) {
@@ -39,10 +39,4 @@ class NotificationList extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        selectedNotificationItem: state.notifications.selectedNotificationItem,
-    };
-};
-
-export default connect(mapStateToProps)(NotificationList);
+export default NotificationList;
