@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Message } from "semantic-ui-react";
 import bindToComponent from "./../utils/bindToComponent.js";
 import validator from "./../utils/inputValidation.js";
+import nanoid from "nanoid";
 
 class ValidationComponent extends Component {
     constructor(props) {
@@ -32,7 +33,7 @@ class ValidationComponent extends Component {
                 }
                 return flatten;
             }, [])
-            .map((msg, i) => <Message key={i} size="small" color="red" content={msg} />);
+            .map((msg) => <Message key={nanoid(10)} size="small" color="red" content={msg} />);
     }
 }
 

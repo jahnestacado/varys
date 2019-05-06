@@ -13,9 +13,14 @@ const MarkdownViewer = ({ entry, noTitle }) => {
     const content = noTitle ? body : `# ${title} \n${body}`;
     const generatedHtml = converter.makeHtml(content);
     // @TODO Create component that generates labels
-    const keywordLabels = entry.tags.map((keyword, i) => {
+    const keywordLabels = entry.tags.map((keyword) => {
         return (
-            <Label key={i} color="teal" size="small" className="ResultListItem-label">
+            <Label
+                key={`${entry.id}-${keyword}`}
+                color="teal"
+                size="small"
+                className="ResultListItem-label"
+            >
                 {keyword}
             </Label>
         );

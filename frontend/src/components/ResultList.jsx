@@ -31,7 +31,7 @@ class ResultList extends Component {
                             computer={5}
                             largeScreen={3}
                             tablet={8}
-                            key={i}
+                            key={`grid-column-${i}`}
                         >
                             {item}
                         </Grid.Column>

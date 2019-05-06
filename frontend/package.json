@@ -5,6 +5,7 @@
     "dependencies": {
         "diff-match-patch": "^1.0.4",
         "markup-it": "11.1.4",
+        "nanoid": "^2.0.1",
         "react": "^16.8.6",
         "react-dom": "^16.8.6",
         "react-redux": "^7.0.3",

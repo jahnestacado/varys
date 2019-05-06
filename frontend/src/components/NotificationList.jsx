@@ -5,6 +5,17 @@ import MergeRequestListItem from "./MergeRequestListItem.jsx";
 import NotificationListItem from "./NotificationListItem.jsx";
 import { connect } from "react-redux";
 
+const notificationListItemMap = {
+    merge_request(notification) {
+        return <MergeRequestListItem notification={notification} key={notification.id} />;
+    },
+    merge_request_accept(notification) {
+        return <NotificationListItem notification={notification} key={notification.id} />;
+    },
+    merge_request_reject: (notification) =>
+        notificationListItemMap.merge_request_accept(notification),
+};
+
 class NotificationList extends Component {
     render() {
         const self = this;
@@ -13,17 +24,13 @@ class NotificationList extends Component {
         return (
             <Segment className="NotificationList-segment" textAlign="left">
                 <List divided verticalAlign="middle">
-                    {notifications.map((notification, i) => {
-                        let item;
-                        switch (notification.type) {
-                            case "merge_request":
-                                item = <MergeRequestListItem notification={notification} key={i} />;
-                                break;
-                            case "merge_request_accept":
-                            case "merge_request_reject":
-                                item = <NotificationListItem notification={notification} key={i} />;
-                                break;
-                        }
+                    {notifications.map((notification) => {
+                        const item = (notificationListItemMap[notification.type] ||
+                            (({ type }) => {
+                                console.warn(`Unknown notification type ${type}`);
+                                return "";
+                            }))(notification);
+
                         return item;
                     })}
                 </List>

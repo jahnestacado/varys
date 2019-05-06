@@ -63,9 +63,14 @@ class ResultListItem extends Component {
         const { username } = auth;
         const isEntryAuthor = entry.author === username;
         // @TODO Create component that generates labels
-        const keywordLabels = entry.tags.map((keyword, i) => {
+        const keywordLabels = entry.tags.map((keyword) => {
             return (
-                <Label key={i} color="teal" size="mini" className="ResultListItem-label">
+                <Label
+                    key={`${entry.id}-${keyword}`}
+                    color="teal"
+                    size="mini"
+                    className="ResultListItem-label"
+                >
                     {keyword}
                 </Label>
             );
@@ -133,4 +138,7 @@ const mapDispatchToProps = (dispatch) => ({
     showDeleteEntryModal: (entry) => dispatch(showDeleteEntryModal(entry)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ResultListItem);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ResultListItem);

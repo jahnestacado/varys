@@ -116,8 +116,8 @@ class MergeRequestModal extends Component {
                     )}
                     <div className="MergeRequestModal-footer">
                         <div className="MergeRequestModal-tags">
-                            {tagDiff.map(({ name, className }, i) => (
-                                <Label className={className} size="large" key={i}>
+                            {tagDiff.map(({ name, className }) => (
+                                <Label className={className} size="large" key={name}>
                                     {name}
                                 </Label>
                             ))}
@@ -144,4 +144,7 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-export default connect(null, mapDispatchToProps)(MergeRequestModal);
+export default connect(
+    null,
+    mapDispatchToProps
+)(MergeRequestModal);
