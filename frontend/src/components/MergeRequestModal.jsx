@@ -1,25 +1,30 @@
 import React, { Component } from "react";
-import { Modal, Header, Label, Button, Dimmer, Loader } from "semantic-ui-react";
+import { Modal, Header, Icon, Label, Button, Dimmer, Loader } from "semantic-ui-react";
 import bindToComponent from "./../utils/bindToComponent.js";
 import { connect } from "react-redux";
 import { rejectMergeRequest, acceptMergeRequest } from "./../actions/mergeRequestActions.js";
+import DiffMatchPatch from "diff-match-patch";
+
 import "./MergeRequestModal.css";
 
-const RichDiff = require("react-rich-diff");
-const MarkupIt = require("markup-it");
-const markdown = require("markup-it/lib/markdown");
-const MarkupItState = MarkupIt.State.create(markdown);
+DiffMatchPatch.DIFF_DELETE = -1;
+DiffMatchPatch.DIFF_INSERT = 1;
+DiffMatchPatch.DIFF_EQUAL = 0;
 
 class MergeRequestModal extends Component {
     constructor(props) {
         super(props);
         const self = this;
+        self.diffMatchPatch = new DiffMatchPatch();
         self.state = {
             body: null,
         };
         bindToComponent(self, ["acceptMergeRequest", "rejectMergeRequest"]);
         const { selectedItem } = props;
         const { originalEntry, modifiedEntry } = selectedItem.data;
+        // We calculate initial diff only for title and tags cause this happens instantly
+        // The body diff might take more time so we skip a tick to show a spinner
+        // Idealy this diffing should be done in the backend
         self.titleDiff = self.getMarkdownDiff(originalEntry.title, modifiedEntry.title);
         self.tagDiff = self.getTagDiff(originalEntry, modifiedEntry);
     }
@@ -30,10 +35,10 @@ class MergeRequestModal extends Component {
     }
 
     getMarkdownDiff(original = "", modified = "") {
-        const originalDoc = MarkupItState.deserializeToDocument(original);
-        const modifiedDoc = MarkupItState.deserializeToDocument(modified);
-        const diff = RichDiff.State.create(originalDoc, modifiedDoc);
-        return diff;
+        const self = this;
+        const mainDiff = self.diffMatchPatch.diff_main(original, modified);
+        const htmlDiff = self.diffMatchPatch.diff_prettyHtml(mainDiff).replace(/&para;/g, "");
+        return htmlDiff;
     }
 
     getTagDiff(originalEntry = { tags: [] }, modifiedEntry = { tags: [] }) {
@@ -95,10 +100,13 @@ class MergeRequestModal extends Component {
                 onClose={onClose}
             >
                 {" "}
-                <Header icon="file text outline" content={<RichDiff state={titleDiff} />} />
+                <Header>
+                    <Icon name="file text outline" />
+                    <div dangerouslySetInnerHTML={{ __html: titleDiff }} />
+                </Header>
                 <Modal.Content scrolling>
                     {state.body ? (
-                        <RichDiff state={state.body} />
+                        <div dangerouslySetInnerHTML={{ __html: state.body }} />
                     ) : (
                         <div className="dimmer">
                             <Dimmer active>
